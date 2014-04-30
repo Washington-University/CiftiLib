@@ -1,0 +1,34 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+#
+# Name of Project
+#
+PROJECT(CiftiLib_and_example)
+
+SET(CMAKE_CXX_FLAGS "-W -Wall")
+
+FIND_PACKAGE(Qt4 4.8 REQUIRED)
+
+#
+# Need XML from Qt
+#
+SET(QT_DONT_USE_QTGUI)
+
+#
+# Add QT for includes
+#
+INCLUDE(${QT_USE_FILE})
+
+FIND_PACKAGE(ZLIB)
+IF (ZLIB_FOUND)
+    ADD_DEFINITIONS("-DCARET_HAVE_ZLIB")
+ENDIF (ZLIB_FOUND)
+
+#OS X has some weirdness in its zlib, so let the preprocessor know
+IF (APPLE)
+    ADD_DEFINITIONS(-DCARET_OS_MACOSX)
+ENDIF (APPLE)
+
+ADD_SUBDIRECTORY(Common)
+ADD_SUBDIRECTORY(Nifti)
+ADD_SUBDIRECTORY(Cifti)
+ADD_SUBDIRECTORY(example)

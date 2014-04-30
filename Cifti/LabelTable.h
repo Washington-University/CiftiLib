@@ -1,0 +1,201 @@
+#ifndef __LABELTABLE_H__
+#define __LABELTABLE_H__
+
+/*LICENSE_START*/ 
+/*
+ *  Copyright (c) 2014, Washington University School of Medicine
+ *  All rights reserved.
+ *
+ *  Redistribution and use in source and binary forms, with or without modification,
+ *  are permitted provided that the following conditions are met:
+ *
+ *  1. Redistributions of source code must retain the above copyright notice,
+ *  this list of conditions and the following disclaimer.
+ *
+ *  2. Redistributions in binary form must reproduce the above copyright notice,
+ *  this list of conditions and the following disclaimer in the documentation
+ *  and/or other materials provided with the distribution.
+ *
+ *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ *  THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ *  FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ *  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *  LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ *  ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include <QString>
+
+#include <map>
+#include <set>
+#include <vector>
+#include <stdint.h>
+
+#include <QXmlStreamWriter>
+#include <QXmlStreamReader>
+
+namespace cifti {
+
+class Label;
+    
+class XmlWriter;
+class XmlException;
+    
+class LabelTable {
+
+public:
+    LabelTable();
+
+    LabelTable(const LabelTable& glt);
+
+    LabelTable& operator=(const LabelTable& glt);
+    
+    bool matches(const LabelTable& rhs, const bool checkColors = false, const bool checkCoords = false) const;
+    
+    bool operator==(const LabelTable& rhs) const { return matches(rhs, true); }
+    
+    bool operator!=(const LabelTable& rhs) const { return !((*this) == rhs); }
+    
+    virtual ~LabelTable();
+
+private:
+    void copyHelper(const LabelTable& glt);
+
+    void initializeMembersLabelTable();
+    
+public:
+    void clear();
+
+    std::map<int32_t,int32_t> append(const LabelTable& glt);
+
+    int32_t addLabel(
+                    const QString& labelName,
+                    const float red,
+                    const float green,
+                    const float blue,
+                    const float alpha);
+
+    int32_t addLabel(
+                    const QString& labelName,
+                    const float red,
+                    const float green,
+                    const float blue);
+
+    int32_t addLabel(
+                    const QString& labelName,
+                    const int32_t red,
+                    const int32_t green,
+                    const int32_t blue,
+                    const int32_t alpha);
+
+    int32_t addLabel(
+                    const QString& labelName,
+                    const int32_t red,
+                    const int32_t green,
+                    const int32_t blue);
+
+    int32_t addLabel(const Label* glt);
+
+    void deleteLabel(const int32_t key);
+
+    void deleteLabel(const Label* label);
+
+    void deleteUnusedLabels(const std::set<int32_t>& usedLabelKeys);
+
+    void insertLabel(const Label* label);
+
+    int32_t getLabelKeyFromName(const QString& name) const;
+
+    const Label* getLabel(const QString& labelName) const;
+
+    Label* getLabel(const QString& labelName);
+    
+    const Label* getLabelBestMatching(const QString& name) const;
+
+    const Label* getLabel(const int32_t key) const;
+
+    Label* getLabel(const int32_t key);
+    
+    int32_t getUnassignedLabelKey() const;
+
+    int32_t getNumberOfLabels() const;
+
+    QString getLabelName(const int32_t key) const;
+
+    void setLabelName(
+                    const int32_t key,
+                    const QString& name);
+
+    void setLabel(const int32_t key,
+                    const QString& name,
+                    const float red,
+                    const float green,
+                    const float blue,
+                    const float alpha);
+
+    void setLabel(const int32_t key,
+                  const QString& name,
+                  const float red,
+                  const float green,
+                  const float blue,
+                  const float alpha,
+                  const float x,
+                  const float y, 
+                  const float z);
+    
+    bool isLabelSelected(const int32_t key) const;
+
+    void setLabelSelected(
+                    const int32_t key,
+                    const bool sel);
+
+    void setSelectionStatusForAllLabels(const bool newStatus);
+
+    float getLabelAlpha(const int32_t key) const;
+
+    void getLabelColor(const int32_t key, float rgbaOut[4]) const;
+
+    void setLabelColor(
+                    const int32_t key,
+                    const float color[4]);
+
+    void createLabelsForKeys(const std::set<int32_t>& newKeys);
+
+    void writeAsXML(QXmlStreamWriter& xmlWriter) const;
+
+    void readFromQXmlStreamReader(QXmlStreamReader& xml);
+
+    std::set<int32_t> getKeys() const;
+
+    void getKeys(std::vector<int32_t>& keysOut) const;
+
+    void getKeysAndNames(std::map<int32_t, QString>& keysAndNamesOut) const;
+    
+    int32_t generateUnusedKey() const;
+    
+private:
+    void issueLabelKeyZeroWarning(const QString& name) const;
+    
+    typedef std::map<int32_t, Label*> LABELS_MAP;
+    typedef std::map<int32_t, Label*>::iterator LABELS_MAP_ITERATOR;
+    typedef std::map<int32_t, Label*>::const_iterator LABELS_MAP_CONST_ITERATOR;
+
+    LABELS_MAP labelsMap;
+
+    int32_t m_tableModelColumnIndexKey;
+    int32_t m_tableModelColumnIndexName;
+    int32_t m_tableModelColumnIndexColorSwatch;
+    int32_t m_tableModelColumnIndexRed;
+    int32_t m_tableModelColumnIndexGreen;
+    int32_t m_tableModelColumnIndexBlue;
+    int32_t m_tableModelColumnCount;
+    
+};
+
+} // namespace
+
+#endif // __LABELTABLE_H__
