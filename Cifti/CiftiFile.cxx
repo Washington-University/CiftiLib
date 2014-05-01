@@ -163,7 +163,7 @@ bool CiftiFile::isInMemory() const
 {
     if (m_readingImpl == NULL)
     {
-        return (m_writingFile == "");//return what it would be if verifyImpl() was called
+        return (m_writingFile == "");//return what it would be if verifyWriteImpl() was called
     } else {
         return m_readingImpl->isInMemory();
     }
@@ -214,7 +214,7 @@ void CiftiFile::setColumn(const float* dataIn, const int64_t& index)
     m_writingImpl->setColumn(dataIn, index);
 }
 
-//compatibility with old interface
+//single-index functions
 void CiftiFile::getRow(float* dataOut, const int64_t& index, const bool& tolerateShortRead) const
 {
     if (m_dims.empty()) throw CiftiException("getRow called on uninitialized CiftiFile");
@@ -229,20 +229,6 @@ void CiftiFile::getRow(float* dataOut, const int64_t& index) const
     getRow(dataOut, index, false);//once CiftiInterface is gone, we can collapse this into a default value
 }
 
-int64_t CiftiFile::getNumberOfRows() const
-{
-    if (m_dims.empty()) throw CiftiException("getNumberOfRows called on uninitialized CiftiFile");
-    if (m_dims.size() != 2) throw CiftiException("getNumberOfRows called on non-2D CiftiFile");
-    return m_dims[1];//length of a column
-}
-
-int64_t CiftiFile::getNumberOfColumns() const
-{
-    if (m_dims.empty()) throw CiftiException("getNumberOfRows called on uninitialized CiftiFile");
-    if (m_dims.size() != 2) throw CiftiException("getNumberOfRows called on non-2D CiftiFile");
-    return m_dims[0];//length of a row
-}
-
 void CiftiFile::setRow(const float* dataIn, const int64_t& index)
 {
     verifyWriteImpl();
@@ -250,7 +236,7 @@ void CiftiFile::setRow(const float* dataIn, const int64_t& index)
     vector<int64_t> tempvec(1, index);//could use a member if we need more speed
     m_writingImpl->setRow(dataIn, tempvec);
 }
-//*///end old compatibility functions
+//*///end single-index functions
 
 void CiftiFile::verifyWriteImpl()
 {//this is where the magic happens - we want to emulate being a simple in-memory file, but actually be reading/writing on-disk when possible
@@ -269,9 +255,13 @@ void CiftiFile::verifyWriteImpl()
         if (m_readingImpl != NULL)
         {
             CiftiOnDiskImpl* testImpl = dynamic_cast<CiftiOnDiskImpl*>(m_readingImpl.get());
-            if (testImpl != NULL && testImpl->getFilename() == m_writingFile)//these have already been canonicalized, see setWritingFile(), openFile()
+            if (testImpl != NULL)
             {
-                convertToInMemory();//save existing data in memory before we clobber file
+                QString canonicalCurrent = QFileInfo(testImpl->getFilename()).canonicalFilePath();//returns "" if nonexistant, if unlinked while open
+                if (canonicalCurrent != "" && canonicalCurrent == QFileInfo(m_writingFile).canonicalFilePath())//these were already absolute
+                {
+                    convertToInMemory();//save existing data in memory before we clobber file
+                }
             }
         }
         m_writingImpl = shared_ptr<CiftiOnDiskImpl>(new CiftiOnDiskImpl(m_writingFile, m_xml, m_writingVersion));//this constructor makes new file for writing
@@ -318,7 +308,7 @@ void CiftiMemoryImpl::getColumn(float* dataOut, const int64_t& index) const
     }
 }
 
-void CiftiMemoryImpl::setRow(const float* dataIn, const vector< int64_t >& indexSelect)
+void CiftiMemoryImpl::setRow(const float* dataIn, const vector<int64_t>& indexSelect)
 {
     float* ref = m_array.get(1, indexSelect);
     int64_t rowSize = m_array.getDimensions()[0];//we don't accept 0-D CiftiXML, so this will always work

@@ -51,10 +51,10 @@ namespace cifti
         
         NiftiHeader();
         void read(BinaryFile& inFile);
-        int64_t write(BinaryFile& outFile, const int& version = 1, const bool& swapEndian = false) const;//returns new vox_offset, doesn't set it internally
+        void write(BinaryFile& outFile, const int& version = 1, const bool& swapEndian = false);//returns new vox_offset, doesn't set it internally
         bool canWriteVersion(const int& version) const;
-        bool wasSwapped() const { return m_readSwapped; }
-        int versionRead() const { return m_readVersion; }
+        bool isSwapped() const { return m_isSwapped; }
+        int version() const { return m_version; }
         
         std::vector<int64_t> getDimensions() const;
         std::vector<std::vector<float> > getSForm() const;
@@ -78,8 +78,8 @@ namespace cifti
         bool operator!=(const NiftiHeader& rhs) const { return !((*this) == rhs); }
     private:
         nifti_2_header m_header;//storage for header values regardless of version
-        int m_readVersion;
-        bool m_readSwapped;
+        int m_version;
+        bool m_isSwapped;
         static void swapHeaderBytes(nifti_1_header &header);
         static void swapHeaderBytes(nifti_2_header &header);
         void prepareHeader(nifti_1_header& header) const;//transform internal state into ready to write header struct

@@ -75,12 +75,10 @@ namespace cifti
         void setRow(const float* dataIn, const std::vector<int64_t>& indexSelect);
         void setColumn(const float* dataIn, const int64_t& index);//for 2D only, will be slow if on disk!
         
-        void getRow(float* dataOut, const int64_t& index, const bool& tolerateShortRead) const;//backwards compatibility for old CiftiFile/CiftiInterface
+        void getRow(float* dataOut, const int64_t& index, const bool& tolerateShortRead) const;//for 2D only, if you don't want to pass a vector
         void getRow(float* dataOut, const int64_t& index) const;
-        int64_t getNumberOfRows() const;
-        int64_t getNumberOfColumns() const;
         
-        void setRow(const float* dataIn, const int64_t& index);//backwards compatibility for old CiftiFile
+        void setRow(const float* dataIn, const int64_t& index);//for 2D only, if you don't want to pass a vector
     private:
         std::vector<int64_t> m_dims;
         boost::shared_ptr<WriteImplInterface> m_writingImpl;//this will be equal to m_readingImpl when non-null
