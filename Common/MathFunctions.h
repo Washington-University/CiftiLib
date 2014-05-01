@@ -27,32 +27,15 @@
  *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/*=========================================================================
-
-  Program:   Visualization Toolkit
-  Module:    $RCSfile: vtkBase64Utilities.h,v $
-
-  Copyright (c) Ken Martin, Will Schroeder, Bill Lorensen
-  All rights reserved.
-  See Copyright.txt or http://www.kitware.com/Copyright.htm for details.
-
-     This software is distributed WITHOUT ANY WARRANTY; without even
-     the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-     PURPOSE.  See the above copyright notice for more information.
-
-=========================================================================*/
-
-
-
 
 #include <stdint.h>
-
 
 namespace cifti {
 
 /**
  * Various mathematical functions.
  */
+//NOTE: in CiftiLib, we only reference matrixToQuatern and quaternToMatrix, both used only in NiftiHeader when using volume files, not cifti files
 class MathFunctions {
 public:
     static int64_t combinations(
@@ -193,20 +176,6 @@ public:
                     const float p1[3],
                     const float p2[3],
                     const float p3[3]);
-
-    static void vtkLinearSolve3x3(
-                    const float A[3][3],
-                    const float x[],
-                    float y[]);
-
-    static void vtkLUSolve3x3(
-                    const float A[3][3],
-                    const int32_t index[],
-                    float x[]);
-
-    static void vtkLUFactor3x3(
-                    float A[3][3],
-                    int32_t index[]);
 
     static bool lineIntersection2D(
                     const float p1[3],
