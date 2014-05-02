@@ -36,7 +36,9 @@
 #include "CiftiException.h"
 
 #include <QFile>
+#ifdef CARET_HAVE_ZLIB
 #include "zlib.h"
+#endif //CARET_HAVE_ZLIB
 
 using namespace cifti;
 using namespace boost;
