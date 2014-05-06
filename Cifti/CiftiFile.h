@@ -87,6 +87,7 @@ namespace cifti
         CiftiXML m_xml;
         CiftiVersion m_writingVersion;
         void verifyWriteImpl();
+        static void copyImplData(const ReadImplInterface* from, WriteImplInterface* to, const std::vector<int64_t>& dims);
     };
     
 }
