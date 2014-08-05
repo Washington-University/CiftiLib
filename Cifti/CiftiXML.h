@@ -79,6 +79,7 @@ namespace cifti
         void setNumberOfDimensions(const int& num);
         void setMap(const int& direction, const CiftiMappingType& mapIn);
         void setFileMetaData(const MetaData& mdIn) { m_fileMetaData = mdIn; }
+        void clear();
         
         void readXML(QXmlStreamReader& xml);
         void readXML(const QString& text);

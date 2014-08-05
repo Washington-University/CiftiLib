@@ -488,15 +488,15 @@ void VolumeSpace::writeCiftiXML1(QXmlStreamWriter& xml) const
         matrixString += "\n";
         for (int i = 0; i < 4; ++i)
         {
-            matrixString += QString::number(m_sform[j][i], 'f', 10) + " ";
+            matrixString += QString::number(m_sform[j][i], 'f', 7) + " ";
         }
     }
     matrixString += "\n";
     for (int i = 0; i < 3; ++i)
     {
-        matrixString += QString::number(0.0f, 'f', 10) + " ";
+        matrixString += QString::number(0.0f, 'f', 7) + " ";
     }
-    matrixString += QString::number(1.0f, 'f', 10);
+    matrixString += QString::number(1.0f, 'f', 7);
     xml.writeCharacters(matrixString);
     xml.writeEndElement();//Transfor...
     xml.writeEndElement();//Volume
@@ -528,15 +528,15 @@ void VolumeSpace::writeCiftiXML2(QXmlStreamWriter& xml) const
         matrixString += "\n";
         for (int i = 0; i < 4; ++i)
         {
-            matrixString += QString::number(m_sform[j][i] * multiplier, 'f', 10) + " ";
+            matrixString += QString::number(m_sform[j][i] * multiplier, 'f', 7) + " ";
         }
     }
     matrixString += "\n";
     for (int i = 0; i < 3; ++i)
     {
-        matrixString += QString::number(0.0f, 'f', 10) + " ";
+        matrixString += QString::number(0.0f, 'f', 7) + " ";
     }
-    matrixString += QString::number(1.0f, 'f', 10);//doesn't get multiplied, because it isn't spatial
+    matrixString += QString::number(1.0f, 'f', 7);//doesn't get multiplied, because it isn't spatial
     xml.writeCharacters(matrixString);
     xml.writeEndElement();//Transfor...
     xml.writeEndElement();//Volume
