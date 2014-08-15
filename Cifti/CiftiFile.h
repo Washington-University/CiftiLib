@@ -60,9 +60,8 @@ namespace cifti
         CiftiFile() { }
         explicit CiftiFile(const QString &fileName);//calls openFile
         void openFile(const QString& fileName);//starts on-disk reading
-        void setWritingFile(const QString& fileName);//starts on-disk writing
-        void writeFile(const QString& fileName, const CiftiVersion& writingVersion);//leaves current state as-is, rewrites if already writing to that filename and version mismatch
-        void writeFile(const QString& fileName);//leaves current state as-is, does nothing if already writing to that filename
+        void setWritingFile(const QString& fileName, const CiftiVersion& writingVersion = CiftiVersion());//starts on-disk writing
+        void writeFile(const QString& fileName, const CiftiVersion& writingVersion = CiftiVersion());//leaves current state as-is, rewrites if already writing to that filename and version mismatch
         void convertToInMemory();
         
         const CiftiXML& getCiftiXML() const { return m_xml; }
@@ -71,7 +70,7 @@ namespace cifti
         const std::vector<int64_t>& getDimensions() const { return m_dims; }
         void getColumn(float* dataOut, const int64_t& index) const;//for 2D only, will be slow if on disk!
         
-        void setCiftiXML(const CiftiXML& xml, const bool useOldMetadata = true, const CiftiVersion& writingVersion = CiftiVersion());
+        void setCiftiXML(const CiftiXML& xml, const bool useOldMetadata = true);
         void setRow(const float* dataIn, const std::vector<int64_t>& indexSelect);
         void setColumn(const float* dataIn, const int64_t& index);//for 2D only, will be slow if on disk!
         
@@ -85,7 +84,7 @@ namespace cifti
         boost::shared_ptr<ReadImplInterface> m_readingImpl;
         QString m_writingFile;
         CiftiXML m_xml;
-        CiftiVersion m_writingVersion;
+        CiftiVersion m_onDiskVersion;
         void verifyWriteImpl();
         static void copyImplData(const ReadImplInterface* from, WriteImplInterface* to, const std::vector<int64_t>& dims);
     };

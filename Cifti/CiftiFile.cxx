@@ -94,12 +94,14 @@ void CiftiFile::openFile(const QString& fileName)
     m_readingImpl = newRead;//it should be noted that if the constructor throws (if the file isn't readable), new guarantees the memory allocated for the object will be freed
     m_xml = newRead->getCiftiXML();
     m_dims = m_xml.getDimensions();
+    m_onDiskVersion = m_xml.getParsedVersion();
 }
 
-void CiftiFile::setWritingFile(const QString& fileName)
+void CiftiFile::setWritingFile(const QString& fileName, const CiftiVersion& writingVersion)
 {
     m_writingFile = QFileInfo(fileName).absoluteFilePath();//always resolve paths as soon as they enter CiftiFile, in case some clown changes directory before writing data
     m_writingImpl.reset();//prevent writing to previous writing implementation, let the next set...() set up for writing
+    m_onDiskVersion = writingVersion;
 }
 
 void CiftiFile::writeFile(const QString& fileName, const CiftiVersion& writingVersion)
@@ -107,33 +109,28 @@ void CiftiFile::writeFile(const QString& fileName, const CiftiVersion& writingVe
     if (m_readingImpl == NULL || m_dims.empty()) throw CiftiException("writeFile called on uninitialized CiftiFile");
     QFileInfo myInfo(fileName);
     QString canonicalFilename = myInfo.canonicalFilePath();//NOTE: returns EMPTY STRING for nonexistant file
-    shared_ptr<ReadImplInterface> tempRead = m_readingImpl;
     const CiftiOnDiskImpl* testImpl = dynamic_cast<CiftiOnDiskImpl*>(m_readingImpl.get());
-    bool collision = false;
+    bool collision = false, hadWriter = (m_writingImpl != NULL);
     if (testImpl != NULL && canonicalFilename != "" && QFileInfo(testImpl->getFilename()).canonicalFilePath() == canonicalFilename)
     {//empty string test is so that we don't say collision if both are nonexistant - could happen if file is removed/unlinked while reading on some filesystems
-        if (m_writingVersion == writingVersion) return;//don't need to copy to itself
+        if (m_onDiskVersion == writingVersion) return;//don't need to copy to itself
         collision = true;//we need to copy to memory temporarily
         shared_ptr<WriteImplInterface> tempMemory(new CiftiMemoryImpl(m_xml));//because tempRead is a ReadImpl, can't be used to copy to
         copyImplData(m_readingImpl.get(), tempMemory.get(), m_dims);
-        tempRead = tempMemory;//set it to read from the memory rather than m_readingImpl
+        m_readingImpl = tempMemory;//we are about to make the old reading impl very unhappy, replace it so that if we get an error while writing, we hang onto the memory version
+        m_writingImpl.reset();//and make it re-magic the writing implementation again if it tries to write again
     }
-    shared_ptr<WriteImplInterface> tempWrite(new CiftiOnDiskImpl(myInfo.absoluteFilePath(), m_xml, writingVersion));//NOTE: this makes m_readingImpl/m_writingImpl unusable if collision is true!
-    copyImplData(tempRead.get(), tempWrite.get(), m_dims);
-    if (collision)//if we rewrote the file, we need the handle to the new file, the old one has the wrong version and vox_offset in it
+    shared_ptr<WriteImplInterface> tempWrite(new CiftiOnDiskImpl(myInfo.absoluteFilePath(), m_xml, writingVersion));
+    copyImplData(m_readingImpl.get(), tempWrite.get(), m_dims);
+    if (collision)//if we rewrote the file, we need the handle to the new file, and to dump the temporary in-memory version
     {
-        m_writingVersion = writingVersion;//also record the current version number
-        if (m_writingImpl != NULL)//NULL can happen if setWritingFile is called with a name other than the current file, then writeFile is called with the same name as current file but different version
-        {//or, if it is in read-only on-disk mode
-            m_writingImpl = tempWrite;//replace the now-unusable old file implementation
+        m_onDiskVersion = writingVersion;//also record the current version number
+        m_readingImpl = tempWrite;//replace the temporary memory version
+        if (hadWriter)//if it was in read-write mode
+        {
+            m_writingImpl = tempWrite;//set the writer too
         }
-        m_readingImpl = tempWrite;//replace the now-unusable old file implementation
     }
-}
-
-void CiftiFile::writeFile(const QString& fileName)
-{
-    writeFile(fileName, m_writingVersion);//let the more complex case handle the simple one too, will always return early on collision
 }
 
 void CiftiFile::convertToInMemory()
@@ -175,10 +172,9 @@ void CiftiFile::getColumn(float* dataOut, const int64_t& index) const
     m_readingImpl->getColumn(dataOut, index);
 }
 
-void CiftiFile::setCiftiXML(const CiftiXML& xml, const bool useOldMetadata, const CiftiVersion& writingVersion)
+void CiftiFile::setCiftiXML(const CiftiXML& xml, const bool useOldMetadata)
 {
     if (xml.getNumberOfDimensions() == 0) throw CiftiException("setCiftiXML called with 0-dimensional CiftiXML");
-    m_writingVersion = writingVersion;
     if (useOldMetadata)
     {
         MetaData newmd = m_xml.getFileMetaData();//make a copy
@@ -242,7 +238,7 @@ void CiftiFile::verifyWriteImpl()
         } else {
             m_writingImpl = shared_ptr<CiftiMemoryImpl>(new CiftiMemoryImpl(m_xml));
         }
-    } else {
+    } else {//NOTE: m_onDiskVersion gets set in setWritingFile
         if (m_readingImpl != NULL)
         {
             CiftiOnDiskImpl* testImpl = dynamic_cast<CiftiOnDiskImpl*>(m_readingImpl.get());
@@ -255,7 +251,7 @@ void CiftiFile::verifyWriteImpl()
                 }
             }
         }
-        m_writingImpl = shared_ptr<CiftiOnDiskImpl>(new CiftiOnDiskImpl(m_writingFile, m_xml, m_writingVersion));//this constructor makes new file for writing
+        m_writingImpl = shared_ptr<CiftiOnDiskImpl>(new CiftiOnDiskImpl(m_writingFile, m_xml, m_onDiskVersion));//this constructor makes new file for writing
         if (m_readingImpl != NULL)
         {
             copyImplData(m_readingImpl.get(), m_writingImpl.get(), m_dims);
