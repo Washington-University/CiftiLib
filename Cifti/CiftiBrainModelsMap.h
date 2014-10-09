@@ -62,6 +62,7 @@ namespace cifti
         {
             ModelType m_type;
             StructureEnum::Enum m_structure;
+            int64_t m_indexStart, m_indexCount;//these are intended only for summary info, use getSurfaceMap, etc for the index to vertex/voxel mappings
         };
         struct IndexInfo
         {
