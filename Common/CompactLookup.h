@@ -28,7 +28,7 @@
  *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "CaretAssert.h"
+#include "CiftiAssert.h"
 #include "stdint.h"
 #include <vector>
 
@@ -61,14 +61,14 @@ namespace cifti
             }
             T& operator*()
             {
-                CaretAssert(m_chunk < m_container.m_chunks.size());
-                CaretAssert(m_elem >= 0 && m_elem < (int64_t)m_container.m_chunks[m_chunk].elements.size());
+                CiftiAssert(m_chunk < m_container.m_chunks.size());
+                CiftiAssert(m_elem >= 0 && m_elem < (int64_t)m_container.m_chunks[m_chunk].elements.size());
                 return m_container.m_chunks[m_chunk].elements[m_elem];
             }
             T* operator->()
             {
-                CaretAssert(m_chunk < m_container.m_chunks.size());
-                CaretAssert(m_elem >= 0 && m_elem < (int64_t)m_container.m_chunks[m_chunk].elements.size());
+                CiftiAssert(m_chunk < m_container.m_chunks.size());
+                CiftiAssert(m_elem >= 0 && m_elem < (int64_t)m_container.m_chunks[m_chunk].elements.size());
                 return &(m_container.m_chunks[m_chunk].elements[m_elem]);
             }
             friend class CompactLookup<T>;
@@ -89,14 +89,14 @@ namespace cifti
             }
             const T& operator*()
             {
-                CaretAssert(m_chunk < m_container.m_chunks.size());
-                CaretAssert(m_elem >= 0 && m_elem < (int64_t)m_container.m_chunks[m_chunk].elements.size());
+                CiftiAssert(m_chunk < m_container.m_chunks.size());
+                CiftiAssert(m_elem >= 0 && m_elem < (int64_t)m_container.m_chunks[m_chunk].elements.size());
                 return m_container.m_chunks[m_chunk].elements[m_elem];
             }
             const T* operator->()
             {
-                CaretAssert(m_chunk < m_container.m_chunks.size());
-                CaretAssert(m_elem >= 0 && m_elem < (int64_t)m_container.m_chunks[m_chunk].elements.size());
+                CiftiAssert(m_chunk < m_container.m_chunks.size());
+                CiftiAssert(m_elem >= 0 && m_elem < (int64_t)m_container.m_chunks[m_chunk].elements.size());
                 return &(m_container.m_chunks[m_chunk].elements[m_elem]);
             }
             friend class CompactLookup<T>;
@@ -122,7 +122,7 @@ namespace cifti
         while (low < high)//bisection search for the chunk with the largest start value not greater than
         {
             guess = (low + high - 1) / 2;//which is why we subtract 1 here
-            CaretAssert(guess < m_chunks.size());
+            CiftiAssert(guess < m_chunks.size());
             if (m_chunks[guess].start > index)
             {
                 high = guess;
@@ -132,7 +132,7 @@ namespace cifti
         }//NOTE: low == high after loop ends
         if (high > 0 && m_chunks[high - 1].start + (int64_t)(m_chunks[high - 1].elements.size()) > index)//element exists, return it
         {
-            CaretAssertVectorIndex(m_chunks[high -1].elements, index - m_chunks[high - 1].start);
+            CiftiAssertVectorIndex(m_chunks[high -1].elements, index - m_chunks[high - 1].start);
             return m_chunks[high - 1].elements[index - m_chunks[high - 1].start];
         }
         if (high > 0 && m_chunks[high - 1].start + (int64_t)(m_chunks[high - 1].elements.size()) == index) attach_low = true;//index is 1 beyond the range
@@ -173,7 +173,7 @@ namespace cifti
         while (low < high)//bisection search for the chunk with the largest start value not greater than
         {
             guess = (low + high - 1) / 2;//which is why we subtract 1 here
-            CaretAssert(guess < m_chunks.size());
+            CiftiAssert(guess < m_chunks.size());
             if (m_chunks[guess].start > index)
             {
                 high = guess;
@@ -184,7 +184,7 @@ namespace cifti
         if (high > 0 && m_chunks[high - 1].start + (int64_t)(m_chunks[high - 1].elements.size()) > index)//element exists, return it
         {
             std::size_t outIndex = index - m_chunks[high - 1].start;
-            CaretAssert(outIndex < m_chunks[high - 1].elements.size());
+            CiftiAssert(outIndex < m_chunks[high - 1].elements.size());
             return iterator(*this, high - 1, outIndex);
         }
         return end();
@@ -198,7 +198,7 @@ namespace cifti
         while (low < high)//bisection search for the chunk with the largest start value not greater than
         {
             guess = (low + high - 1) / 2;//which is why we subtract 1 here
-            CaretAssert(guess < m_chunks.size());
+            CiftiAssert(guess < m_chunks.size());
             if (m_chunks[guess].start > index)
             {
                 high = guess;
@@ -209,7 +209,7 @@ namespace cifti
         if (high > 0 && m_chunks[high - 1].start + (int64_t)(m_chunks[high - 1].elements.size()) > index)//element exists, return it
         {
             std::size_t outIndex = index - m_chunks[high - 1].start;
-            CaretAssert(outIndex < m_chunks[high - 1].elements.size());
+            CiftiAssert(outIndex < m_chunks[high - 1].elements.size());
             return const_iterator(*this, high - 1, outIndex);
         }
         return end();

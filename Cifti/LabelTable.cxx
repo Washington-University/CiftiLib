@@ -29,7 +29,7 @@
 #include <sstream>
 #include <iostream>
 
-#include "CaretAssert.h"
+#include "CiftiAssert.h"
 #include "Label.h"
 #include "LabelTable.h"
 
@@ -42,7 +42,6 @@ using namespace cifti;
  */
 LabelTable::LabelTable()
 {
-    this->initializeMembersLabelTable();
     clear();//actually adds the 0: ??? label
 }
 
@@ -65,7 +64,6 @@ LabelTable::~LabelTable()
  */
 LabelTable::LabelTable(const LabelTable& glt)
 {
-    this->initializeMembersLabelTable();
     this->copyHelper(glt);
 }
 
@@ -102,17 +100,6 @@ LabelTable::copyHelper(const LabelTable& glt)
     }
 }
 
-void
-LabelTable::initializeMembersLabelTable()
-{
-    m_tableModelColumnCount = 0;
-    m_tableModelColumnIndexKey         = m_tableModelColumnCount++;
-    m_tableModelColumnIndexName        = m_tableModelColumnCount++;
-    m_tableModelColumnIndexColorSwatch = m_tableModelColumnCount++;
-    m_tableModelColumnIndexRed         = m_tableModelColumnCount++;
-    m_tableModelColumnIndexGreen       = m_tableModelColumnCount++;
-    m_tableModelColumnIndexBlue        = m_tableModelColumnCount++;
-}
 /**
  * Clear the labelTable.
  *
@@ -173,7 +160,7 @@ LabelTable::append(const LabelTable& glt)
  */
 int32_t
 LabelTable::addLabel(
-                   const QString& labelName,
+                   const AString& labelName,
                    const float red,
                    const float green,
                    const float blue,
@@ -196,7 +183,7 @@ LabelTable::addLabel(
  */
 int32_t
 LabelTable::addLabel(
-                   const QString& labelName,
+                   const AString& labelName,
                    const float red,
                    const float green,
                    const float blue)
@@ -218,7 +205,7 @@ LabelTable::addLabel(
  */
 int32_t
 LabelTable::addLabel(
-                   const QString& labelName,
+                   const AString& labelName,
                    const int32_t red,
                    const int32_t green,
                    const int32_t blue,
@@ -241,7 +228,7 @@ LabelTable::addLabel(
  */
 int32_t
 LabelTable::addLabel(
-                   const QString& labelName,
+                   const AString& labelName,
                    const int32_t red,
                    const int32_t green,
                    const int32_t blue)
@@ -292,11 +279,6 @@ LabelTable::addLabel(const Label* glIn)
         return key;
     }
     
-    if (key == 0)
-    {
-        issueLabelKeyZeroWarning(glIn->getName());
-    }
-    
     LABELS_MAP_ITERATOR iter = this->labelsMap.find(key);
     if (iter != this->labelsMap.end()) {
         /*
@@ -331,13 +313,13 @@ LabelTable::generateUnusedKey() const
     {
         if (rbegin->first < numKeys)
         {
-            CaretAssert(labelsMap.find(rbegin->first + 1) == labelsMap.end());
+            CiftiAssert(labelsMap.find(rbegin->first + 1) == labelsMap.end());
             return rbegin->first + 1;//keys are compact unless negatives exist, in which case consider it "compact enough" if positive holes equal number of negative keys
         } else {
             LABELS_MAP::const_iterator begin = labelsMap.begin();
             if (begin->first == 1 && rbegin->first == numKeys)
             {
-                CaretAssert(labelsMap.find(rbegin->first + 1) == labelsMap.end());
+                CiftiAssert(labelsMap.find(rbegin->first + 1) == labelsMap.end());
                 return rbegin->first + 1;//keys are compact but missing 0, do not return 0, so return next
             } else {//there aren't enough negatives to make up for the missing, search for a hole in the positives
                 LABELS_MAP::const_iterator iter = labelsMap.upper_bound(0);//start with first positive
@@ -347,12 +329,12 @@ LabelTable::generateUnusedKey() const
                     curVal = iter->first;
                     ++iter;
                 }
-                CaretAssert(labelsMap.find(curVal + 1) == labelsMap.end());
+                CiftiAssert(labelsMap.find(curVal + 1) == labelsMap.end());
                 return curVal + 1;
             }
         }
     } else {
-        CaretAssert(labelsMap.find(1) == labelsMap.end());
+        CiftiAssert(labelsMap.find(1) == labelsMap.end());
         return 1;//otherwise, no keys exist or all keys are non-positive, return 1
     }
 }
@@ -445,11 +427,6 @@ LabelTable::insertLabel(const Label* labelIn)
         key = this->generateUnusedKey();
         label->setKey(key);
     }
-    if (key == 0)
-    {//key 0 is reserved (sort of)
-        issueLabelKeyZeroWarning(label->getName());
-    }
-    
     /*
      * Note: A map DOES NOT replace an existing key, so it
      * must be deleted and then added.
@@ -471,7 +448,7 @@ LabelTable::insertLabel(const Label* labelIn)
  *
  */
 int32_t
-LabelTable::getLabelKeyFromName(const QString& name) const
+LabelTable::getLabelKeyFromName(const AString& name) const
 {
     LABELS_MAP newMap;
     for (LABELS_MAP_CONST_ITERATOR iter = this->labelsMap.begin();
@@ -493,7 +470,7 @@ LabelTable::getLabelKeyFromName(const QString& name) const
  *
  */
 const Label*
-LabelTable::getLabel(const QString& labelName) const
+LabelTable::getLabel(const AString& labelName) const
 {
     LABELS_MAP newMap;
     for (LABELS_MAP_CONST_ITERATOR iter = this->labelsMap.begin();
@@ -514,7 +491,7 @@ LabelTable::getLabel(const QString& labelName) const
  *
  */
 Label*
-LabelTable::getLabel(const QString& labelName)
+LabelTable::getLabel(const AString& labelName)
 {
     LABELS_MAP newMap;
     for (LABELS_MAP_CONST_ITERATOR iter = this->labelsMap.begin();
@@ -526,37 +503,6 @@ LabelTable::getLabel(const QString& labelName)
         }
     }
     return NULL;
-}
-
-/**
- * Get the label whose name is the longest substring of "name" beginning
- * at the first character.
- *
- * @param name - name for which best matching label is sought.
- * @return Reference to best matching label or null if not found.
- *
- */
-const Label*
-LabelTable::getLabelBestMatching(const QString& name) const
-{
-    Label* bestMatchingLabel = NULL;
-    int32_t bestMatchLength = -1;
-    
-    LABELS_MAP newMap;
-    for (LABELS_MAP_CONST_ITERATOR iter = this->labelsMap.begin();
-         iter != this->labelsMap.end();
-         iter++) {
-        Label* gl = iter->second;
-        QString labelName = gl->getName();
-        if (name.startsWith(labelName)) {
-            const int32_t len = labelName.length();
-            if (len > bestMatchLength) {
-                bestMatchLength = len;
-                bestMatchingLabel = iter->second;
-            }
-        }
-    }
-    return bestMatchingLabel;
 }
 
 /**
@@ -637,12 +583,12 @@ LabelTable::getNumberOfLabels() const
  * @return  Name of label at inkeydex.
  *
  */
-QString
+AString
 LabelTable::getLabelName(const int32_t key) const
 {
     LABELS_MAP_CONST_ITERATOR iter = this->labelsMap.find(key);
     if (iter != this->labelsMap.end()) {
-        const QString name = iter->second->getName();
+        const AString name = iter->second->getName();
         return name;
     }
     return "";
@@ -657,14 +603,8 @@ LabelTable::getLabelName(const int32_t key) const
 void
 LabelTable::setLabelName(
                    const int32_t key,
-                   const QString& name)
+                   const AString& name)
 {
-    if (key == 0)
-    {
-        if (name != "???") {
-            issueLabelKeyZeroWarning(name);
-        }
-    }
     LABELS_MAP_ITERATOR iter = this->labelsMap.find(key);
     if (iter != this->labelsMap.end()) {
         iter->second->setName(name);
@@ -686,19 +626,12 @@ LabelTable::setLabelName(
 void
 LabelTable::setLabel(
                    const int32_t key,
-                   const QString& name,
+                   const AString& name,
                    const float red,
                    const float green,
                    const float blue,
                    const float alpha)
 {
-    if (key == 0)
-    {
-        if (name != "???")
-        {
-            issueLabelKeyZeroWarning(name);
-        }
-    }
     LABELS_MAP_ITERATOR iter = this->labelsMap.find(key);
     if (iter != this->labelsMap.end()) {
         Label* gl = iter->second;
@@ -729,7 +662,7 @@ LabelTable::setLabel(
  */
 void
 LabelTable::setLabel(const int32_t key,
-                          const QString& name,
+                          const AString& name,
                           const float red,
                           const float green,
                           const float blue,
@@ -738,13 +671,6 @@ LabelTable::setLabel(const int32_t key,
                           const float y,
                           const float z)
 {
-    if (key == 0)
-    {
-        if (name != "???")
-        {
-            issueLabelKeyZeroWarning(name);
-        }
-    }
     LABELS_MAP_ITERATOR iter = this->labelsMap.find(key);
     if (iter != this->labelsMap.end()) {
         Label* gl = iter->second;
@@ -861,121 +787,8 @@ LabelTable::setLabelColor(
     }
 }
 
-/**
- * Create labels for the keys with generated names and colors.
- * @param newKeys - Keys that need labels.
- *
- */
 void
-LabelTable::createLabelsForKeys(const std::set<int32_t>& newKeys)
-{
-    QString namePrefix = "Name";
-    int32_t nameCount = 0;
-    int32_t colorCounter = 0;
-    for (std::set<int32_t>::iterator iter = newKeys.begin();
-         iter != newKeys.end();
-         iter++) {
-        int32_t key = *iter;
-        if (this->getLabel(key) == NULL) {
-            bool found = false;
-            QString name;
-            while (! found) {
-                std::stringstream str;
-                str << namePrefix.toStdString() << "_" << nameCount;
-                nameCount++;
-                
-                name = QString::fromStdString(str.str());
-                if (this->getLabel(name) == NULL) {
-                    found = true;
-                }
-                float red = 0.0f;
-                float green = 0.0f;
-                float blue = 0.0f;
-                float alpha = 1.0f;
-                switch (colorCounter) {
-                    case 0:
-                        red = 1.0f;
-                        break;
-                    case 1:
-                        red  = 1.0f;
-                        blue = 0.5f;
-                        break;
-                    case 2:
-                        red  = 1.0f;
-                        blue = 1.0f;
-                        break;
-                    case 3:
-                        red   = 1.0f;
-                        green = 0.5f;
-                        break;
-                    case 4:
-                        red   = 1.0f;
-                        green = 0.5f;
-                        blue  = 0.5f;
-                        break;
-                    case 5:
-                        red   = 1.0f;
-                        green = 0.5f;
-                        blue  = 1.0f;
-                        break;
-                    case 6:
-                        blue = 0.5f;
-                        break;
-                    case 7:
-                        blue = 1.0f;
-                        break;
-                    case 8:
-                        red = 0.5f;
-                        break;
-                    case 9:
-                        red  = 0.5f;
-                        blue = 0.5f;
-                        break;
-                    case 10:
-                        red  = 0.5f;
-                        blue = 1.0f;
-                        break;
-                    case 11:
-                        red   = 0.5f;
-                        green = 0.5f;
-                        break;
-                    case 12:
-                        red   = 0.5f;
-                        green = 0.5f;
-                        blue  = 0.5f;
-                        break;
-                    case 13:
-                        red   = 0.5f;
-                        green = 0.5f;
-                        blue  = 1.0f;
-                        break;
-                    case 14:
-                        red   = 0.5f;
-                        green = 1.0f;
-                        break;
-                    case 15:
-                        red   = 0.5f;
-                        green = 1.0f;
-                        blue  = 0.5f;
-                        break;
-                    case 16:
-                        red   = 0.5f;
-                        green = 1.0f;
-                        blue  = 1.0f;
-                        colorCounter = 0;  // start over
-                        break;
-                }
-                colorCounter++;
-                
-                Label* gl = new Label(key, name, red, green, blue, alpha);
-                this->addLabel(gl);
-            }
-        }
-    }
-}
-
-void
-LabelTable::writeAsXML(QXmlStreamWriter& xmlWriter) const
+LabelTable::writeXML(XmlWriter& xmlWriter) const
 {
     //
     // Write the label tag
@@ -993,12 +806,12 @@ LabelTable::writeAsXML(QXmlStreamWriter& xmlWriter) const
         const Label* label = this->getLabel(key);
         if (label != NULL) {
             xmlWriter.writeStartElement("Label");
-            xmlWriter.writeAttribute("Key", QString::number(key));
+            xmlWriter.writeAttribute("Key", AString_number(key));
             float* rgba = label->getColor();
-            xmlWriter.writeAttribute("Red", QString::number(rgba[0]));
-            xmlWriter.writeAttribute("Green", QString::number(rgba[1]));
-            xmlWriter.writeAttribute("Blue", QString::number(rgba[2]));
-            xmlWriter.writeAttribute("Alpha", QString::number(rgba[3]));
+            xmlWriter.writeAttribute("Red", AString_number(rgba[0]));
+            xmlWriter.writeAttribute("Green", AString_number(rgba[1]));
+            xmlWriter.writeAttribute("Blue", AString_number(rgba[2]));
+            xmlWriter.writeAttribute("Alpha", AString_number(rgba[3]));
             xmlWriter.writeCharacters(label->getName());
             xmlWriter.writeEndElement();
             delete[] rgba;
@@ -1011,47 +824,103 @@ LabelTable::writeAsXML(QXmlStreamWriter& xmlWriter) const
     xmlWriter.writeEndElement();
 }
 
-void LabelTable::readFromQXmlStreamReader(QXmlStreamReader& xml)
+void LabelTable::readXml(XmlReader& xml)
 {
     clear();
+#ifdef CIFTILIB_USE_QT
     if (!xml.isStartElement() || xml.name() != "LabelTable")
     {
-        xml.raiseError("tried to read LabelTable when current element is not LabelTable");
-        return;
+        throw CiftiException("tried to read LabelTable when current element is not LabelTable");
     }
     while (xml.readNextStartElement() && !xml.atEnd())
     {
         if (xml.name() != "Label")
         {
-            xml.raiseError("unexpected element '" + xml.name().toString() + "' encountered in Label");
+            throw CiftiException("unexpected element '" + xml.name().toString() + "' encountered in Label");
         }
         int key;
         float rgba[4];
         QXmlStreamAttributes myAttrs = xml.attributes();
         bool ok = false;
-        QString temp = myAttrs.value("Key").toString();
+        AString temp = myAttrs.value("Key").toString();
         key = temp.toInt(&ok);
-        if (!ok) xml.raiseError("Key attribute missing or noninteger");
+        if (!ok) throw CiftiException("Key attribute of Label missing or noninteger");
         temp = myAttrs.value("Red").toString();
         rgba[0] = temp.toFloat(&ok);
-        if (!ok) xml.raiseError("Red attribute missing or not a number");
+        if (!ok) throw CiftiException("Red attribute of Label missing or not a number");
         temp = myAttrs.value("Green").toString();
         rgba[1] = temp.toFloat(&ok);
-        if (!ok) xml.raiseError("Green attribute missing or not a number");
+        if (!ok) throw CiftiException("Green attribute of Label missing or not a number");
         temp = myAttrs.value("Blue").toString();
         rgba[2] = temp.toFloat(&ok);
-        if (!ok) xml.raiseError("Blue attribute missing or not a number");
+        if (!ok) throw CiftiException("Blue attribute of Label missing or not a number");
         temp = myAttrs.value("Alpha").toString();
         if (temp == "")
         {
             rgba[3] = 1.0f;
         } else {
             rgba[3] = temp.toFloat(&ok);
-            if (!ok) xml.raiseError("Alpha attribute not a number");
+            if (!ok) throw CiftiException("Alpha attribute of Label is not a number");
         }
         temp = xml.readElementText();
+        if (xml.hasError()) return;
         setLabel(key, temp, rgba[0], rgba[1], rgba[2], rgba[3]);
     }
+#else
+#ifdef CIFTILIB_USE_XMLPP
+    vector<AString> mandAttrs(4), optAttrs(1, "Alpha");
+    mandAttrs[0] = "Key";
+    mandAttrs[1] = "Red";
+    mandAttrs[2] = "Green";
+    mandAttrs[3] = "Blue";
+    bool done = xml.is_empty_element();//NOTE: a <blah/> element does NOT give a separate end element state!!!
+    while(!done && xml.read())
+    {
+        switch (xml.get_node_type())
+        {
+            case XmlReader::Element:
+            {
+                AString name = xml.get_local_name();
+                if (name == "Label")
+                {
+                    XmlAttributesResult myAttrs = XmlReader_parseAttributes(xml, mandAttrs, optAttrs);
+                    int key;
+                    float rgba[4];
+                    bool ok = false;
+                    key = AString_toInt(myAttrs.mandatoryVals[0], ok);
+                    if (!ok) throw CiftiException("Key attribute of Label is not an integer");
+                    rgba[0] = AString_toFloat(myAttrs.mandatoryVals[1], ok);
+                    if (!ok) throw CiftiException("Red attribute of Label is not a number");
+                    rgba[1] = AString_toFloat(myAttrs.mandatoryVals[2], ok);
+                    if (!ok) throw CiftiException("Green attribute of Label is not a number");
+                    rgba[2] = AString_toFloat(myAttrs.mandatoryVals[3], ok);
+                    if (!ok) throw CiftiException("Blue attribute of Label is not a number");
+                    if (myAttrs.optionalVals[0].present)
+                    {
+                        rgba[3] = AString_toFloat(myAttrs.optionalVals[0].value, ok);
+                        if (!ok) throw CiftiException("Alpha attribute of Label is not a number");
+                    } else {
+                        rgba[3] = 1.0f;
+                    }
+                    AString name = XmlReader_readElementText(xml);
+                    setLabel(key, name, rgba[0], rgba[1], rgba[2], rgba[3]);
+                } else {
+                    throw CiftiException("unexpected element in LabelTable: " + name);
+                }
+                break;
+            }
+            case XmlReader::EndElement:
+                done = true;
+                break;
+            default:
+                break;
+        }
+    }
+#else
+#error "not implemented"
+#endif
+#endif
+    CiftiAssert(XmlReader_checkEndElement(xml, "LabelTable"));
 }
 
 /**
@@ -1089,7 +958,7 @@ void LabelTable::getKeys(std::vector<int32_t>& keysOut) const
  *     Map containing the pairs of corresponding keys and names.
  */
 void
-LabelTable::getKeysAndNames(std::map<int32_t, QString>& keysAndNamesOut) const
+LabelTable::getKeysAndNames(std::map<int32_t, AString>& keysAndNamesOut) const
 {
     keysAndNamesOut.clear();
     
@@ -1112,23 +981,4 @@ bool LabelTable::matches(const LabelTable& rhs, const bool checkColors, const bo
         if (!iter->second->matches(*(riter->second), checkColors, checkCoords)) return false;
     }
     return true;
-}
-
-/**
- * Called when label key zero's name is changed.
- * May result in a message if name is not a preferred name
- * for the label with key zero.
- *
- * @param name
- *    New name for label with key zero.
- */
-void
-LabelTable::issueLabelKeyZeroWarning(const QString& name) const
-{
-    if ((name != "???")
-        && (name.toLower() != "unknown")) {
-        cerr << ("Label with key=0 overridden with name \""
-                        + name
-                        + "\".  This label is typically \"???\" or \"unknown\".").toStdString() << endl;
-    }
 }

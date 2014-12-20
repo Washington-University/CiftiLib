@@ -25,7 +25,7 @@
  *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "CaretAssert.h"
+#include "CiftiAssert.h"
 #include "CiftiException.h"
 #include "FloatMatrix.h"
 #include "MatrixFunctions.h"
@@ -51,7 +51,7 @@ bool FloatMatrix::checkDimensions() const
 FloatMatrix::FloatMatrix(const vector<vector<float> >& matrixIn)
 {
    m_matrix = matrixIn;
-   CaretAssert(checkDimensions());
+   CiftiAssert(checkDimensions());
 }
 
 FloatMatrix::FloatMatrix(const int64_t& rows, const int64_t& cols)
@@ -207,14 +207,14 @@ void FloatMatrix::getDimensions(int64_t& rows, int64_t& cols) const
 
 FloatMatrixRowRef FloatMatrix::operator[](const int64_t& index)
 {
-   CaretAssert(index > -1 && index < (int64_t)m_matrix.size());
+   CiftiAssert(index > -1 && index < (int64_t)m_matrix.size());
    FloatMatrixRowRef ret(m_matrix[index]);
    return ret;
 }
 
 ConstFloatMatrixRowRef FloatMatrix::operator[](const int64_t& index) const
 {
-   CaretAssert(index > -1 && index < (int64_t)m_matrix.size());
+   CiftiAssert(index > -1 && index < (int64_t)m_matrix.size());
    ConstFloatMatrixRowRef ret(m_matrix[index]);
    return ret;
 }
@@ -288,7 +288,7 @@ FloatMatrixRowRef& FloatMatrixRowRef::operator=(const FloatMatrixRowRef& right)
    {//just in case vector isn't smart enough to check self assignment
       return *this;
    }
-   CaretAssert(m_row.size() == right.m_row.size());//maybe this should be an exception, not an assertion?
+   CiftiAssert(m_row.size() == right.m_row.size());//maybe this should be an exception, not an assertion?
    m_row = right.m_row;
    return *this;
 }
@@ -304,7 +304,7 @@ FloatMatrixRowRef& FloatMatrixRowRef::operator=(const float& right)
 
 float& FloatMatrixRowRef::operator[](const int64_t& index)
 {
-   CaretAssert(index > -1 && index < (int64_t)m_row.size());//instead of segfaulting, explicitly check in debug
+   CiftiAssert(index > -1 && index < (int64_t)m_row.size());//instead of segfaulting, explicitly check in debug
    return m_row[index];
 }
 
@@ -318,14 +318,14 @@ FloatMatrixRowRef& FloatMatrixRowRef::operator=(const ConstFloatMatrixRowRef& ri
    {//just in case vector isn't smart enough to check self assignment
       return *this;
    }
-   CaretAssert(m_row.size() == right.m_row.size());
+   CiftiAssert(m_row.size() == right.m_row.size());
    m_row = right.m_row;
    return *this;
 }
 
 const float& ConstFloatMatrixRowRef::operator[](const int64_t& index)
 {
-   CaretAssert(index > -1 && index < (int64_t)m_row.size());//instead of segfaulting, explicitly check in debug
+   CiftiAssert(index > -1 && index < (int64_t)m_row.size());//instead of segfaulting, explicitly check in debug
    return m_row[index];
 }
 

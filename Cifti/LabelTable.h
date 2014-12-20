@@ -28,22 +28,18 @@
  *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <QString>
+#include "AString.h"
 
 #include <map>
 #include <set>
 #include <vector>
 #include <stdint.h>
 
-#include <QXmlStreamWriter>
-#include <QXmlStreamReader>
+#include "XmlAdapter.h"
 
 namespace cifti {
 
 class Label;
-    
-class XmlWriter;
-class XmlException;
     
 class LabelTable {
 
@@ -65,35 +61,33 @@ public:
 private:
     void copyHelper(const LabelTable& glt);
 
-    void initializeMembersLabelTable();
-    
 public:
     void clear();
 
     std::map<int32_t,int32_t> append(const LabelTable& glt);
 
     int32_t addLabel(
-                    const QString& labelName,
+                    const AString& labelName,
                     const float red,
                     const float green,
                     const float blue,
                     const float alpha);
 
     int32_t addLabel(
-                    const QString& labelName,
+                    const AString& labelName,
                     const float red,
                     const float green,
                     const float blue);
 
     int32_t addLabel(
-                    const QString& labelName,
+                    const AString& labelName,
                     const int32_t red,
                     const int32_t green,
                     const int32_t blue,
                     const int32_t alpha);
 
     int32_t addLabel(
-                    const QString& labelName,
+                    const AString& labelName,
                     const int32_t red,
                     const int32_t green,
                     const int32_t blue);
@@ -108,14 +102,12 @@ public:
 
     void insertLabel(const Label* label);
 
-    int32_t getLabelKeyFromName(const QString& name) const;
+    int32_t getLabelKeyFromName(const AString& name) const;
 
-    const Label* getLabel(const QString& labelName) const;
+    const Label* getLabel(const AString& labelName) const;
 
-    Label* getLabel(const QString& labelName);
+    Label* getLabel(const AString& labelName);
     
-    const Label* getLabelBestMatching(const QString& name) const;
-
     const Label* getLabel(const int32_t key) const;
 
     Label* getLabel(const int32_t key);
@@ -124,21 +116,21 @@ public:
 
     int32_t getNumberOfLabels() const;
 
-    QString getLabelName(const int32_t key) const;
+    AString getLabelName(const int32_t key) const;
 
     void setLabelName(
                     const int32_t key,
-                    const QString& name);
+                    const AString& name);
 
     void setLabel(const int32_t key,
-                    const QString& name,
+                    const AString& name,
                     const float red,
                     const float green,
                     const float blue,
                     const float alpha);
 
     void setLabel(const int32_t key,
-                  const QString& name,
+                  const AString& name,
                   const float red,
                   const float green,
                   const float blue,
@@ -165,35 +157,25 @@ public:
 
     void createLabelsForKeys(const std::set<int32_t>& newKeys);
 
-    void writeAsXML(QXmlStreamWriter& xmlWriter) const;
+    void writeXML(XmlWriter& xmlWriter) const;
 
-    void readFromQXmlStreamReader(QXmlStreamReader& xml);
+    void readXml(XmlReader& xml);
 
     std::set<int32_t> getKeys() const;
 
     void getKeys(std::vector<int32_t>& keysOut) const;
 
-    void getKeysAndNames(std::map<int32_t, QString>& keysAndNamesOut) const;
+    void getKeysAndNames(std::map<int32_t, AString>& keysAndNamesOut) const;
     
     int32_t generateUnusedKey() const;
     
 private:
-    void issueLabelKeyZeroWarning(const QString& name) const;
-    
     typedef std::map<int32_t, Label*> LABELS_MAP;
     typedef std::map<int32_t, Label*>::iterator LABELS_MAP_ITERATOR;
     typedef std::map<int32_t, Label*>::const_iterator LABELS_MAP_CONST_ITERATOR;
 
     LABELS_MAP labelsMap;
 
-    int32_t m_tableModelColumnIndexKey;
-    int32_t m_tableModelColumnIndexName;
-    int32_t m_tableModelColumnIndexColorSwatch;
-    int32_t m_tableModelColumnIndexRed;
-    int32_t m_tableModelColumnIndexGreen;
-    int32_t m_tableModelColumnIndexBlue;
-    int32_t m_tableModelColumnCount;
-    
 };
 
 } // namespace

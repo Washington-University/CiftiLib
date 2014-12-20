@@ -48,7 +48,7 @@ namespace cifti
         {
             std::map<StructureEnum::Enum, std::set<int64_t> > m_surfaceNodes;
             std::set<VoxelIJK> m_voxelIndices;
-            QString m_name;
+            AString m_name;
             bool operator==(const Parcel& rhs) const;
             bool operator!=(const Parcel& rhs) const { return !((*this) == rhs); }
             bool approximateMatch(const Parcel& rhs) const;
@@ -74,10 +74,10 @@ namespace cifti
         int64_t getLength() const { return m_parcels.size(); }
         bool operator==(const CiftiMappingType& rhs) const;
         bool approximateMatch(const CiftiMappingType& rhs) const;
-        void readXML1(QXmlStreamReader& xml);
-        void readXML2(QXmlStreamReader& xml);
-        void writeXML1(QXmlStreamWriter& xml) const;
-        void writeXML2(QXmlStreamWriter& xml) const;
+        void readXML1(XmlReader& xml);
+        void readXML2(XmlReader& xml);
+        void writeXML1(XmlWriter& xml) const;
+        void writeXML2(XmlWriter& xml) const;
     private:
         std::vector<Parcel> m_parcels;
         VolumeSpace m_volSpace;
@@ -89,9 +89,9 @@ namespace cifti
         };
         Compact3DLookup<int64_t> m_volLookup;
         std::map<StructureEnum::Enum, SurfaceInfo> m_surfInfo;
-        static Parcel readParcel1(QXmlStreamReader& xml);
-        static Parcel readParcel2(QXmlStreamReader& xml);
-        static std::vector<int64_t> readIndexArray(QXmlStreamReader& xml);
+        static Parcel readParcel1(XmlReader& xml);
+        static Parcel readParcel2(XmlReader& xml);
+        static std::vector<int64_t> readIndexArray(XmlReader& xml);
     };
 }
 

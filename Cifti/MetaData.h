@@ -29,12 +29,11 @@
  */
 
 
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>
+#include "AString.h"
+
+#include "XmlAdapter.h"
 
 #include <stdint.h>
-
-#include <QString>
 
 #include <map>
 #include <stdexcept>
@@ -42,8 +41,6 @@
 
 namespace cifti {
 
-class XmlWriter;
-    
 class MetaData {
 
 public:
@@ -72,54 +69,46 @@ public:
 
     void replace(const MetaData& smd);
 
-    void set(
-                    const QString& name,
-                    const QString& value);
+    void set(const AString& name, const AString& value);
 
-    void setInt(
-                    const QString& name,
-                    const int32_t value);
+    void setInt(const AString& name, const int32_t value);
 
-    void setFloat(
-                    const QString& name,
-                    const float value);
+    void setFloat(const AString& name, const float value);
 
-    void replaceWithMap(const std::map<QString, QString>& map);
+    void replaceWithMap(const std::map<AString, AString>& map);
     
-    std::map<QString, QString> getAsMap() const;
+    std::map<AString, AString> getAsMap() const;
     
-    void remove(const QString& name);
+    void remove(const AString& name);
 
-    bool exists(const QString& name) const;
+    bool exists(const AString& name) const;
 
-    QString get(const QString& name) const;
+    AString get(const AString& name) const;
 
-    int32_t getInt(const QString& name) const;
+    int32_t getInt(const AString& name, bool& ok) const;
 
-    float getFloat(const QString& name) const;
+    float getFloat(const AString& name, bool& ok) const;
 
-    std::vector<QString> getAllMetaDataNames() const;
+    std::vector<AString> getAllMetaDataNames() const;
 
-    void writeCiftiXML1(QXmlStreamWriter& xmlWriter) const;
-    void writeCiftiXML2(QXmlStreamWriter& xmlWriter) const;//for style, and in case it changes
-    void readCiftiXML1(QXmlStreamReader& xml);
-    void readCiftiXML2(QXmlStreamReader& xml);
+    void writeCiftiXML1(XmlWriter& xmlWriter) const;
+    void writeCiftiXML2(XmlWriter& xmlWriter) const;//for style, and in case it changes
+    void readCiftiXML1(XmlReader& xml);
+    void readCiftiXML2(XmlReader& xml);
     
 private:
-    void readEntry(QXmlStreamReader& xml);
+    void readEntry(XmlReader& xml);
     
-    std::map<QString, QString> createTreeMap();
-
-    void replaceName(const QString& oldName,
-                     const QString& newName);
+    void replaceName(const AString& oldName,
+                     const AString& newName);
 
 public:
 
 private:
     /**the metadata storage. */
-    std::map<QString, QString> metadata;    
-    typedef std::map<QString, QString>::iterator MetaDataIterator;
-    typedef std::map<QString, QString>::const_iterator MetaDataConstIterator;
+    std::map<AString, AString> metadata;
+    typedef std::map<AString, AString>::iterator MetaDataIterator;
+    typedef std::map<AString, AString>::const_iterator MetaDataConstIterator;
     
 };
 

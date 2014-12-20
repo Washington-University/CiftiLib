@@ -27,7 +27,8 @@
 
 #include <algorithm>
 
-#include "CaretAssert.h"
+#include "CiftiAssert.h"
+#include "CiftiException.h"
 #include "MetaData.h"
 
 using namespace cifti;
@@ -137,8 +138,8 @@ MetaData::replace(const MetaData& smd)
  *
  */
 void
-MetaData::set(const QString& name,
-                   const QString& value)
+MetaData::set(const AString& name,
+                   const AString& value)
 {
     MetaDataIterator namePos = this->metadata.find(name);
     if (namePos != this->metadata.end()) {
@@ -159,10 +160,10 @@ MetaData::set(const QString& name,
  */
 void
 MetaData::setInt(
-                   const QString& name,
+                   const AString& name,
                    const int32_t value)
 {
-    QString s = QString::number(value);
+    AString s = AString_number(value);
     this->set(name, s);
 }
 
@@ -174,10 +175,10 @@ MetaData::setInt(
  */
 void
 MetaData::setFloat(
-                   const QString& name,
+                   const AString& name,
                    const float value)
 {
-    QString s = QString::number(value);
+    AString s = AString_number(value);
     this->set(name, s);
 }
 
@@ -188,7 +189,7 @@ MetaData::setFloat(
  *     New metadata that replaces all existing metadata.
  */
 void
-MetaData::replaceWithMap(const std::map<QString, QString>& map)
+MetaData::replaceWithMap(const std::map<AString, AString>& map)
 {
     this->metadata = map;
 }
@@ -196,7 +197,7 @@ MetaData::replaceWithMap(const std::map<QString, QString>& map)
 /**
  * @return ALL of the metadata in map.
  */
-std::map<QString, QString>
+std::map<AString, AString>
 MetaData::getAsMap() const
 {
     return this->metadata;
@@ -210,7 +211,7 @@ MetaData::getAsMap() const
  *
  */
 void
-MetaData::remove(const QString& name)
+MetaData::remove(const AString& name)
 {
     this->metadata.erase(name);
 }
@@ -223,7 +224,7 @@ MetaData::remove(const QString& name)
  *
  */
 bool
-MetaData::exists(const QString& name) const
+MetaData::exists(const AString& name) const
 {
     if (this->metadata.find(name) != this->metadata.end()) {
         return true;
@@ -240,8 +241,8 @@ MetaData::exists(const QString& name) const
  *               string is returned.
  *
  */
-QString
-MetaData::get(const QString& name) const
+AString
+MetaData::get(const AString& name) const
 {
     MetaDataConstIterator iter = this->metadata.find(name);
     if (iter != this->metadata.end()) {
@@ -252,17 +253,18 @@ MetaData::get(const QString& name) const
 
 /**
  * Get the metadata as an integer value.  If the metadata does not exist
- * of its string representation is not a number, zero is returned.
+ * or its string representation is not a number, zero is returned.
  * @param name - name of metadata.
  * @return  Integer value associated with the metadata.
  *
  */
 int32_t
-MetaData::getInt(const QString& name) const
+MetaData::getInt(const AString& name, bool& ok) const
 {
-    QString s = this->get(name);
+    ok = false;
+    AString s = this->get(name);
     if (s.length() > 0) {
-        int32_t i = s.toInt();
+        int32_t i = AString_toInt(s, ok);
         return i;
     }
     return 0;
@@ -270,17 +272,18 @@ MetaData::getInt(const QString& name) const
 
 /**
  * Get the metadata as an float value.  If the metadata does not exist
- * of its string representation is not a number, zero is returned.
+ * or its string representation is not a number, zero is returned.
  * @param name - name of metadata.
  * @return  Float value associated with the metadata.
  *
  */
 float
-MetaData::getFloat(const QString& name) const
+MetaData::getFloat(const AString& name, bool& ok) const
 {
-    QString s = this->get(name);
+    ok = false;
+    AString s = this->get(name);
     if (s.length() > 0) {
-        float f = s.toFloat();
+        float f = AString_toFloat(s, ok);
         return f;
     }
     return 0.0f;
@@ -292,10 +295,10 @@ MetaData::getFloat(const QString& name) const
  * @return List of all metadata names.
  *
  */
-std::vector<QString>
+std::vector<AString>
 MetaData::getAllMetaDataNames() const
 {
-    std::vector<QString> names;
+    std::vector<AString> names;
     
     for (MetaDataConstIterator iter = this->metadata.begin();
          iter != this->metadata.end();
@@ -313,18 +316,18 @@ MetaData::getAllMetaDataNames() const
  */
 void
 MetaData::replaceName(
-                   const QString& oldName,
-                   const QString& newName)
+                   const AString& oldName,
+                   const AString& newName)
 {
     MetaDataIterator iter = this->metadata.find(oldName);
     if (iter != this->metadata.end()) {
-        QString value = iter->second;
+        AString value = iter->second;
         this->remove(oldName);
         this->set(newName, value);
     }
 }
 
-void MetaData::writeCiftiXML1(QXmlStreamWriter& xmlWriter) const
+void MetaData::writeCiftiXML1(XmlWriter& xmlWriter) const
 {
     if (metadata.empty()) return;//don't write an empty tag if we have no metadata
     xmlWriter.writeStartElement("MetaData");
@@ -338,14 +341,15 @@ void MetaData::writeCiftiXML1(QXmlStreamWriter& xmlWriter) const
     xmlWriter.writeEndElement();
 }
 
-void MetaData::writeCiftiXML2(QXmlStreamWriter& xmlWriter) const
+void MetaData::writeCiftiXML2(XmlWriter& xmlWriter) const
 {
     writeCiftiXML1(xmlWriter);
 }
 
-void MetaData::readCiftiXML1(QXmlStreamReader& xml)
+void MetaData::readCiftiXML1(XmlReader& xml)
 {
     clear();
+#ifdef CIFTILIB_USE_QT
     while (!xml.atEnd())//don't check the current element's name
     {
         xml.readNext();
@@ -356,23 +360,54 @@ void MetaData::readCiftiXML1(QXmlStreamReader& xml)
             {
                 readEntry(xml);
             } else {
-                xml.raiseError("unexpected tag name in MD: " + name.toString());
+                throw CiftiException("unexpected tag name in MetaData: " + name.toString());
             }
         } else if (xml.isEndElement()) {
             break;
         }
     }
+#else
+#ifdef CIFTILIB_USE_XMLPP
+    bool done = xml.is_empty_element();//NOTE: because libxml++ will NOT give a separate close element for <MetaData/>!!!
+    while (!done && xml.read())//false means no node was available to read, it will throw on malformed xml
+    {
+        switch (xml.get_node_type())
+        {
+            case XmlReader::Element:
+            {
+                AString name = xml.get_local_name();
+                if (name == "MD")
+                {
+                    readEntry(xml);
+                } else {
+                    throw CiftiException("unexpected tag name in MetaData: " + name);
+                }
+                break;
+            }
+            case XmlReader::EndElement:
+                done = true;
+                break;
+            default:
+                break;
+        }
+    }
+#else
+#error "not implemented"
+#endif
+#endif
+    CiftiAssert(XmlReader_checkEndElement(xml, "MetaData"));
 }
 
-void MetaData::readCiftiXML2(QXmlStreamReader& xml)
+void MetaData::readCiftiXML2(XmlReader& xml)
 {
     readCiftiXML1(xml);
 }
 
-void MetaData::readEntry(QXmlStreamReader& xml)
+void MetaData::readEntry(XmlReader& xml)
 {
-    QString key, value;
+    AString key, value;
     bool haveKey = false, haveValue = false;
+#ifdef CIFTILIB_USE_QT
     while (!xml.atEnd())//don't check the current element's name
     {
         xml.readNext();
@@ -381,37 +416,75 @@ void MetaData::readEntry(QXmlStreamReader& xml)
             QStringRef name = xml.name();
             if (name == "Name")
             {
+                if (haveKey) throw CiftiException("MD element has multiple Name elements");
                 key = xml.readElementText();
                 haveKey = true;
             } else if (name == "Value") {
+                if (haveValue) throw CiftiException("MD element has multiple Value elements");
                 value = xml.readElementText();
                 haveValue = true;
             } else {
-                xml.raiseError("unexpected tag name in MD: " + name.toString());
+                throw CiftiException("unexpected element name in MD: " + name.toString());
             }
         } else if (xml.isEndElement()) {
-            if (haveKey && haveValue)
-            {
-                if (exists(key))
-                {
-                    xml.raiseError("key '" + key + "' used more than once in MetaData");
-                } else {
-                    set(key, value);
-                }
-            } else {
-                if (haveKey)
-                {
-                    xml.raiseError("MD element has no Value element");
-                } else {
-                    if (haveValue)
-                    {
-                        xml.raiseError("MD element has no Name element");
-                    } else {
-                        xml.raiseError("MD element has no Name or Value element");
-                    }
-                }
-            }
             break;
         }
     }
+#else
+#ifdef CIFTILIB_USE_XMLPP
+    bool done = xml.is_empty_element();//NOTE: a <blah/> element does NOT give a separate end element state!!!
+    while (!done && xml.read())
+    {
+        switch (xml.get_node_type())
+        {
+            case XmlReader::Element:
+            {
+                AString name = xml.get_local_name();
+                if (name == "Name")
+                {
+                    if (haveKey) throw CiftiException("MD element has multiple Name elements");
+                    key = XmlReader_readElementText(xml);
+                    haveKey = true;
+                } else if (name == "Value") {
+                    if (haveValue) throw CiftiException("MD element has multiple Value elements");
+                    name = XmlReader_readElementText(xml);
+                    haveValue = true;
+                } else {
+                    throw CiftiException("unexpected element name in MD: " + name);
+                }
+                break;
+            }
+            case XmlReader::EndElement:
+                done = true;
+                break;
+            default:
+                break;
+        }
+    }
+#else
+#error "not implemented"
+#endif
+#endif
+    if (haveKey && haveValue)
+    {
+        if (exists(key))
+        {
+            throw CiftiException("key '" + key + "' used more than once in MetaData");
+        } else {
+            set(key, value);
+        }
+    } else {
+        if (haveKey)
+        {
+            throw CiftiException("MD element has no Value element");
+        } else {
+            if (haveValue)
+            {
+                throw CiftiException("MD element has no Name element");
+            } else {
+                throw CiftiException("MD element has no Name or Value element");
+            }
+        }
+    }
+    CiftiAssert(XmlReader_checkEndElement(xml, "MD"));
 }

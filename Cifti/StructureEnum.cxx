@@ -27,7 +27,7 @@
 
 #include "StructureEnum.h"
 
-#include "CaretAssert.h"
+#include "CiftiAssert.h"
 #include "CiftiException.h"
 
 using namespace cifti;
@@ -50,8 +50,8 @@ bool StructureEnum::initializedFlag = false;
  *    User-friendly name for use in user-interface.
  */
 StructureEnum::StructureEnum(const Enum enumValue,
-                           const QString& name,
-                           const QString& guiName)
+                           const AString& name,
+                           const AString& guiName)
 {
     this->enumValue = enumValue;
     this->name = name;
@@ -68,8 +68,7 @@ StructureEnum::~StructureEnum()
 /**
  * Initialize the enumerated metadata.
  */
-void
-StructureEnum::initialize()
+void StructureEnum::initialize()
 {
     if (initializedFlag) {
         return;
@@ -204,14 +203,6 @@ StructureEnum::initialize()
                                      "PUTAMEN_RIGHT", 
                                      "PutamenRight"));
     
-//    enumData.push_back(StructureEnum(SUBCORTICAL_WHITE_MATTER_LEFT, 
-//                                     "SUBCORTICAL_WHITE_MATTER_LEFT", 
-//                                     "SubcorticalWhiteMatterLeft"));
-//    
-//    enumData.push_back(StructureEnum(SUBCORTICAL_WHITE_MATTER_RIGHT, 
-//                                     "SUBCORTICAL_WHITE_MATTER_RIGHT", 
-//                                     "SubcorticalWhiteMatterRight"));
-    
     enumData.push_back(StructureEnum(THALAMUS_LEFT, 
                                      "THALAMUS_LEFT", 
                                      "ThalamusLeft"));
@@ -228,8 +219,7 @@ StructureEnum::initialize()
  * @return Pointer to data for this enumerated type
  * or NULL if no data for type or if type is invalid.
  */
-const StructureEnum*
-StructureEnum::findData(const Enum enumValue)
+const StructureEnum* StructureEnum::findData(const Enum enumValue)
 {
     if (initializedFlag == false) initialize();
 
@@ -241,7 +231,7 @@ StructureEnum::findData(const Enum enumValue)
         }
     }
 
-    return NULL;
+    throw CiftiException("unable to find enumeration value " + AString_number(enumValue));
 }
 
 /**
@@ -251,8 +241,7 @@ StructureEnum::findData(const Enum enumValue)
  * @return 
  *     String representing enumerated value.
  */
-QString 
-StructureEnum::toName(Enum enumValue) {
+AString StructureEnum::toName(Enum enumValue) {
     if (initializedFlag == false) initialize();
     
     const StructureEnum* enumInstance = findData(enumValue);
@@ -269,8 +258,7 @@ StructureEnum::toName(Enum enumValue) {
  * @return 
  *     Enumerated value.
  */
-StructureEnum::Enum 
-StructureEnum::fromName(const QString& name, bool* isValidOut)
+StructureEnum::Enum StructureEnum::fromName(const AString& name, bool* isValidOut)
 {
     if (initializedFlag == false) initialize();
     
@@ -304,8 +292,7 @@ StructureEnum::fromName(const QString& name, bool* isValidOut)
  * @return 
  *     String representing enumerated value.
  */
-QString 
-StructureEnum::toGuiName(Enum enumValue) {
+AString StructureEnum::toGuiName(Enum enumValue) {
     if (initializedFlag == false) initialize();
     
     const StructureEnum* enumInstance = findData(enumValue);
@@ -322,8 +309,7 @@ StructureEnum::toGuiName(Enum enumValue) {
  * @return 
  *     Enumerated value.
  */
-StructureEnum::Enum 
-StructureEnum::fromGuiName(const QString& guiName, bool* isValidOut)
+StructureEnum::Enum StructureEnum::fromGuiName(const AString& guiName, bool* isValidOut)
 {
     if (initializedFlag == false) initialize();
     
@@ -357,8 +343,7 @@ StructureEnum::fromGuiName(const QString& guiName, bool* isValidOut)
  * @return
  *     String representing enumerated value.
  */
-QString
-StructureEnum::toCiftiName(Enum enumValue) {
+AString StructureEnum::toCiftiName(Enum enumValue) {
     if (initializedFlag == false) initialize();
 
     const StructureEnum* enumInstance = findData(enumValue);
@@ -375,16 +360,15 @@ StructureEnum::toCiftiName(Enum enumValue) {
  * @return
  *     Enumerated value.
  */
-StructureEnum::Enum
-StructureEnum::fromCiftiName(const QString& ciftiName, bool* isValidOut)
+StructureEnum::Enum StructureEnum::fromCiftiName(const AString& ciftiName, bool* isValidOut)
 {
     if (initializedFlag == false) initialize();
 
     bool validFlag = false;
     Enum enumValue = INVALID;
-    if (ciftiName.startsWith("CIFTI_STRUCTURE_"))
+    if (AString_substr(ciftiName, 0, 16) == "CIFTI_STRUCTURE_")
     {
-        QString toMatch = ciftiName.mid(16);
+        AString toMatch = AString_substr(ciftiName, 16);
         for (std::vector<StructureEnum>::iterator iter = enumData.begin();
             iter != enumData.end();
             iter++) {
@@ -401,7 +385,7 @@ StructureEnum::fromCiftiName(const QString& ciftiName, bool* isValidOut)
         *isValidOut = validFlag;
     }
     else if (validFlag == false) {
-        throw CiftiException("guiName " + ciftiName + "failed to match enumerated value for type StructureEnum");
+        throw CiftiException("ciftiName " + ciftiName + "failed to match enumerated value for type StructureEnum");
     }
     return enumValue;
 }
@@ -414,8 +398,7 @@ StructureEnum::fromCiftiName(const QString& ciftiName, bool* isValidOut)
  *     A vector that is OUTPUT containing all of the enumerated values
  *     except ALL.
  */
-void
-StructureEnum::getAllEnums(std::vector<StructureEnum::Enum>& allEnums)
+void StructureEnum::getAllEnums(std::vector<StructureEnum::Enum>& allEnums)
 {
     if (initializedFlag == false) initialize();
     
@@ -441,13 +424,49 @@ StructureEnum::getAllEnums(std::vector<StructureEnum::Enum>& allEnums)
  * @return 
  *   true if the enumerated value represents a 'right' structure, else false.
  */
-bool 
-StructureEnum::isRight(const Enum enumValue)
+bool StructureEnum::isRight(const Enum enumValue)
 {
-    const QString name = toName(enumValue).toUpper();
-    if (name.contains("RIGHT")) {
-        return true;
+    switch (enumValue)
+    {
+        case ACCUMBENS_RIGHT:
+        case AMYGDALA_RIGHT:
+        case CAUDATE_RIGHT:
+        case CEREBELLAR_WHITE_MATTER_RIGHT:
+        case CEREBELLUM_RIGHT:
+        case CEREBRAL_WHITE_MATTER_RIGHT:
+        case CORTEX_RIGHT:
+        case DIENCEPHALON_VENTRAL_RIGHT:
+        case HIPPOCAMPUS_RIGHT:
+        case PALLIDUM_RIGHT:
+        case PUTAMEN_RIGHT:
+        case THALAMUS_RIGHT:
+            return true;
+        case ALL://avoid default so smart compilers can warn when a new structure isn't added here
+        case ALL_GREY_MATTER:
+        case ALL_WHITE_MATTER:
+        case BRAIN_STEM:
+        case CEREBELLUM:
+        case CORTEX:
+        case INVALID:
+        case OTHER:
+        case OTHER_GREY_MATTER:
+        case OTHER_WHITE_MATTER:
+            return false;//visually separate none/both from opposite cases
+        case ACCUMBENS_LEFT:
+        case AMYGDALA_LEFT:
+        case CAUDATE_LEFT:
+        case CEREBELLAR_WHITE_MATTER_LEFT:
+        case CEREBELLUM_LEFT:
+        case CEREBRAL_WHITE_MATTER_LEFT:
+        case CORTEX_LEFT:
+        case DIENCEPHALON_VENTRAL_LEFT:
+        case HIPPOCAMPUS_LEFT:
+        case PALLIDUM_LEFT:
+        case PUTAMEN_LEFT:
+        case THALAMUS_LEFT:
+            return false;
     }
+    CiftiAssert(false);
     return false;
 }
 
@@ -458,15 +477,50 @@ StructureEnum::isRight(const Enum enumValue)
  * @return 
  *   true if the enumerated value represents a 'left' structure, else false.
  */
-bool 
-StructureEnum::isLeft(const Enum enumValue)
+bool StructureEnum::isLeft(const Enum enumValue)
 {
-    const QString name = toName(enumValue).toUpper();
-    if (name.contains("LEFT")) {
-        return true;
+    switch (enumValue)
+    {
+        case ACCUMBENS_LEFT:
+        case AMYGDALA_LEFT:
+        case CAUDATE_LEFT:
+        case CEREBELLAR_WHITE_MATTER_LEFT:
+        case CEREBELLUM_LEFT:
+        case CEREBRAL_WHITE_MATTER_LEFT:
+        case CORTEX_LEFT:
+        case DIENCEPHALON_VENTRAL_LEFT:
+        case HIPPOCAMPUS_LEFT:
+        case PALLIDUM_LEFT:
+        case PUTAMEN_LEFT:
+        case THALAMUS_LEFT:
+            return true;
+        case ALL://avoid default so smart compilers can warn when a new structure isn't added here
+        case ALL_GREY_MATTER:
+        case ALL_WHITE_MATTER:
+        case BRAIN_STEM:
+        case CEREBELLUM:
+        case CORTEX:
+        case INVALID:
+        case OTHER:
+        case OTHER_GREY_MATTER:
+        case OTHER_WHITE_MATTER:
+            return false;//visually separate none/both from opposite cases
+        case ACCUMBENS_RIGHT:
+        case AMYGDALA_RIGHT:
+        case CAUDATE_RIGHT:
+        case CEREBELLAR_WHITE_MATTER_RIGHT:
+        case CEREBELLUM_RIGHT:
+        case CEREBRAL_WHITE_MATTER_RIGHT:
+        case CORTEX_RIGHT:
+        case DIENCEPHALON_VENTRAL_RIGHT:
+        case HIPPOCAMPUS_RIGHT:
+        case PALLIDUM_RIGHT:
+        case PUTAMEN_RIGHT:
+        case THALAMUS_RIGHT:
+            return false;
     }
+    CiftiAssert(false);
     return false;
-    
 }
 
 /**
@@ -480,8 +534,7 @@ StructureEnum::isLeft(const Enum enumValue)
  * @return
  *    True if one is CORTEX_LEFT and one is CORTEX_LEFT.
  */
-bool 
-StructureEnum::isCortexContralateral(const Enum enumValueA,
+bool StructureEnum::isCortexContralateral(const Enum enumValueA,
                                const Enum enumValueB)
 {
     if ((enumValueA == CORTEX_LEFT)
@@ -506,8 +559,7 @@ StructureEnum::isCortexContralateral(const Enum enumValueA,
  * @return The contralateral structure or NULL if it does
  *    not have a contralateral structure.
  */
-StructureEnum::Enum 
-StructureEnum::getContralateralStructure(const Enum enumValue)
+StructureEnum::Enum StructureEnum::getContralateralStructure(const Enum enumValue)
 {
     StructureEnum::Enum contralateralStructure = INVALID;
 
@@ -603,12 +655,6 @@ StructureEnum::getContralateralStructure(const Enum enumValue)
         case PUTAMEN_RIGHT:
             contralateralStructure = PUTAMEN_LEFT;
             break;
-//        case SUBCORTICAL_WHITE_MATTER_LEFT:
-//            contralateralStructure = SUBCORTICAL_WHITE_MATTER_RIGHT;
-//            break;
-//        case SUBCORTICAL_WHITE_MATTER_RIGHT:
-//            contralateralStructure = SUBCORTICAL_WHITE_MATTER_LEFT;
-//            break;
         case THALAMUS_LEFT:
             contralateralStructure = THALAMUS_RIGHT;
             break;

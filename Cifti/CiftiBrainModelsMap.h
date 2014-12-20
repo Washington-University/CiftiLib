@@ -101,10 +101,10 @@ namespace cifti
         int64_t getLength() const;
         bool operator==(const CiftiMappingType& rhs) const;
         bool approximateMatch(const CiftiMappingType& rhs) const;
-        void readXML1(QXmlStreamReader& xml);
-        void readXML2(QXmlStreamReader& xml);
-        void writeXML1(QXmlStreamWriter& xml) const;
-        void writeXML2(QXmlStreamWriter& xml) const;
+        void readXML1(XmlReader& xml);
+        void readXML2(XmlReader& xml);
+        void writeXML1(XmlWriter& xml) const;
+        void writeXML2(XmlWriter& xml) const;
     private:
         struct BrainModelPriv
         {
@@ -141,9 +141,9 @@ namespace cifti
                 if (m_count < rhs.m_count) return true;//in case we have a zero-length model - this shouldn't happen, usually
                 return false;
             }
-            void parseBrainModel1(QXmlStreamReader& xml);
-            void parseBrainModel2(QXmlStreamReader& xml);
-            static std::vector<int64_t> readIndexArray(QXmlStreamReader& xml);
+            void parseBrainModel1(XmlReader& xml);
+            void parseBrainModel2(XmlReader& xml);
+            static std::vector<int64_t> readIndexArray(XmlReader& xml);
         };
     };
 }

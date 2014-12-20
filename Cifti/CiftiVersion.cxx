@@ -44,23 +44,42 @@ CiftiVersion::CiftiVersion(const int16_t& major, const int16_t& minor)
     m_minor = minor;
 }
 
-CiftiVersion::CiftiVersion(const QString& versionString)
+CiftiVersion::CiftiVersion(const AString& versionString)
 {
-    int result = versionString.indexOf('.');
     bool ok = false;
+#ifdef CIFTILIB_USE_QT
+    int result = versionString.indexOf('.');
     if (result < 0)
     {
         m_minor = 0;
         m_major = versionString.toShort(&ok);
+        if (!ok) throw CiftiException("improperly formatted version string: " + versionString);
     } else {
-        if (result > 0)
-        {
-            m_major = versionString.mid(0, result).toShort(&ok);
-            if (!ok) throw CiftiException("improperly formatted version string: " + versionString);
-            m_minor = versionString.mid(result + 1).toShort(&ok);
-        }
+        if (result == 0) throw CiftiException("improperly formatted version string: " + versionString);
+        m_major = versionString.mid(0, result).toShort(&ok);
+        if (!ok) throw CiftiException("improperly formatted version string: " + versionString);
+        m_minor = versionString.mid(result + 1).toShort(&ok);
+        if (!ok) throw CiftiException("improperly formatted version string: " + versionString);
     }
-    if (!ok) throw CiftiException("improperly formatted version string: " + versionString);
+#else
+#ifdef CIFTILIB_USE_XMLPP
+    size_t result = versionString.find('.');
+    if (result == AString::npos)
+    {
+        m_minor = 0;
+        m_major = (int16_t)AString_toInt(versionString, ok);
+        if (!ok) throw CiftiException("improperly formatted version string: " + versionString);
+    } else {
+        if (result == 0) throw CiftiException("improperly formatted version string: " + versionString);
+        m_major = (int16_t)AString_toInt(versionString.substr(0, result), ok);
+        if (!ok) throw CiftiException("improperly formatted version string: " + versionString);
+        m_minor = (int16_t)AString_toInt(versionString.substr(result + 1), ok);
+        if (!ok) throw CiftiException("improperly formatted version string: " + versionString);
+    }
+#else
+#error "not implemented"
+#endif
+#endif
 }
 
 bool CiftiVersion::hasReversedFirstDims() const
@@ -108,9 +127,9 @@ bool CiftiVersion::operator>=(const cifti::CiftiVersion& rhs) const
     return false;
 }
 
-QString CiftiVersion::toString() const
+AString CiftiVersion::toString() const
 {
-    QString ret = QString::number(m_major);
-    if (m_minor != 0) ret += "." + QString::number(m_minor);
+    AString ret = AString_number(m_major);
+    if (m_minor != 0) ret += "." + AString_number(m_minor);
     return ret;
 }

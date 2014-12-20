@@ -28,9 +28,10 @@
  *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "AString.h"
+
 #include <stdint.h>
 #include <vector>
-#include <QString>
 
 namespace cifti {
 
@@ -110,10 +111,6 @@ public:
         PUTAMEN_LEFT,
         /** Right Putamen */
         PUTAMEN_RIGHT,
-//        /** Left Subcortical White Matter */
-//        SUBCORTICAL_WHITE_MATTER_LEFT,
-//        /** Right Subcortical White Matter */
-//        SUBCORTICAL_WHITE_MATTER_RIGHT,
         /** Left Thalamus */
         THALAMUS_LEFT,
         /** Right Thalamus */
@@ -123,17 +120,17 @@ public:
 
     ~StructureEnum();
 
-    static QString toName(Enum enumValue);
+    static AString toName(Enum enumValue);
     
-    static Enum fromName(const QString& name, bool* isValidOut);
+    static Enum fromName(const AString& name, bool* isValidOut);
     
-    static QString toGuiName(Enum enumValue);
+    static AString toGuiName(Enum enumValue);
     
-    static Enum fromGuiName(const QString& guiName, bool* isValidOut);
+    static Enum fromGuiName(const AString& guiName, bool* isValidOut);
     
-    static QString toCiftiName(Enum enumValue);
+    static AString toCiftiName(Enum enumValue);
 
-    static Enum fromCiftiName(const QString& ciftiName, bool* isValidOut);
+    static Enum fromCiftiName(const AString& ciftiName, bool* isValidOut);
 
     static void getAllEnums(std::vector<Enum>& allEnums);
 
@@ -148,8 +145,8 @@ public:
     
 private:
     StructureEnum(const Enum enumValue, 
-                 const QString& name,
-                 const QString& guiName);
+                 const AString& name,
+                 const AString& guiName);
 
     static const StructureEnum* findData(const Enum enumValue);
 
@@ -166,10 +163,10 @@ private:
     Enum enumValue;
 
     /** The name, a text string that is identical to the enumerated value */
-    QString name;
+    AString name;
     
     /** A user-friendly name that is displayed in the GUI */
-    QString guiName;
+    AString guiName;
 };
 
 } // namespace

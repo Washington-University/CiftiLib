@@ -34,140 +34,169 @@
 using namespace cifti;
 using namespace std;
 
-void CiftiSeriesMap::readXML1(QXmlStreamReader& xml)
+void CiftiSeriesMap::readXML1(XmlReader& xml)
 {
-    QXmlStreamAttributes attrs = xml.attributes();
+    vector<AString> mandAttrs(2), optAttrs(1, "TimeStart");
+    mandAttrs[0] = "TimeStep";
+    mandAttrs[1] = "TimeStepUnits";
+    XmlAttributesResult myAttrs = XmlReader_parseAttributes(xml, mandAttrs, optAttrs);
     float newStart = 0.0f, newStep = -1.0f, mult = 0.0f;
     bool ok = false;
-    if (!attrs.hasAttribute("TimeStepUnits"))
-    {
-        throw CiftiException("timepoints mapping is missing requred attribute TimeStepUnits");
-    }
-    QStringRef unitString = attrs.value("TimeStepUnits");
-    if (unitString == "NIFTI_UNITS_SEC")
+    if (myAttrs.mandatoryVals[1] == "NIFTI_UNITS_SEC")
     {
         mult = 1.0f;
-    } else if (unitString == "NIFTI_UNITS_MSEC") {
+    } else if (myAttrs.mandatoryVals[1] == "NIFTI_UNITS_MSEC") {
         mult = 0.001f;
-    } else if (unitString == "NIFTI_UNITS_USEC") {
+    } else if (myAttrs.mandatoryVals[1] == "NIFTI_UNITS_USEC") {
         mult = 0.000001f;
     } else {
-        throw CiftiException("unrecognized value for TimeStepUnits: " + unitString.toString());
+        throw CiftiException("unrecognized value for TimeStepUnits: " + myAttrs.mandatoryVals[1]);
     }
-    if (attrs.hasAttribute("TimeStart"))//optional and nonstandard
+    if (myAttrs.optionalVals[0].present)//optional and nonstandard
     {
-        newStart = mult * attrs.value("TimeStart").toString().toFloat(&ok);
+        newStart = mult * AString_toFloat(myAttrs.optionalVals[0].value, ok);
         if (!ok)
         {
-            throw CiftiException("unrecognized value for TimeStart: " + attrs.value("TimeStart").toString());
+            throw CiftiException("unrecognized value for TimeStart: " + myAttrs.optionalVals[0].value);
         }
     }
-    if (!attrs.hasAttribute("TimeStep"))
-    {
-        throw CiftiException("timepoints mapping is missing requred attribute TimeStep");
-    }
-    newStep = mult * attrs.value("TimeStep").toString().toFloat(&ok);
+    newStep = mult * AString_toFloat(myAttrs.mandatoryVals[0], ok);
     if (!ok)
     {
-        throw CiftiException("unrecognized value for TimeStep: " + attrs.value("TimeStep").toString());
+        throw CiftiException("unrecognized value for TimeStep: " + myAttrs.mandatoryVals[0]);
     }
+#ifdef CIFTILIB_USE_QT
     if (xml.readNextStartElement())
     {
-        throw CiftiException("unexpected element in timepoints mapping: " + xml.name().toString());
+        throw CiftiException("unexpected element in timepoints map: " + xml.name().toString());
     }
+#else
+#ifdef CIFTILIB_USE_XMLPP
+    bool done = xml.is_empty_element();//NOTE: a <blah/> element does NOT give a separate end element state!!!
+    while(!done && xml.read())
+    {
+        switch (xml.get_node_type())
+        {
+            case XmlReader::Element:
+            {
+                AString name = xml.get_local_name();
+                throw CiftiException("unexpected element in timepoints map: " + name);
+                break;
+            }
+            case XmlReader::EndElement:
+                done = true;
+                break;
+            default:
+                break;
+        }
+    }
+#else
+#error "not implemented"
+#endif
+#endif
+    CiftiAssert(XmlReader_checkEndElement(xml, "MatrixIndicesMap"));
     m_length = -1;//cifti-1 doesn't know length in xml, must be set by checking the matrix
     m_start = newStart;
     m_step = newStep;
     m_unit = SECOND;
-    CaretAssert(xml.isEndElement() && xml.name() == "MatrixIndicesMap");
 }
 
-void CiftiSeriesMap::readXML2(QXmlStreamReader& xml)
+void CiftiSeriesMap::readXML2(XmlReader& xml)
 {
-    QXmlStreamAttributes attrs = xml.attributes();
+    vector<AString> mandAttrs(5);
+    mandAttrs[0] = "SeriesStep";
+    mandAttrs[1] = "SeriesUnit";
+    mandAttrs[2] = "SeriesExponent";
+    mandAttrs[3] = "SeriesStart";
+    mandAttrs[4] = "NumberOfSeriesPoints";
+    XmlAttributesResult myAttrs = XmlReader_parseAttributes(xml, mandAttrs);
     float newStart = 0.0f, newStep = -1.0f, mult = 0.0f;
     int64_t newLength = -1;
     Unit newUnit;
     bool ok = false;
-    if (!attrs.hasAttribute("SeriesUnit"))
-    {
-        throw CiftiException("series mapping is missing requred attribute SeriesUnit");
-    }
-    QStringRef unitString = attrs.value("SeriesUnit");
-    if (unitString == "HERTZ")
+    if (myAttrs.mandatoryVals[1] == "HERTZ")
     {
         newUnit = HERTZ;
-    } else if (unitString == "METER") {
+    } else if (myAttrs.mandatoryVals[1] == "METER") {
         newUnit = METER;
-    } else if (unitString == "RADIAN") {
+    } else if (myAttrs.mandatoryVals[1] == "RADIAN") {
         newUnit = RADIAN;
-    } else if (unitString == "SECOND") {
+    } else if (myAttrs.mandatoryVals[1] == "SECOND") {
         newUnit = SECOND;
     } else {
-        throw CiftiException("unrecognized value for TimeStepUnits: " + unitString.toString());
+        throw CiftiException("unrecognized value for SeriesUnit: " + myAttrs.mandatoryVals[1]);
     }
-    if (!attrs.hasAttribute("SeriesExponent"))
-    {
-        throw CiftiException("series mapping is missing requred attribute SeriesExponent");
-    }
-    int exponent = attrs.value("SeriesExponent").toString().toInt(&ok);
+    int exponent = AString_toInt(myAttrs.mandatoryVals[2], ok);
     if (!ok)
     {
-        throw CiftiException("unrecognized value for SeriesExponent: " + attrs.value("SeriesExponent").toString());
+        throw CiftiException("unrecognized value for SeriesExponent: " + myAttrs.mandatoryVals[2]);
     }
     mult = pow(10.0f, exponent);
-    if (!attrs.hasAttribute("SeriesStart"))
-    {
-        throw CiftiException("series mapping is missing requred attribute SeriesStart");
-    }
-    newStart = mult * attrs.value("SeriesStart").toString().toFloat(&ok);
+    newStart = mult * AString_toFloat(myAttrs.mandatoryVals[3], ok);
     if (!ok)
     {
-        throw CiftiException("unrecognized value for SeriesStart: " + attrs.value("SeriesStart").toString());
+        throw CiftiException("unrecognized value for SeriesStart: " + myAttrs.mandatoryVals[3]);
     }
-    if (!attrs.hasAttribute("SeriesStep"))
-    {
-        throw CiftiException("series mapping is missing requred attribute SeriesStep");
-    }
-    newStep = mult * attrs.value("SeriesStep").toString().toFloat(&ok);
+    newStep = mult * AString_toFloat(myAttrs.mandatoryVals[0], ok);
     if (!ok)
     {
-        throw CiftiException("unrecognized value for SeriesStep: " + attrs.value("SeriesStep").toString());
+        throw CiftiException("unrecognized value for SeriesStep: " + myAttrs.mandatoryVals[0]);
     }
-    if (!attrs.hasAttribute("NumberOfSeriesPoints"))
-    {
-        throw CiftiException("series mapping is missing requred attribute NumberOfSeriesPoints");
-    }
-    newLength = attrs.value("NumberOfSeriesPoints").toString().toLongLong(&ok);
+    newLength = AString_toInt(myAttrs.mandatoryVals[4], ok);
     if (!ok)
     {
-        throw CiftiException("unrecognized value for NumberOfSeriesPoints: " + attrs.value("NumberOfSeriesPoints").toString());
+        throw CiftiException("unrecognized value for NumberOfSeriesPoints: " + myAttrs.mandatoryVals[4]);
     }
     if (newLength < 1)
     {
         throw CiftiException("NumberOfSeriesPoints must be positive");
     }
+#ifdef CIFTILIB_USE_QT
     if (xml.readNextStartElement())
     {
-        throw CiftiException("unexpected element in series mapping: " + xml.name().toString());
+        throw CiftiException("unexpected element in series map: " + xml.name().toString());
     }
+#else
+#ifdef CIFTILIB_USE_XMLPP
+    bool done = xml.is_empty_element();//NOTE: a <blah/> element does NOT give a separate end element state!!!
+    while(!done && xml.read())
+    {
+        switch (xml.get_node_type())
+        {
+            case XmlReader::Element:
+            {
+                AString name = xml.get_local_name();
+                throw CiftiException("unexpected element in series map: " + name);
+                break;
+            }
+            case XmlReader::EndElement:
+                done = true;
+                break;
+            default:
+                break;
+        }
+    }
+#else
+#error "not implemented"
+#endif
+#endif
+    CiftiAssert(XmlReader_checkEndElement(xml, "MatrixIndicesMap"));
     m_length = newLength;
     m_start = newStart;
     m_step = newStep;
     m_unit = newUnit;
-    CaretAssert(xml.isEndElement() && xml.name() == "MatrixIndicesMap");
 }
 
-void CiftiSeriesMap::writeXML1(QXmlStreamWriter& xml) const
+void CiftiSeriesMap::writeXML1(XmlWriter& xml) const
 {
-    CaretAssert(m_length != -1);
+    CiftiAssert(m_length != -1);
     if (m_unit != SECOND)
     {
         throw CiftiException("cifti-1 does not support writing series with non-time units");
     }
     xml.writeAttribute("IndicesMapToDataType", "CIFTI_INDEX_TYPE_TIME_POINTS");
     float mult = 1.0f;
-    QString unitString = "NIFTI_UNITS_SEC";
+    AString unitString = "NIFTI_UNITS_SEC";
     float test = m_step;
     if (test == 0.0f) test = m_start;
     if (test != 0.0f)
@@ -182,13 +211,13 @@ void CiftiSeriesMap::writeXML1(QXmlStreamWriter& xml) const
         }
     }
     xml.writeAttribute("TimeStepUnits", unitString);
-    xml.writeAttribute("TimeStart", QString::number(mult * m_start, 'f', 10));//even though it is nonstandard, write it, always
-    xml.writeAttribute("TimeStep", QString::number(mult * m_step, 'f', 10));
+    xml.writeAttribute("TimeStart", AString_number_fixed(mult * m_start, 7));//even though it is nonstandard, write it, always
+    xml.writeAttribute("TimeStep", AString_number_fixed(mult * m_step, 7));
 }
 
-void CiftiSeriesMap::writeXML2(QXmlStreamWriter& xml) const
+void CiftiSeriesMap::writeXML2(XmlWriter& xml) const
 {
-    CaretAssert(m_length != -1);
+    CiftiAssert(m_length != -1);
     xml.writeAttribute("IndicesMapToDataType", "CIFTI_INDEX_TYPE_SERIES");
     int exponent = 0;
     float test = m_step;
@@ -198,7 +227,7 @@ void CiftiSeriesMap::writeXML2(QXmlStreamWriter& xml) const
         exponent = 3 * (int)floor((log10(test) - log10(0.05f)) / 3.0f);//some magic to get the exponent that is a multiple of 3 that puts the test value in [0.05, 50]
     }
     float mult = pow(10.0f, -exponent);
-    QString unitString;
+    AString unitString;
     switch (m_unit)
     {
         case HERTZ:
@@ -214,9 +243,9 @@ void CiftiSeriesMap::writeXML2(QXmlStreamWriter& xml) const
             unitString = "SECOND";
             break;
     }
-    xml.writeAttribute("NumberOfSeriesPoints", QString::number(m_length));
-    xml.writeAttribute("SeriesExponent", QString::number(exponent));
-    xml.writeAttribute("SeriesStart", QString::number(mult * m_start, 'f', 10));
-    xml.writeAttribute("SeriesStep", QString::number(mult * m_step, 'f', 10));
+    xml.writeAttribute("NumberOfSeriesPoints", AString_number(m_length));
+    xml.writeAttribute("SeriesExponent", AString_number(exponent));
+    xml.writeAttribute("SeriesStart", AString_number_fixed(mult * m_start, 7));
+    xml.writeAttribute("SeriesStep", AString_number_fixed(mult * m_step, 7));
     xml.writeAttribute("SeriesUnit", unitString);
 }

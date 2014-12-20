@@ -25,7 +25,7 @@
  *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "CaretAssert.h"
+#include "CiftiAssert.h"
 #include "Vector3D.h"
 
 #include <cmath>
@@ -92,25 +92,25 @@ Vector3D::Vector3D(const float* right)
 
 float& Vector3D::operator[](const int64_t& index)
 {
-    CaretAssert(index > -1 && index < 3);
+    CiftiAssert(index > -1 && index < 3);
     return m_vec[index];
 }
 
 const float& Vector3D::operator[](const int64_t& index) const
 {
-    CaretAssert(index > -1 && index < 3);
+    CiftiAssert(index > -1 && index < 3);
     return m_vec[index];
 }
 
 float& Vector3D::operator[](const int32_t& index)
 {
-    CaretAssert(index > -1 && index < 3);
+    CiftiAssert(index > -1 && index < 3);
     return m_vec[index];
 }
 
 const float& Vector3D::operator[](const int32_t& index) const
 {
-    CaretAssert(index > -1 && index < 3);
+    CiftiAssert(index > -1 && index < 3);
     return m_vec[index];
 }
 

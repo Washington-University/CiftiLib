@@ -28,7 +28,7 @@
 #include "NiftiHeader.h"
 
 #include "ByteSwapping.h"
-#include "CaretAssert.h"
+#include "CiftiAssert.h"
 #include "CiftiException.h"
 #include "FloatMatrix.h"
 #include "MathFunctions.h"
@@ -94,7 +94,7 @@ int64_t NiftiHeader::computeVoxOffset(const int& version) const
     int numExtensions = (int)m_extensions.size();
     for (int i = 0; i < numExtensions; ++i)
     {
-        CaretAssert(m_extensions[i] != NULL);
+        CiftiAssert(m_extensions[i] != NULL);
         int64_t thisSize = 8 + m_extensions[i]->m_bytes.size();//8 is for the int32_t size and ecode for nifti-1 style extensions
         if (thisSize % 16 != 0)//round up to nearest multiple of 16
         {
@@ -127,7 +127,7 @@ bool NiftiHeader::getDataScaling(double& mult, double& offset) const
 
 vector<int64_t> NiftiHeader::getDimensions() const
 {
-    CaretAssert(m_header.dim[0] >= 0 && m_header.dim[0] <= 7);//because storage is private and initialized to zero, so it should never be invalid
+    CiftiAssert(m_header.dim[0] >= 0 && m_header.dim[0] <= 7);//because storage is private and initialized to zero, so it should never be invalid
     vector<int64_t> ret(m_header.dim[0]);
     for (int i = 0; i < m_header.dim[0]; ++i)
     {
@@ -266,67 +266,66 @@ vector<vector<float> > NiftiHeader::getSForm() const
     return ret.getMatrix();
 }
 
-QString NiftiHeader::toString() const
+AString NiftiHeader::toString() const
 {
-    QString ret;
+    AString ret;
     if (isSwapped())
     {
         ret += "native endian: false\n";
     } else {
         ret += "native endian: true\n";
     }
-    ret += "sizeof_hdr: " + QString::number(m_header.sizeof_hdr) + "\n";//skip the fields that aren't important, like intent_p1, cal_max, etc
-    ret += "magic: " + QByteArray(m_header.magic, 8);//quirk: QByteArray supports embedded nulls, so adding "\n" here doesn't result in a newline in the string
-    ret += "\ndatatype: " + QString::number(m_header.datatype) + "\n";
-    ret += "bitpix: " + QString::number(m_header.bitpix) + "\n";
-    CaretAssert(m_header.dim[0] < 8);
+    ret += "sizeof_hdr: " + AString_number(m_header.sizeof_hdr) + "\n";//skip the fields that aren't important, like intent_p1, cal_max, etc
+    ret += "magic: " + AString_from_latin1(m_header.magic, 8) + "\n";
+    ret += "datatype: " + AString_number(m_header.datatype) + "\n";
+    ret += "bitpix: " + AString_number(m_header.bitpix) + "\n";
+    CiftiAssert(m_header.dim[0] < 8);
     for (int i = 0; i <= m_header.dim[0]; ++i)
     {
-        ret += "dim[" + QString::number(i) + "]: " + QString::number(m_header.dim[i]) + "\n";
+        ret += "dim[" + AString_number(i) + "]: " + AString_number(m_header.dim[i]) + "\n";
     }
     for (int i = 0; i <= m_header.dim[0]; ++i)
     {
-        ret += "pixdim[" + QString::number(i) + "]: " + QString::number(m_header.pixdim[i]) + "\n";
+        ret += "pixdim[" + AString_number(i) + "]: " + AString_number(m_header.pixdim[i]) + "\n";
     }
-    ret += "vox_offset: " + QString::number(m_header.vox_offset) + "\n";
-    ret += "scl_slope: " + QString::number(m_header.scl_slope) + "\n";
-    ret += "scl_inter: " + QString::number(m_header.scl_inter) + "\n";
-    ret += "sform_code: " + QString::number(m_header.sform_code) + "\n";
+    ret += "vox_offset: " + AString_number(m_header.vox_offset) + "\n";
+    ret += "scl_slope: " + AString_number(m_header.scl_slope) + "\n";
+    ret += "scl_inter: " + AString_number(m_header.scl_inter) + "\n";
+    ret += "sform_code: " + AString_number(m_header.sform_code) + "\n";
     if (m_header.sform_code != NIFTI_XFORM_UNKNOWN)
     {
         ret += "srow_x:";
         for (int i = 0; i < 4; ++i)
         {
-            ret += " " + QString::number(m_header.srow_x[i]);
+            ret += " " + AString_number(m_header.srow_x[i]);
         }
         ret += "\nsrow_y:";
         for (int i = 0; i < 4; ++i)
         {
-            ret += " " + QString::number(m_header.srow_y[i]);
+            ret += " " + AString_number(m_header.srow_y[i]);
         }
         ret += "\nsrow_z:";
         for (int i = 0; i < 4; ++i)
         {
-            ret += " " + QString::number(m_header.srow_z[i]);
+            ret += " " + AString_number(m_header.srow_z[i]);
         }
         ret += "\n";
     }
-    ret += "qform_code: " + QString::number(m_header.qform_code) + "\n";
+    ret += "qform_code: " + AString_number(m_header.qform_code) + "\n";
     if (m_header.qform_code != NIFTI_XFORM_UNKNOWN)
     {
-        ret += "quatern_b: " + QString::number(m_header.quatern_b) + "\n";
-        ret += "quatern_c: " + QString::number(m_header.quatern_c) + "\n";
-        ret += "quatern_d: " + QString::number(m_header.quatern_d) + "\n";
-        ret += "qoffset_x: " + QString::number(m_header.qoffset_x) + "\n";
-        ret += "qoffset_y: " + QString::number(m_header.qoffset_y) + "\n";
-        ret += "qoffset_z: " + QString::number(m_header.qoffset_z) + "\n";
+        ret += "quatern_b: " + AString_number(m_header.quatern_b) + "\n";
+        ret += "quatern_c: " + AString_number(m_header.quatern_c) + "\n";
+        ret += "quatern_d: " + AString_number(m_header.quatern_d) + "\n";
+        ret += "qoffset_x: " + AString_number(m_header.qoffset_x) + "\n";
+        ret += "qoffset_y: " + AString_number(m_header.qoffset_y) + "\n";
+        ret += "qoffset_z: " + AString_number(m_header.qoffset_z) + "\n";
     }
-    ret += "xyzt_units: " + QString::number(m_header.xyzt_units) + "\n";
-    ret += "intent_code: " + QString::number(m_header.intent_code) + "\n";
-    ret += "intent_name: " + QByteArray(m_header.intent_name, 16);//same quirk
-    ret += "\n";
+    ret += "xyzt_units: " + AString_number(m_header.xyzt_units) + "\n";
+    ret += "intent_code: " + AString_number(m_header.intent_code) + "\n";
+    ret += "intent_name: " + AString_from_latin1(m_header.intent_name, 16) + "\n";
     int numExts = (int)m_extensions.size();
-    ret += QString::number(numExts) + " extension";
+    ret += AString_number(numExts) + " extension";
     if (numExts != 1) ret += "s";
     if (numExts == 0)
     {
@@ -335,10 +334,10 @@ QString NiftiHeader::toString() const
         ret += ":\n";
         for (int i = 0; i < numExts; ++i)
         {
-            CaretAssert(m_extensions[i] != NULL);
+            CiftiAssert(m_extensions[i] != NULL);
             ret += "\n";
-            ret += "code: " + QString::number(m_extensions[i]->m_ecode) + "\n";
-            ret += "length: " + QString::number(m_extensions[i]->m_bytes.size()) + "\n";
+            ret += "code: " + AString_number(m_extensions[i]->m_ecode) + "\n";
+            ret += "length: " + AString_number(m_extensions[i]->m_bytes.size()) + "\n";
         }
     }
     return ret;
@@ -376,11 +375,11 @@ void NiftiHeader::setIntent(const int32_t& code, const char name[16])
 
 void NiftiHeader::setSForm(const vector<vector<float> >& sForm)
 {
-    CaretAssert(sForm.size() >= 3);//programmer error to pass badly sized matrix
+    CiftiAssert(sForm.size() >= 3);//programmer error to pass badly sized matrix
     if (sForm.size() < 3) throw CiftiException("internal error: setSForm matrix badly sized");//but make release also throw
     for (int i = 0; i < (int)sForm.size(); i++)
     {
-        CaretAssert(sForm[i].size() >= 4);//ditto
+        CiftiAssert(sForm[i].size() >= 4);//ditto
         if (sForm[i].size() < 4) throw CiftiException("internal error: setSForm matrix badly sized");
     }
     m_header.xyzt_units = SPACE_TIME_TO_XYZT(NIFTI_UNITS_MM, NIFTI_UNITS_SEC);//overwrite whatever units we read in
@@ -489,10 +488,10 @@ void NiftiHeader::read(BinaryFile& inFile)
         {
             extStart = 352;
         } else {
-            CaretAssert(version == 2);
+            CiftiAssert(version == 2);
             extStart = 544;
         }
-        CaretAssert(inFile.pos() == extStart);
+        CiftiAssert(inFile.pos() == extStart);
         while(extStart + 2 * sizeof(int32_t) <= (size_t)m_header.vox_offset)
         {
             int32_t esize, ecode;
@@ -524,7 +523,7 @@ void NiftiHeader::setupFrom(const nifti_1_header& header)
     if (header.dim[0] < 1 || header.dim[0] > 7) throw CiftiException("incorrect dim[0]");
     for (int i = 0; i < header.dim[0]; ++i)
     {
-        if (header.dim[i + 1] < 1) throw CiftiException("dim[" + QString::number(i + 1) + "] < 1");
+        if (header.dim[i + 1] < 1) throw CiftiException("dim[" + AString_number(i + 1) + "] < 1");
     }
     if (header.vox_offset < 352) throw CiftiException("incorrect vox_offset");
     int numBits = typeToNumBits(header.datatype);
@@ -584,7 +583,7 @@ void NiftiHeader::setupFrom(const nifti_2_header& header)
     if (header.dim[0] < 1 || header.dim[0] > 7) throw CiftiException("incorrect dim[0]");
     for (int i = 0; i < header.dim[0]; ++i)
     {
-        if (header.dim[i + 1] < 1) throw CiftiException("dim[" + QString::number(i + 1) + "] < 1");
+        if (header.dim[i + 1] < 1) throw CiftiException("dim[" + AString_number(i + 1) + "] < 1");
     }
     if (header.vox_offset < 352) throw CiftiException("incorrect vox_offset");
     if (header.bitpix != typeToNumBits(header.datatype)) throw CiftiException("datatype disagrees with bitpix");
@@ -702,7 +701,7 @@ void NiftiHeader::swapHeaderBytes(nifti_2_header& header)
 
 void NiftiHeader::write(BinaryFile& outFile, const int& version, const bool& swapEndian)
 {//always write in native byte order, until there is a real reason to do otherwise
-    if (!canWriteVersion(version)) throw CiftiException("unable to write NIfTI version " + QString::number(version) + " for file " + outFile.getFilename());
+    if (!canWriteVersion(version)) throw CiftiException("unable to write NIfTI version " + AString_number(version) + " for file " + outFile.getFilename());
     const char padding[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     int64_t voxOffset;
     if (version == 2)
@@ -719,7 +718,7 @@ void NiftiHeader::write(BinaryFile& outFile, const int& version, const bool& swa
         if (swapEndian) swapHeaderBytes(outHeader);
         outFile.write(&outHeader, sizeof(nifti_1_header));
     } else {
-        CaretAssert(0);//canWriteVersion should have said no
+        CiftiAssert(0);//canWriteVersion should have said no
         throw CiftiException("internal error: NiftiHeader::canWriteVersion() returned true for unimplemented writing version");
     }
     char extender[] = { 0, 0, 0, 0 };//at least until nifti-2 gets a new extension format, use the same code for both
@@ -728,7 +727,7 @@ void NiftiHeader::write(BinaryFile& outFile, const int& version, const bool& swa
     outFile.write(extender, 4);
     for (int i = 0; i < numExtensions; ++i)
     {
-        CaretAssert(m_extensions[i] != NULL);
+        CiftiAssert(m_extensions[i] != NULL);
         int64_t thisSize = 8 + m_extensions[i]->m_bytes.size();//8 is for the int32_t size and ecode for nifti-1 style extensions
         int paddingBytes = 0;
         if (thisSize % 16 != 0)//round up to nearest multiple of 16
@@ -736,8 +735,8 @@ void NiftiHeader::write(BinaryFile& outFile, const int& version, const bool& swa
             paddingBytes = 16 - (thisSize % 16);
             thisSize += paddingBytes;
         }
-        CaretAssert(thisSize <= numeric_limits<int32_t>::max());
-        CaretAssert(thisSize + outFile.pos() <= voxOffset);
+        CiftiAssert(thisSize <= numeric_limits<int32_t>::max());
+        CiftiAssert(thisSize + outFile.pos() <= voxOffset);
         int32_t outSize = thisSize;
         int32_t outEcode = m_extensions[i]->m_ecode;
         if (swapEndian)
@@ -750,7 +749,7 @@ void NiftiHeader::write(BinaryFile& outFile, const int& version, const bool& swa
         outFile.write(m_extensions[i]->m_bytes.data(), m_extensions[i]->m_bytes.size());
         if (paddingBytes != 0) outFile.write(padding, paddingBytes);
     }
-    CaretAssert(outFile.pos() == voxOffset);
+    CiftiAssert(outFile.pos() == voxOffset);
     m_header.vox_offset = voxOffset;//update internal state to reflect the state that was written to the file
     m_version = version;
     m_isSwapped = swapEndian;
@@ -758,7 +757,7 @@ void NiftiHeader::write(BinaryFile& outFile, const int& version, const bool& swa
 
 void NiftiHeader::prepareHeader(nifti_1_header& header) const
 {
-    CaretAssert(canWriteVersion(1));//programmer error to call this if it isn't possible
+    CiftiAssert(canWriteVersion(1));//programmer error to call this if it isn't possible
     header.sizeof_hdr = sizeof(nifti_1_header);//do static things first
     const char magic[] = "n+1\0";//only support single-file nifti
     for (int i = 0; i < 4; ++i) header.magic[i] = magic[i];
@@ -780,7 +779,7 @@ void NiftiHeader::prepareHeader(nifti_1_header& header) const
     header.slice_start = m_header.slice_start;
     for (int i = 0; i < 8; ++i) header.pixdim[i] = m_header.pixdim[i];//more double to float conversion
     header.vox_offset = computeVoxOffset(1);//again, canWriteVersion should have checked that this, and later conversions, are okay
-    CaretAssert(header.vox_offset >= 352);
+    CiftiAssert(header.vox_offset >= 352);
     header.scl_slope = m_header.scl_slope;
     header.scl_inter = m_header.scl_inter;
     header.slice_end = m_header.slice_end;
@@ -811,7 +810,7 @@ void NiftiHeader::prepareHeader(nifti_1_header& header) const
 
 void NiftiHeader::prepareHeader(nifti_2_header& header) const
 {
-    CaretAssert(canWriteVersion(2));
+    CiftiAssert(canWriteVersion(2));
     memcpy(&header, &m_header, sizeof(nifti_2_header));//first copy everything, then fix static and computed fields
     header.sizeof_hdr = sizeof(nifti_2_header);
     const char magic[] = "n+2\0\r\n\032\n";

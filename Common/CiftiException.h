@@ -28,8 +28,9 @@
  *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "AString.h"
+
 #include <stdexcept>
-#include <QString>
 
 namespace cifti {
 
@@ -41,7 +42,7 @@ namespace cifti {
 public:
     CiftiException();
 
-    CiftiException(const QString& s);
+    CiftiException(const AString& s);
 
     CiftiException(const CiftiException& e);
         
@@ -49,11 +50,11 @@ public:
         
     virtual ~CiftiException() throw();
     
-    virtual QString whatString() const throw();
+    virtual AString whatString() const throw();
 
 private:
     /// Description of the exception
-    QString exceptionDescription;
+    AString exceptionDescription;
 };
 
 } // namespace

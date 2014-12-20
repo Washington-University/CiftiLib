@@ -28,7 +28,7 @@
  *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "CaretAssert.h"
+#include "CiftiAssert.h"
 
 #include "stdint.h"
 #include <vector>
@@ -71,7 +71,7 @@ namespace cifti
         int64_t numElems = 1;
         for (int i = 0; i < (int)m_dims.size(); ++i)
         {
-            CaretAssert(m_dims[i] > 0);
+            CiftiAssert(m_dims[i] > 0);
             m_skip[i] = numElems;
             numElems *= m_dims[i];
         }
@@ -82,11 +82,11 @@ namespace cifti
     template<typename I>
     int64_t MultiDimArray<T>::index(const int& fullDims, const std::vector<I>& indexSelect) const
     {
-        CaretAssert(fullDims + indexSelect.size() == m_dims.size());
+        CiftiAssert(fullDims + indexSelect.size() == m_dims.size());
         int64_t ret = 0;
         for (int i = fullDims; i < (int)m_dims.size(); ++i)
         {
-            CaretAssert(indexSelect[i - fullDims] >= 0 && indexSelect[i - fullDims] < m_dims[i]);
+            CiftiAssert(indexSelect[i - fullDims] >= 0 && indexSelect[i - fullDims] < m_dims[i]);
             ret += m_skip[i] * indexSelect[i - fullDims];
         }
         return ret;

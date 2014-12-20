@@ -1,24 +1,16 @@
-#
-# Name of Project
-#
+
 PROJECT(Common)
 
-#
-# Need XML from Qt
-#
-SET(QT_DONT_USE_QTGUI)
-
-#
-# Add QT for includes
-#
-INCLUDE(${QT_USE_FILE})
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 
 #
 # Create Common Library
 #
 ADD_LIBRARY(Common
+AString.h
+AString.cxx
 ByteSwapping.h
-CaretAssert.h
+CiftiAssert.h
 BinaryFile.h
 BinaryFile.cxx
 CiftiException.h
@@ -34,7 +26,9 @@ MultiDimArray.h
 MultiDimIterator.h
 Vector3D.h
 Vector3D.cxx
-VoxelIJK.h)
+VoxelIJK.h
+XmlAdapter.h
+XmlAdapter.cxx)
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_SOURCE_DIR}/Common

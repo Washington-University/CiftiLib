@@ -35,13 +35,20 @@
 #include "BinaryFile.h"
 #include "CiftiException.h"
 
+#ifdef CIFTILIB_USE_QT
 #include <QFile>
+#else
+#include "stdio.h"
+#endif
+
 #ifdef CARET_HAVE_ZLIB
 #include "zlib.h"
 #endif //CARET_HAVE_ZLIB
 
+#include <iostream>
+
 using namespace cifti;
-using namespace boost;
+using boost::shared_ptr;
 using namespace std;
 
 //private implementation classes
@@ -53,7 +60,7 @@ namespace cifti
         gzFile m_zfile;
     public:
         ZFileImpl() { m_zfile = NULL; }
-        void open(const QString& filename, const BinaryFile::OpenMode& opmode);
+        void open(const AString& filename, const BinaryFile::OpenMode& opmode);
         void close();
         void seek(const int64_t& position);
         int64_t pos();
@@ -63,24 +70,40 @@ namespace cifti
     };
 #endif //ZLIB_VERSION
 
+#ifdef CIFTILIB_USE_QT
     class QFileImpl : public BinaryFile::ImplInterface
     {
         QFile m_file;
     public:
-        void open(const QString& filename, const BinaryFile::OpenMode& opmode);
+        void open(const AString& filename, const BinaryFile::OpenMode& opmode);
         void close();
         void seek(const int64_t& position);
         int64_t pos();
         void read(void* dataOut, const int64_t& count, int64_t* numRead);
         void write(const void* dataIn, const int64_t& count);
     };
+#else
+    class StrFileImpl : public BinaryFile::ImplInterface
+    {
+        FILE* m_file;
+    public:
+        StrFileImpl() { m_file = NULL; }
+        void open(const AString& filename, const BinaryFile::OpenMode& opmode);
+        void close();
+        void seek(const int64_t& position);
+        int64_t pos();
+        void read(void* dataOut, const int64_t& count, int64_t* numRead);
+        void write(const void* dataIn, const int64_t& count);
+        ~StrFileImpl();
+    };
+#endif //CIFTILIB_USE_QT
 }
 
 BinaryFile::ImplInterface::~ImplInterface()
 {
 }
 
-BinaryFile::BinaryFile(const QString& filename, const OpenMode& fileMode)
+BinaryFile::BinaryFile(const AString& filename, const OpenMode& fileMode)
 {
     open(filename, fileMode);
 }
@@ -93,7 +116,7 @@ void BinaryFile::close()
     m_impl.reset();
 }
 
-QString BinaryFile::getFilename() const
+AString BinaryFile::getFilename() const
 {
     if (m_impl == NULL) return "";//don't throw, its not really a problem
     return m_impl->getFilename();
@@ -109,11 +132,11 @@ bool BinaryFile::getOpenForWrite()
     return (m_curMode | WRITE) != 0;
 }
 
-void BinaryFile::open(const QString& filename, const OpenMode& opmode)
+void BinaryFile::open(const AString& filename, const OpenMode& opmode)
 {
     close();
     if (opmode == NONE) throw CiftiException("can't open file with NONE mode");
-    if (filename.endsWith(".gz"))
+    if (AString_substr(filename, filename.size() - 3) == ".gz")
     {
 #ifdef ZLIB_VERSION
         m_impl = shared_ptr<ZFileImpl>(new ZFileImpl());
@@ -121,7 +144,11 @@ void BinaryFile::open(const QString& filename, const OpenMode& opmode)
         throw CiftiException("can't open .gz file '" + filename + "', compiled without zlib support");
 #endif //ZLIB_VERSION
     } else {
+#ifdef CIFTILIB_USE_QT
         m_impl = shared_ptr<QFileImpl>(new QFileImpl());
+#else
+        m_impl = shared_ptr<StrFileImpl>(new StrFileImpl());
+#endif
     }
     m_impl->open(filename, opmode);
     m_curMode = opmode;
@@ -152,11 +179,11 @@ void BinaryFile::write(const void* dataIn, const int64_t& count)
 }
 
 #ifdef ZLIB_VERSION
-void ZFileImpl::open(const QString& filename, const BinaryFile::OpenMode& opmode)
+void ZFileImpl::open(const AString& filename, const BinaryFile::OpenMode& opmode)
 {
     close();//don't need to, but just because
     m_fileName = filename;
-    const char* mode;
+    const char* mode = NULL;
     switch (opmode)//we only support a limited number of combinations, and the string modes are quirky
     {
         case BinaryFile::READ:
@@ -169,9 +196,9 @@ void ZFileImpl::open(const QString& filename, const BinaryFile::OpenMode& opmode
             throw CiftiException("compressed file only supports READ and WRITE_TRUNCATE modes");
     }
 #if !defined(CARET_OS_MACOSX) && ZLIB_VERNUM > 0x1232
-    m_zfile = gzopen64(filename.toLocal8Bit().constData(), mode);
+    m_zfile = gzopen64(ASTRING_TO_CSTR(filename), mode);
 #else
-    m_zfile = gzopen(filename.toLocal8Bit().constData(), mode);
+    m_zfile = gzopen(ASTRING_TO_CSTR(filename), mode);
 #endif
     if (m_zfile == NULL)
     {
@@ -230,7 +257,7 @@ void ZFileImpl::seek(const int64_t& position)
 
 int64_t ZFileImpl::pos()
 {
-    if (m_zfile == NULL) throw CiftiException("seek called on unopened ZFileImpl");//shouldn't happen
+    if (m_zfile == NULL) throw CiftiException("pos called on unopened ZFileImpl");//shouldn't happen
 #if !defined(CARET_OS_MACOSX) && ZLIB_VERNUM > 0x1232
     return gztell64(m_zfile);
 #else
@@ -240,7 +267,7 @@ int64_t ZFileImpl::pos()
 
 void ZFileImpl::write(const void* dataIn, const int64_t& count)
 {
-    if (m_zfile == NULL) throw CiftiException("read called on unopened ZFileImpl");//shouldn't happen
+    if (m_zfile == NULL) throw CiftiException("write called on unopened ZFileImpl");//shouldn't happen
     const int64_t CHUNK_SIZE = (1<<26);//64MB, should be large enough for good performance, and small enough not to give zlib trouble - needs to convert to unsigned int
     int64_t totalWritten = 0;
     while (totalWritten < count)
@@ -259,11 +286,22 @@ void ZFileImpl::write(const void* dataIn, const int64_t& count)
 
 ZFileImpl::~ZFileImpl()
 {
-    close();
+    try//throwing from a destructor is a bad idea
+    {
+        close();
+    } catch (const CiftiException& e) {
+        cerr << AString_to_std_string(e.whatString()) << endl;
+    } catch (exception& e) {
+        cerr << e.what() << endl;
+    } catch (...) {
+        cerr << "caught unknown exception type while closing a compressed file" << endl;
+    }
 }
 #endif //ZLIB_VERSION
 
-void QFileImpl::open(const QString& filename, const BinaryFile::OpenMode& opmode)
+#ifdef CIFTILIB_USE_QT
+
+void QFileImpl::open(const AString& filename, const BinaryFile::OpenMode& opmode)
 {
     close();//don't need to, but just because
     m_fileName = filename;
@@ -313,3 +351,94 @@ void QFileImpl::write(const void* dataIn, const int64_t& count)
     int64_t writeret = m_file.write((const char*)dataIn, count);//again, expect QFile to handle it in one shot
     if (writeret != count) throw CiftiException("failed to write to file '" + m_fileName + "'");
 }
+
+#else //CIFTILIB_USE_QT
+
+void StrFileImpl::open(const AString& filename, const BinaryFile::OpenMode& opmode)
+{
+    close();
+    m_fileName = filename;
+    const char* mode = NULL;
+    switch (opmode)
+    {
+        case BinaryFile::READ:
+            mode = "rb";
+            break;
+        case BinaryFile::READ_WRITE:
+            mode = "r+b";
+            break;
+        case BinaryFile::WRITE_TRUNCATE:
+            mode = "wb";
+            break;
+        case BinaryFile::READ_WRITE_TRUNCATE:
+            mode = "w+b";
+            break;
+        default:
+            throw CiftiException("unsupported open mode in StrFileImpl");
+    }
+    m_file = fopen(ASTRING_TO_CSTR(filename), mode);
+    if (m_file == NULL)
+    {
+        throw CiftiException("error opening file '" + filename + "'");
+    }
+}
+
+void StrFileImpl::close()
+{
+    if (m_file == NULL) return;
+    int ret = fclose(m_file);
+    m_file = NULL;
+    if (ret != 0) throw CiftiException("error closing file '" + m_fileName + "'");
+}
+
+void StrFileImpl::read(void* dataOut, const int64_t& count, int64_t* numRead)
+{
+    if (m_file == NULL) throw CiftiException("read called on unopened StrFileImpl");//shouldn't happen
+    int64_t readret = fread(dataOut, 1, count, m_file);//expect fread to not have read size limitations comapred to memory
+    if (numRead == NULL)
+    {
+        if (readret != count)
+        {
+            if (feof(m_file)) throw CiftiException("premature end of file in file '" + m_fileName + "'");
+            throw CiftiException("error while reading file '" + m_fileName + "'");
+        }
+    } else {
+        *numRead = readret;
+    }
+}
+
+void StrFileImpl::seek(const int64_t& position)
+{
+    if (m_file == NULL) throw CiftiException("seek called on unopened StrFileImpl");//shouldn't happen
+    int ret = fseeko(m_file, position, SEEK_SET);
+    if (ret != 0) throw CiftiException("seek failed in file '" + m_fileName + "'");
+}
+
+int64_t StrFileImpl::pos()
+{
+    if (m_file == NULL) throw CiftiException("pos called on unopened StrFileImpl");//shouldn't happen
+    return ftello(m_file);
+}
+
+void StrFileImpl::write(const void* dataIn, const int64_t& count)
+{
+    if (m_file == NULL) throw CiftiException("write called on unopened StrFileImpl");//shouldn't happen
+    int64_t writeret = fwrite(dataIn, 1, count, m_file);//expect fwrite to not have write size limitations compared to memory
+    if (writeret != count) throw CiftiException("failed to write to file '" + m_fileName + "'");
+}
+
+StrFileImpl::~StrFileImpl()
+{
+    try//throwing from a destructor is a bad idea
+    {
+        close();
+    } catch (const CiftiException& e) {
+        cerr << AString_to_std_string(e.whatString()) << endl;
+    } catch (exception& e) {
+        cerr << e.what() << endl;
+    } catch (...) {
+        cerr << "caught unknown exception type while closing a compressed file" << endl;
+    }
+}
+
+#endif //CIFTILIB_USE_QT

@@ -28,11 +28,10 @@
  *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "CaretAssert.h"
+#include "CiftiAssert.h"
 #include "Vector3D.h"
 
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>
+#include "XmlAdapter.h"
 
 #include "stdint.h"
 #include <vector>
@@ -130,7 +129,7 @@ namespace cifti
         
         inline int64_t getIndex(const int64_t& indexIn1, const int64_t& indexIn2, const int64_t& indexIn3) const
         {
-            CaretAssert(indexValid(indexIn1, indexIn2, indexIn3));
+            CiftiAssert(indexValid(indexIn1, indexIn2, indexIn3));
             return indexIn1 + m_dims[0] * (indexIn2 + m_dims[1] * indexIn3);
         }
         
@@ -140,10 +139,10 @@ namespace cifti
             return getIndex(indexIn[0], indexIn[1], indexIn[2]);//implicit cast to int64_t
         }
         
-        void readCiftiXML1(QXmlStreamReader& xml);//xml functions
-        void readCiftiXML2(QXmlStreamReader& xml);
-        void writeCiftiXML1(QXmlStreamWriter& xml) const;
-        void writeCiftiXML2(QXmlStreamWriter& xml) const;
+        void readCiftiXML1(XmlReader& xml);//xml functions
+        void readCiftiXML2(XmlReader& xml);
+        void writeCiftiXML1(XmlWriter& xml) const;
+        void writeCiftiXML2(XmlWriter& xml) const;
     };
 
     template <typename T>

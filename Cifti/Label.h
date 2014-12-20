@@ -28,9 +28,9 @@
  *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <stdint.h>
+#include "AString.h"
 
-#include <QString>
+#include <stdint.h>
 
 namespace cifti {
     
@@ -41,11 +41,11 @@ namespace cifti {
     public:
         Label(
                    const int32_t key,
-                   const QString& name);
+                   const AString& name);
         
         explicit Label(
                             const int32_t key,
-                            const QString& name,
+                            const AString& name,
                             const float red,
                             const float green,
                             const float blue,
@@ -53,7 +53,7 @@ namespace cifti {
         
         explicit Label(
                             const int32_t key,
-                            const QString& name,
+                            const AString& name,
                             const float red,
                             const float green,
                             const float blue,
@@ -64,7 +64,7 @@ namespace cifti {
         
         explicit Label(
                             const int32_t key,
-                            const QString& name,
+                            const AString& name,
                             const double red,
                             const double green,
                             const double blue,
@@ -72,12 +72,12 @@ namespace cifti {
         
         Label(
                    const int32_t key,
-                   const QString& name,
+                   const AString& name,
                    const float rgba[]);
         
         explicit Label(
                             const int32_t key,
-                            const QString& name,
+                            const AString& name,
                             const int32_t red,
                             const int32_t green,
                             const int32_t blue,
@@ -85,7 +85,7 @@ namespace cifti {
         
         Label(
                    const int32_t key,
-                   const QString& name,
+                   const AString& name,
                    const int32_t rgba[]);
         
         Label(const int32_t key);
@@ -113,9 +113,9 @@ namespace cifti {
         
         void setKey(const int32_t key);
         
-        QString getName() const;
+        AString getName() const;
         
-        void setName(const QString& name);
+        void setName(const AString& name);
         
         bool isSelected() const;
         
@@ -165,7 +165,7 @@ namespace cifti {
         static inline int32_t getInvalidLabelKey() { return s_invalidLabelKey; }
         
     private:
-        QString name;
+        AString name;
         
         int32_t key;
         

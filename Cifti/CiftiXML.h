@@ -38,9 +38,6 @@
 #include "CiftiScalarsMap.h"
 #include "CiftiSeriesMap.h"
 
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>
-
 #include "boost/shared_ptr.hpp"
 
 #include <vector>
@@ -81,13 +78,11 @@ namespace cifti
         void setFileMetaData(const MetaData& mdIn) { m_fileMetaData = mdIn; }
         void clear();
         
-        void readXML(QXmlStreamReader& xml);
-        void readXML(const QString& text);
-        void readXML(const QByteArray& data);
+        void readXML(XmlReader& xml);
+        void readXML(const std::vector<char>& text);
         
-        QString writeXMLToString(const CiftiVersion& writingVersion = CiftiVersion()) const;
-        QByteArray writeXMLToQByteArray(const CiftiVersion& writingVersion = CiftiVersion()) const;
-        void writeXML(QXmlStreamWriter& xml, const CiftiVersion& writingVersion = CiftiVersion()) const;
+        std::vector<char> writeXMLToVector(const CiftiVersion& writingVersion = CiftiVersion()) const;
+        void writeXML(XmlWriter& xml, const CiftiVersion& writingVersion = CiftiVersion()) const;
         
         ///uses the mapping types to figure out what the intent info should be
         int32_t getIntentInfo(const CiftiVersion& writingVersion, char intentNameOut[16]) const;
@@ -95,6 +90,9 @@ namespace cifti
         CiftiXML() { }
         CiftiXML(const CiftiXML& rhs);
         CiftiXML& operator=(const CiftiXML& rhs);
+        bool operator==(const CiftiXML& rhs) const;
+        bool operator!=(const CiftiXML& rhs) const { return !((*this) == rhs); }
+        bool approximateMatch(const CiftiXML& rhs) const;
     private:
         std::vector<boost::shared_ptr<CiftiMappingType> > m_indexMaps;
         CiftiVersion m_parsedVersion;
@@ -102,15 +100,15 @@ namespace cifti
         
         void copyHelper(const CiftiXML& rhs);
         //parsing functions
-        void parseCIFTI1(QXmlStreamReader& xml);
-        void parseMatrix1(QXmlStreamReader& xml);
-        void parseCIFTI2(QXmlStreamReader& xml);
-        void parseMatrix2(QXmlStreamReader& xml);
-        void parseMatrixIndicesMap1(QXmlStreamReader& xml);
-        void parseMatrixIndicesMap2(QXmlStreamReader& xml);
+        void parseCIFTI1(XmlReader& xml);
+        void parseMatrix1(XmlReader& xml);
+        void parseCIFTI2(XmlReader& xml);
+        void parseMatrix2(XmlReader& xml);
+        void parseMatrixIndicesMap1(XmlReader& xml);
+        void parseMatrixIndicesMap2(XmlReader& xml);
         //writing functions
-        void writeMatrix1(QXmlStreamWriter& xml) const;
-        void writeMatrix2(QXmlStreamWriter& xml) const;
+        void writeMatrix1(XmlWriter& xml) const;
+        void writeMatrix2(XmlWriter& xml) const;
     };
 }
 

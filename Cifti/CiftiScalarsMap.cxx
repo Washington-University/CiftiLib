@@ -27,8 +27,9 @@
 
 #include "CiftiScalarsMap.h"
 
-#include "CaretAssert.h"
+#include "CiftiAssert.h"
 #include "CiftiException.h"
+
 #include <iostream>
 
 using namespace std;
@@ -41,31 +42,31 @@ void CiftiScalarsMap::clear()
 
 const MetaData& CiftiScalarsMap::getMapMetadata(const int64_t& index) const
 {
-    CaretAssertVectorIndex(m_maps, index);
+    CiftiAssertVectorIndex(m_maps, index);
     return m_maps[index].m_metaData;
 }
 
-const QString& CiftiScalarsMap::getMapName(const int64_t& index) const
+const AString& CiftiScalarsMap::getMapName(const int64_t& index) const
 {
-    CaretAssertVectorIndex(m_maps, index);
+    CiftiAssertVectorIndex(m_maps, index);
     return m_maps[index].m_name;
 }
 
 void CiftiScalarsMap::setMapMetadata(const int64_t& index, const MetaData& mdIn)
 {
-    CaretAssertVectorIndex(m_maps, index);
+    CiftiAssertVectorIndex(m_maps, index);
     m_maps[index].m_metaData = mdIn;
 }
 
-void CiftiScalarsMap::setMapName(const int64_t& index, const QString& mapName)
+void CiftiScalarsMap::setMapName(const int64_t& index, const AString& mapName)
 {
-    CaretAssertVectorIndex(m_maps, index);
+    CiftiAssertVectorIndex(m_maps, index);
     m_maps[index].m_name = mapName;
 }
 
 void CiftiScalarsMap::setLength(const int64_t& length)
 {
-    CaretAssert(length > 0);
+    CiftiAssert(length > 0);
     m_maps.resize(length);
 }
 
@@ -95,10 +96,11 @@ bool CiftiScalarsMap::ScalarMap::operator==(const CiftiScalarsMap::ScalarMap& rh
     return (m_metaData == rhs.m_metaData);
 }
 
-void CiftiScalarsMap::readXML1(QXmlStreamReader& xml)
+void CiftiScalarsMap::readXML1(XmlReader& xml)
 {
     cerr << "parsing nonstandard scalars mapping type in cifti-1" << endl;
     clear();
+#ifdef CIFTILIB_USE_QT
     for (xml.readNext(); !xml.atEnd() && !xml.isEndElement(); xml.readNext())
     {
         switch (xml.tokenType())
@@ -107,7 +109,7 @@ void CiftiScalarsMap::readXML1(QXmlStreamReader& xml)
             {
                 if (xml.name() != "NamedMap")
                 {
-                    throw CiftiException("unexpected element in scalars mapping type: " + xml.name().toString());
+                    throw CiftiException("unexpected element in scalars map: " + xml.name().toString());
                 }
                 m_maps.push_back(ScalarMap());
                 m_maps.back().readXML1(xml);
@@ -118,12 +120,43 @@ void CiftiScalarsMap::readXML1(QXmlStreamReader& xml)
                 break;
         }
     }
-    CaretAssert(xml.isEndElement() && xml.name() == "MatrixIndicesMap");
+#else
+#ifdef CIFTILIB_USE_XMLPP
+    bool done = xml.is_empty_element();//NOTE: a <blah/> element does NOT give a separate end element state!!!
+    while(!done && xml.read())
+    {
+        switch (xml.get_node_type())
+        {
+            case XmlReader::Element:
+            {
+                AString name = xml.get_local_name();
+                if (name == "NamedMap")
+                {
+                    m_maps.push_back(ScalarMap());
+                    m_maps.back().readXML1(xml);
+                } else {
+                    throw CiftiException("unexpected element in scalars map: " + name);
+                }
+                break;
+            }
+            case XmlReader::EndElement:
+                done = true;
+                break;
+            default:
+                break;
+        }
+    }
+#else
+#error "not implemented"
+#endif
+#endif
+    CiftiAssert(XmlReader_checkEndElement(xml, "MatrixIndicesMap"));
 }
 
-void CiftiScalarsMap::readXML2(QXmlStreamReader& xml)
+void CiftiScalarsMap::readXML2(XmlReader& xml)
 {
     clear();
+#ifdef CIFTILIB_USE_QT
     for (xml.readNext(); !xml.atEnd() && !xml.isEndElement(); xml.readNext())
     {
         switch (xml.tokenType())
@@ -132,7 +165,7 @@ void CiftiScalarsMap::readXML2(QXmlStreamReader& xml)
             {
                 if (xml.name() != "NamedMap")
                 {
-                    throw CiftiException("unexpected element in scalars mapping type: " + xml.name().toString());
+                    throw CiftiException("unexpected element in scalars map: " + xml.name().toString());
                 }
                 m_maps.push_back(ScalarMap());
                 m_maps.back().readXML2(xml);
@@ -143,12 +176,43 @@ void CiftiScalarsMap::readXML2(QXmlStreamReader& xml)
                 break;
         }
     }
-    CaretAssert(xml.isEndElement() && xml.name() == "MatrixIndicesMap");
+#else
+#ifdef CIFTILIB_USE_XMLPP
+    bool done = xml.is_empty_element();//NOTE: a <blah/> element does NOT give a separate end element state!!!
+    while(!done && xml.read())
+    {
+        switch (xml.get_node_type())
+        {
+            case XmlReader::Element:
+            {
+                AString name = xml.get_local_name();
+                if (name == "NamedMap")
+                {
+                    m_maps.push_back(ScalarMap());
+                    m_maps.back().readXML2(xml);
+                } else {
+                    throw CiftiException("unexpected element in scalars map: " + name);
+                }
+                break;
+            }
+            case XmlReader::EndElement:
+                done = true;
+                break;
+            default:
+                break;
+        }
+    }
+#else
+#error "not implemented"
+#endif
+#endif
+    CiftiAssert(XmlReader_checkEndElement(xml, "MatrixIndicesMap"));
 }
 
-void CiftiScalarsMap::ScalarMap::readXML1(QXmlStreamReader& xml)
+void CiftiScalarsMap::ScalarMap::readXML1(XmlReader& xml)
 {
     bool haveName = false, haveMetaData = false;
+#ifdef CIFTILIB_USE_QT
     for (xml.readNext(); !xml.atEnd() && !xml.isEndElement(); xml.readNext())
     {
         switch (xml.tokenType())
@@ -182,16 +246,58 @@ void CiftiScalarsMap::ScalarMap::readXML1(QXmlStreamReader& xml)
                 break;
         }
     }
+#else
+#ifdef CIFTILIB_USE_XMLPP
+    bool done = xml.is_empty_element();//NOTE: a <blah/> element does NOT give a separate end element state!!!
+    while(!done && xml.read())
+    {
+        switch (xml.get_node_type())
+        {
+            case XmlReader::Element:
+            {
+                AString name = xml.get_local_name();
+                if (name == "MetaData")
+                {
+                    if (haveMetaData)
+                    {
+                        throw CiftiException("MetaData specified multiple times in one NamedMap");
+                    }
+                    m_metaData.readCiftiXML1(xml);
+                    haveMetaData = true;
+                } else if (name == "MapName") {
+                    if (haveName)
+                    {
+                        throw CiftiException("MapName specified multiple times in one NamedMap");
+                    }
+                    m_name = XmlReader_readElementText(xml);//throws if element encountered
+                    haveName = true;
+                } else {
+                    throw CiftiException("unexpected element in NamedMap: " + name);
+                }
+                break;
+            }
+            case XmlReader::EndElement:
+                done = true;
+                break;
+            default:
+                break;
+        }
+    }
+#else
+#error "not implemented"
+#endif
+#endif
+    CiftiAssert(XmlReader_checkEndElement(xml, "NamedMap"));
     if (!haveName)
     {
         throw CiftiException("NamedMap missing required child element MapName");
     }
-    CaretAssert(xml.isEndElement() && xml.name() == "NamedMap");
 }
 
-void CiftiScalarsMap::ScalarMap::readXML2(QXmlStreamReader& xml)
+void CiftiScalarsMap::ScalarMap::readXML2(XmlReader& xml)
 {
     bool haveName = false, haveMetaData = false;
+#ifdef CIFTILIB_USE_QT
     for (xml.readNext(); !xml.atEnd() && !xml.isEndElement(); xml.readNext())
     {
         switch (xml.tokenType())
@@ -225,14 +331,55 @@ void CiftiScalarsMap::ScalarMap::readXML2(QXmlStreamReader& xml)
                 break;
         }
     }
+#else
+#ifdef CIFTILIB_USE_XMLPP
+    bool done = xml.is_empty_element();//NOTE: a <blah/> element does NOT give a separate end element state!!!
+    while(!done && xml.read())
+    {
+        switch (xml.get_node_type())
+        {
+            case XmlReader::Element:
+            {
+                AString name = xml.get_local_name();
+                if (name == "MetaData")
+                {
+                    if (haveMetaData)
+                    {
+                        throw CiftiException("MetaData specified multiple times in one NamedMap");
+                    }
+                    m_metaData.readCiftiXML2(xml);
+                    haveMetaData = true;
+                } else if (name == "MapName") {
+                    if (haveName)
+                    {
+                        throw CiftiException("MapName specified multiple times in one NamedMap");
+                    }
+                    m_name = XmlReader_readElementText(xml);//throws if element encountered
+                    haveName = true;
+                } else {
+                    throw CiftiException("unexpected element in NamedMap: " + name);
+                }
+                break;
+            }
+            case XmlReader::EndElement:
+                done = true;
+                break;
+            default:
+                break;
+        }
+    }
+#else
+#error "not implemented"
+#endif
+#endif
+    CiftiAssert(XmlReader_checkEndElement(xml, "NamedMap"));
     if (!haveName)
     {
         throw CiftiException("NamedMap missing required child element MapName");
     }
-    CaretAssert(xml.isEndElement() && xml.name() == "NamedMap");
 }
 
-void CiftiScalarsMap::writeXML1(QXmlStreamWriter& xml) const
+void CiftiScalarsMap::writeXML1(XmlWriter& xml) const
 {
     cerr << "writing nonstandard scalars mapping type in cifti-1" << endl;
     xml.writeAttribute("IndicesMapToDataType", "CIFTI_INDEX_TYPE_SCALARS");
@@ -246,7 +393,7 @@ void CiftiScalarsMap::writeXML1(QXmlStreamWriter& xml) const
     }
 }
 
-void CiftiScalarsMap::writeXML2(QXmlStreamWriter& xml) const
+void CiftiScalarsMap::writeXML2(XmlWriter& xml) const
 {
     int64_t numMaps = (int64_t)m_maps.size();
     xml.writeAttribute("IndicesMapToDataType", "CIFTI_INDEX_TYPE_SCALARS");

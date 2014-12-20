@@ -28,13 +28,13 @@
  *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "AString.h"
+
 #include "ByteSwapping.h"
-#include "CaretAssert.h"
+#include "CiftiAssert.h"
 #include "BinaryFile.h"
 #include "CiftiException.h"
 #include "NiftiHeader.h"
-
-#include <QString>
 
 #include <cmath>
 #include <limits>
@@ -55,9 +55,9 @@ namespace cifti
         template<typename TO, typename FROM>
         void convertWrite(TO* out, const FROM* in, const int64_t& count);//for writing to file
     public:
-        void openRead(const QString& filename);
-        void writeNew(const QString& filename, const NiftiHeader& header, const int& version = 1, const bool& withRead = false, const bool& swapEndian = false);
-        QString getFilename() const { return m_file.getFilename(); }
+        void openRead(const AString& filename);
+        void writeNew(const AString& filename, const NiftiHeader& header, const int& version = 1, const bool& withRead = false, const bool& swapEndian = false);
+        AString getFilename() const { return m_file.getFilename(); }
         void overrideDimensions(const std::vector<int64_t>& newDims) { m_dims = newDims; }//HACK: deal with reading/writing CIFTI-1's broken headers
         void close();
         const NiftiHeader& getHeader() const { return m_header; }
@@ -74,8 +74,8 @@ namespace cifti
     template<typename T>
     void NiftiIO::readData(T* dataOut, const int& fullDims, const std::vector<int64_t>& indexSelect, const bool& tolerateShortRead)
     {
-        CaretAssert(fullDims >= 0 && fullDims <= (int)m_dims.size());
-        CaretAssert((size_t)fullDims + indexSelect.size() == m_dims.size());//could be >=, but should catch more stupid mistakes as ==
+        CiftiAssert(fullDims >= 0 && fullDims <= (int)m_dims.size());
+        CiftiAssert((size_t)fullDims + indexSelect.size() == m_dims.size());//could be >=, but should catch more stupid mistakes as ==
         int64_t numElems = getNumComponents();//for now, calculate read size on the fly, as the read call will be the slowest part
         int curDim;
         for (curDim = 0; curDim < fullDims; ++curDim)
@@ -85,7 +85,7 @@ namespace cifti
         int64_t numDimSkip = numElems, numSkip = 0;
         for (; curDim < (int)m_dims.size(); ++curDim)
         {
-            CaretAssert(indexSelect[curDim - fullDims] >= 0 && indexSelect[curDim - fullDims] < m_dims[curDim]);
+            CiftiAssert(indexSelect[curDim - fullDims] >= 0 && indexSelect[curDim - fullDims] < m_dims[curDim]);
             numSkip += indexSelect[curDim - fullDims] * numDimSkip;
             numDimSkip *= m_dims[curDim];
         }
@@ -137,17 +137,16 @@ namespace cifti
                 convertRead(dataOut, (long double*)m_scratch.data(), numElems);
                 break;
             default:
-                CaretAssert(0);
+                CiftiAssert(0);
                 throw CiftiException("internal error, tell the developers what you just tried to do");
-                break;
         }
     }
     
     template<typename T>
     void NiftiIO::writeData(const T* dataIn, const int& fullDims, const std::vector<int64_t>& indexSelect)
     {
-        CaretAssert(fullDims >= 0 && fullDims <= (int)m_dims.size());
-        CaretAssert((size_t)fullDims + indexSelect.size() == m_dims.size());//could be >=, but should catch more stupid mistakes as ==
+        CiftiAssert(fullDims >= 0 && fullDims <= (int)m_dims.size());
+        CiftiAssert((size_t)fullDims + indexSelect.size() == m_dims.size());//could be >=, but should catch more stupid mistakes as ==
         int64_t numElems = getNumComponents();//for now, calculate read size on the fly, as the read call will be the slowest part
         int curDim;
         for (curDim = 0; curDim < fullDims; ++curDim)
@@ -157,7 +156,7 @@ namespace cifti
         int64_t numDimSkip = numElems, numSkip = 0;
         for (; curDim < (int)m_dims.size(); ++curDim)
         {
-            CaretAssert(indexSelect[curDim - fullDims] >= 0 && indexSelect[curDim - fullDims] < m_dims[curDim]);
+            CiftiAssert(indexSelect[curDim - fullDims] >= 0 && indexSelect[curDim - fullDims] < m_dims[curDim]);
             numSkip += indexSelect[curDim - fullDims] * numDimSkip;
             numDimSkip *= m_dims[curDim];
         }
@@ -203,9 +202,8 @@ namespace cifti
                 convertWrite((long double*)m_scratch.data(), dataIn, numElems);
                 break;
             default:
-                CaretAssert(0);
+                CiftiAssert(0);
                 throw CiftiException("internal error, tell the developers what you just tried to do");
-                break;
         }
         m_file.write(m_scratch.data(), m_scratch.size());
     }

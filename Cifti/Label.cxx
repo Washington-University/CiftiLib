@@ -44,7 +44,7 @@ const int32_t Label::s_invalidLabelKey =  std::numeric_limits<int32_t>::min();
  */
 Label::Label(
                    const int32_t key,
-                   const QString& name)
+                   const AString& name)
 {
     this->initializeMembersLabel();
     this->key = key;
@@ -64,7 +64,7 @@ Label::Label(
  */
 Label::Label(
                    const int32_t key,
-                   const QString& name,
+                   const AString& name,
                    const float red,
                    const float green,
                    const float blue,
@@ -91,7 +91,7 @@ Label::Label(
  *
  */
 Label::Label(const int32_t key,
-                       const QString& name,
+                       const AString& name,
                        const float red,
                        const float green,
                        const float blue,
@@ -125,7 +125,7 @@ Label::Label(const int32_t key,
  */
 Label::Label(
                        const int32_t key,
-                       const QString& name,
+                       const AString& name,
                        const double red,
                        const double green,
                        const double blue,
@@ -150,7 +150,7 @@ Label::Label(
  */
 Label::Label(
                    const int32_t key,
-                   const QString& name,
+                   const AString& name,
                    const float rgba[])
 {
     this->initializeMembersLabel();
@@ -175,7 +175,7 @@ Label::Label(
  */
 Label::Label(
                    const int32_t key,
-                   const QString& name,
+                   const AString& name,
                    const int32_t red,
                    const int32_t green,
                    const int32_t blue,
@@ -200,7 +200,7 @@ Label::Label(
  */
 Label::Label(
                    const int32_t key,
-                   const QString& name,
+                   const AString& name,
                    const int32_t rgba[])
 {
     this->initializeMembersLabel();
@@ -229,7 +229,7 @@ Label::Label(
     else {
         std::stringstream str;
         str << "???" << this->key;
-        this->name = QString::fromStdString(str.str());
+        this->name = str.str().c_str();
     }
 }
 
@@ -354,7 +354,7 @@ Label::setKey(const int32_t key)
  * @return Name of label.
  *
  */
-QString
+AString
 Label::getName() const
 {
     return this->name;
@@ -366,7 +366,7 @@ Label::getName() const
  *
  */
 void
-Label::setName(const QString& name)
+Label::setName(const AString& name)
 {
     this->name = name;
 }

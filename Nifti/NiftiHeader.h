@@ -63,7 +63,7 @@ namespace cifti
         int32_t getIntentCode() const { return m_header.intent_code; }
         const char* getIntentName() const { return m_header.intent_name; }//NOTE: MAY NOT HAVE A NULL TERMINATOR
         bool getDataScaling(double& mult, double& offset) const;//returns false if scaling not needed
-        QString toString() const;
+        AString toString() const;
         
         void setDimensions(const std::vector<int64_t>& dimsIn);
         void setSForm(const std::vector<std::vector<float> > &sForm);

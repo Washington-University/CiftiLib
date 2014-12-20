@@ -28,7 +28,7 @@
  *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /*
- * NOTE: our version is slightly modified, mainly turning #define into const int32_t
+ * NOTE: our version is somewhat modified, turning constant #defines into const int32_t, namespacing, removal of some other #defines, to try to coexist with the original header
 */
 /*****************************************************************************
       ** This file defines the "NIFTI-1" header format.               **
@@ -147,11 +147,8 @@
      sizeof(int) = sizeof(float) = 4 ;  sizeof(short) = 2
 -----------------------------------------------------------------------------*/
 
-/*=================*/
-#ifdef  __cplusplus
-extern "C" {
-#endif
-/*=================*/
+namespace cifti
+{
 
 //hopefully cross-platform solution to byte padding added by some compilers
 #pragma pack(push)
@@ -1437,37 +1434,35 @@ const int32_t NIFTI_SLICE_ALT_DEC2 =6; /* 05 May 2005: RWCox */
 /*! Given a nifti_1_header struct, check if it has a good magic number.
     Returns NIFTI version number (1..9) if magic is good, 0 if it is not. */
 
-#define NIFTI_VERSION(h)                               \
+/*#define NIFTI_VERSION(h)                               \
     ( ( (h).magic[0]=='n' && (h).magic[3]=='\0'    &&     \
     ( (h).magic[1]=='i' || (h).magic[1]=='+' ) &&     \
     ( (h).magic[2]>='1' && (h).magic[2]<='9' )   )    \
     ? (h).magic[2]-'0' : 0 )
+
+//*/
 
 /*.................*/
 /*! Check if a nifti_1_header struct says if the data is stored in the
     same file or in a separate file.  Returns 1 if the data is in the same
     file as the header, 0 if it is not.                                   */
 
-#define NIFTI_ONEFILE(h) ( (h).magic[1] == '+' )
+//#define NIFTI_ONEFILE(h) ( (h).magic[1] == '+' )
 
 /*.................*/
 /*! Check if a nifti_1_header struct needs to be byte swapped.
     Returns 1 if it needs to be swapped, 0 if it does not.     */
 
-#define NIFTI_NEEDS_SWAP(h) ( (h).dim[0] < 0 || (h).dim[0] > 7 )
+//#define NIFTI_NEEDS_SWAP(h) ( (h).dim[0] < 0 || (h).dim[0] > 7 )
 
 /*.................*/
 /*! Check if a nifti_1_header struct contains a 5th (vector) dimension.
     Returns size of 5th dimension if > 1, returns 0 otherwise.         */
 
-#define NIFTI_5TH_DIM(h) ( ((h).dim[0]>4 && (h).dim[5]>1) ? (h).dim[5] : 0 )
+//#define NIFTI_5TH_DIM(h) ( ((h).dim[0]>4 && (h).dim[5]>1) ? (h).dim[5] : 0 )
 
 /*****************************************************************************/
 
-/*=================*/
-#ifdef  __cplusplus
-}
-#endif
-/*=================*/
+}//namespace
 
 #endif /* _NIFTI_HEADER_ */

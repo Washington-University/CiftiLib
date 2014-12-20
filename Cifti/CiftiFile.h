@@ -28,10 +28,10 @@
  *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "boost/shared_ptr.hpp"
+#include "AString.h"
 #include "CiftiXML.h"
 
-#include <QString>
+#include "boost/shared_ptr.hpp"
 
 #include <vector>
 
@@ -58,10 +58,10 @@ namespace cifti
             virtual ~WriteImplInterface();
         };
         CiftiFile() { }
-        explicit CiftiFile(const QString &fileName);//calls openFile
-        void openFile(const QString& fileName);//starts on-disk reading
-        void setWritingFile(const QString& fileName, const CiftiVersion& writingVersion = CiftiVersion());//starts on-disk writing
-        void writeFile(const QString& fileName, const CiftiVersion& writingVersion = CiftiVersion());//leaves current state as-is, rewrites if already writing to that filename and version mismatch
+        explicit CiftiFile(const AString &fileName);//calls openFile
+        void openFile(const AString& fileName);//starts on-disk reading
+        void setWritingFile(const AString& fileName, const CiftiVersion& writingVersion = CiftiVersion());//starts on-disk writing
+        void writeFile(const AString& fileName, const CiftiVersion& writingVersion = CiftiVersion());//leaves current state as-is, rewrites if already writing to that filename and version mismatch
         void convertToInMemory();
         
         const CiftiXML& getCiftiXML() const { return m_xml; }
@@ -82,7 +82,7 @@ namespace cifti
         std::vector<int64_t> m_dims;
         boost::shared_ptr<WriteImplInterface> m_writingImpl;//this will be equal to m_readingImpl when non-null
         boost::shared_ptr<ReadImplInterface> m_readingImpl;
-        QString m_writingFile;
+        AString m_writingFile;
         CiftiXML m_xml;
         CiftiVersion m_onDiskVersion;
         void verifyWriteImpl();

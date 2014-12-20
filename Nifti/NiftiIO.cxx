@@ -32,7 +32,7 @@
 using namespace std;
 using namespace cifti;
 
-void NiftiIO::openRead(const QString& filename)
+void NiftiIO::openRead(const AString& filename)
 {
     m_file.open(filename);
     m_header.read(m_file);
@@ -43,7 +43,7 @@ void NiftiIO::openRead(const QString& filename)
     m_dims = m_header.getDimensions();
 }
 
-void NiftiIO::writeNew(const QString& filename, const NiftiHeader& header, const int& version, const bool& withRead, const bool& swapEndian)
+void NiftiIO::writeNew(const AString& filename, const NiftiHeader& header, const int& version, const bool& withRead, const bool& swapEndian)
 {
     if (header.getDataType() == DT_BINARY)
     {
@@ -92,7 +92,7 @@ int NiftiIO::getNumComponents() const
             return 1;
             break;
         default:
-            CaretAssert(0);
+            CiftiAssert(0);
             throw CiftiException("internal error, report what you did to the developers");
     }
 }
@@ -127,7 +127,7 @@ int NiftiIO::numBytesPerElem()
             return 16;
             break;
         default:
-            CaretAssert(0);
+            CiftiAssert(0);
             throw CiftiException("internal error, report what you did to the developers");
     }
 }

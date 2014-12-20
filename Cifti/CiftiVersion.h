@@ -28,7 +28,7 @@
  *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <QString>
+#include "AString.h"
 
 #include "stdint.h"
 
@@ -43,8 +43,8 @@ namespace cifti
         
         CiftiVersion();
         CiftiVersion(const int16_t& major, const int16_t& minor);
-        CiftiVersion(const QString& versionString);
-        QString toString() const;
+        CiftiVersion(const AString& versionString);
+        AString toString() const;
         bool operator<(const CiftiVersion& rhs) const;
         bool operator>(const CiftiVersion& rhs) const;
         bool operator==(const CiftiVersion& rhs) const;

@@ -45,8 +45,8 @@ CiftiException::CiftiException()
  *
  */
 CiftiException::CiftiException(
-                   const QString& s)
-: std::runtime_error(s.toStdString())
+                   const AString& s)
+: std::runtime_error(AString_to_std_string(s))
 {
     this->exceptionDescription = s;
 }
@@ -91,8 +91,8 @@ CiftiException::~CiftiException() throw()
  * Get a message describing the exception.
  * @return A message describing the exception.
  */
-QString
+AString
 CiftiException::whatString() const throw() 
 {
-    return this->exceptionDescription;  
+    return this->exceptionDescription;
 }

@@ -30,8 +30,15 @@
 #include "CiftiException.h"
 #include "FloatMatrix.h"
 
-#include <QRegExp>
-#include <QStringList>
+#ifdef CIFTILIB_USE_QT
+    #include <QRegExp>
+    #include <QStringList>
+#else
+    #ifdef CIFTILIB_USE_XMLPP
+    #else
+        #error "not implemented"
+    #endif
+#endif
 
 #include <algorithm>
 #include <cmath>
@@ -63,14 +70,14 @@ void VolumeSpace::setSpace(const int64_t dims[3], const vector<vector<float> >& 
 {
     if (sform.size() < 2 || sform.size() > 4)
     {
-        CaretAssert(false);
+        CiftiAssert(false);
         throw CiftiException("VolumeSpace initialized with wrong size sform");
     }
     for (int i = 0; i < (int)sform.size(); ++i)
     {
         if (sform[i].size() != 4)
         {
-            CaretAssert(false);
+            CiftiAssert(false);
             throw CiftiException("VolumeSpace initialized with wrong size sform");
         }
     }
@@ -178,7 +185,7 @@ void VolumeSpace::getSpacingVectors(Vector3D& iStep, Vector3D& jStep, Vector3D& 
 
 void VolumeSpace::getOrientAndSpacingForPlumb(OrientTypes* orientOut, float* spacingOut, float* originOut) const
 {
-    CaretAssert(isPlumb());
+    CiftiAssert(isPlumb());
     if (!isPlumb())
     {
         throw CiftiException("orientation and spacing asked for on non-plumb volume space");//this will fail MISERABLY on non-plumb volumes, so throw otherwise
@@ -281,7 +288,7 @@ void VolumeSpace::getOrientation(VolumeSpace::OrientTypes orientOut[3]) const
                 }
                 break;
             default:
-                CaretAssert(0);
+                CiftiAssert(0);
         }
     }
 }
@@ -312,14 +319,14 @@ bool VolumeSpace::isPlumb() const
     return true;
 }
 
-void VolumeSpace::readCiftiXML1(QXmlStreamReader& xml)
+void VolumeSpace::readCiftiXML1(XmlReader& xml)
 {
-    QXmlStreamAttributes attributes = xml.attributes();
-    if (!attributes.hasAttribute("VolumeDimensions"))
-    {
-        throw CiftiException("Volume element missing VolumeDimensions attribute");
-    }
-    QStringList dimStrings = attributes.value("VolumeDimensions").toString().split(',');
+    vector<AString> mandAttrs(1, "VolumeDimensions"), transAttrs(3);
+    transAttrs[0] = "UnitsXYZ";
+    transAttrs[1] = "DataSpace";//we ignore the values in these, but they are required by cifti-1, so check that they exist
+    transAttrs[2] = "TransformedSpace";
+    XmlAttributesResult myAttrs = XmlReader_parseAttributes(xml, mandAttrs);
+    vector<AString> dimStrings = AString_split(myAttrs.mandatoryVals[0], ',');
     if (dimStrings.size() != 3)
     {
         throw CiftiException("VolumeDimensions attribute of Volume must contain exactly two commas");
@@ -328,7 +335,7 @@ void VolumeSpace::readCiftiXML1(QXmlStreamReader& xml)
     bool ok = false;
     for (int i = 0; i < 3; ++i)
     {
-        newDims[i] = dimStrings[i].toLongLong(&ok);
+        newDims[i] = AString_toInt(dimStrings[i], ok);
         if (!ok)
         {
             throw CiftiException("noninteger found in VolumeDimensions attribute of Volume: " + dimStrings[i]);
@@ -338,32 +345,29 @@ void VolumeSpace::readCiftiXML1(QXmlStreamReader& xml)
             throw CiftiException("found bad value in VolumeDimensions attribute of Volume: " + dimStrings[i]);
         }
     }
-    if (!xml.readNextStartElement())
+    if (!XmlReader_readNextStartElement(xml))
     {
         throw CiftiException("failed to find TransformationMatrixVoxelIndicesIJKtoXYZ element in Volume");
     }
-    if (xml.name() != "TransformationMatrixVoxelIndicesIJKtoXYZ")
+    if (XmlReader_elementName(xml) != "TransformationMatrixVoxelIndicesIJKtoXYZ")
     {
-        throw CiftiException("found unknown element in Volume: " + xml.name().toString());
+        throw CiftiException("unexpected element in Volume: " + XmlReader_elementName(xml));
     }
-    QXmlStreamAttributes transattribs = xml.attributes();
-    if (!transattribs.hasAttribute("UnitsXYZ"))//ignore the space attributes
-    {
-        throw CiftiException("missing UnitsXYZ attribute in TransformationMatrixVoxelIndicesIJKtoXYZ");
-    }
+    XmlAttributesResult transAttrsRes = XmlReader_parseAttributes(xml, transAttrs);
     float mult = 0.0f;
-    QStringRef unitstring = transattribs.value("UnitsXYZ");
-    if (unitstring == "NIFTI_UNITS_MM")
+    if (transAttrsRes.mandatoryVals[0] == "NIFTI_UNITS_MM")
     {
         mult = 1.0f;
-    } else if (unitstring == "NIFTI_UNITS_MICRON") {
+    } else if (transAttrsRes.mandatoryVals[0] == "NIFTI_UNITS_MICRON") {
         mult = 0.001f;
     } else {
-        throw CiftiException("unrecognized value for UnitsXYZ in TransformationMatrixVoxelIndicesIJKtoXYZ: " + unitstring.toString());
+        throw CiftiException("unrecognized value for UnitsXYZ in TransformationMatrixVoxelIndicesIJKtoXYZ: " + transAttrsRes.mandatoryVals[0]);
     }
-    QString accum = xml.readElementText();
+    AString accum = XmlReader_readElementText(xml);
+#ifdef CIFTILIB_USE_QT
     if (xml.hasError()) return;
-    QStringList matrixStrings = accum.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+#endif
+    vector<AString> matrixStrings = AString_split_whitespace(accum);
     if (matrixStrings.size() != 16)
     {
         throw CiftiException("text content of TransformationMatrixVoxelIndicesIJKtoXYZ must have exactly 16 numbers separated by whitespace");
@@ -373,7 +377,7 @@ void VolumeSpace::readCiftiXML1(QXmlStreamReader& xml)
     {
         for (int i = 0; i < 4; ++i)
         {
-            newsform[j][i] = matrixStrings[i + j * 4].toFloat(&ok);
+            newsform[j][i] = AString_toFloat(matrixStrings[i + j * 4], ok);
             if (!ok)
             {
                 throw CiftiException("non-number in text of TransformationMatrixVoxelIndicesIJKtoXYZ: " + matrixStrings[i + j * 4]);
@@ -384,24 +388,21 @@ void VolumeSpace::readCiftiXML1(QXmlStreamReader& xml)
     {
         cerr << "last row of matrix in TransformationMatrixVoxelIndicesIJKtoXYZ is not 0 0 0 1" << endl;//not an exception, because some cifti-1 exist with this wrong
     }
-    if (xml.readNextStartElement())//find Volume end element
+    if (XmlReader_readNextStartElement(xml))//find Volume end element
     {
-        throw CiftiException("unexpected element in Volume: " + xml.name().toString());
+        throw CiftiException("unexpected element in Volume: " + XmlReader_elementName(xml));
     }
     newsform *= mult;//apply units
     newsform[3][3] = 1.0f;//reset [3][3], since it isn't spatial
     setSpace(newDims, newsform.getMatrix());
-    CaretAssert(xml.isEndElement() && xml.name() == "Volume");
+    CiftiAssert(XmlReader_checkEndElement(xml, "Volume"));
 }
 
-void VolumeSpace::readCiftiXML2(QXmlStreamReader& xml)
+void VolumeSpace::readCiftiXML2(XmlReader& xml)
 {//we changed stuff, so separate code
-    QXmlStreamAttributes attributes = xml.attributes();
-    if (!attributes.hasAttribute("VolumeDimensions"))
-    {
-        throw CiftiException("Volume element missing VolumeDimensions attribute");
-    }
-    QStringList dimStrings = attributes.value("VolumeDimensions").toString().split(',');
+    vector<AString> mandAttrs(1, "VolumeDimensions"), transAttrs(1, "MeterExponent");
+    XmlAttributesResult myAttrs = XmlReader_parseAttributes(xml, mandAttrs);
+    vector<AString> dimStrings = AString_split(myAttrs.mandatoryVals[0], ',');
     if (dimStrings.size() != 3)
     {
         throw CiftiException("VolumeDimensions attribute of Volume must contain exactly two commas");
@@ -410,7 +411,7 @@ void VolumeSpace::readCiftiXML2(QXmlStreamReader& xml)
     bool ok = false;
     for (int i = 0; i < 3; ++i)
     {
-        newDims[i] = dimStrings[i].toLongLong(&ok);
+        newDims[i] = AString_toInt(dimStrings[i], ok);
         if (!ok)
         {
             throw CiftiException("noninteger found in VolumeDimensions attribute of Volume: " + dimStrings[i]);
@@ -420,29 +421,26 @@ void VolumeSpace::readCiftiXML2(QXmlStreamReader& xml)
             throw CiftiException("found bad value in VolumeDimensions attribute of Volume: " + dimStrings[i]);
         }
     }
-    if (!xml.readNextStartElement())
+    if (!XmlReader_readNextStartElement(xml))
     {
         throw CiftiException("failed to find TransformationMatrixVoxelIndicesIJKtoXYZ element in Volume");
     }
-    if (xml.name() != "TransformationMatrixVoxelIndicesIJKtoXYZ")
+    if (XmlReader_elementName(xml) != "TransformationMatrixVoxelIndicesIJKtoXYZ")
     {
-        throw CiftiException("found unknown element in Volume: " + xml.name().toString());
+        throw CiftiException("unexpected element in Volume: " + XmlReader_elementName(xml));
     }
-    QXmlStreamAttributes transattribs = xml.attributes();
-    if (!transattribs.hasAttribute("MeterExponent"))//ignore the space attributes
-    {
-        throw CiftiException("missing MeterExponent attribute in TransformationMatrixVoxelIndicesIJKtoXYZ");
-    }
-    QStringRef exponentstring = transattribs.value("MeterExponent");
-    int exponent = exponentstring.toString().toInt(&ok);
+    XmlAttributesResult transAttrsRes = XmlReader_parseAttributes(xml, transAttrs);
+    int exponent = AString_toInt(transAttrsRes.mandatoryVals[0], ok);
     if (!ok)
     {
-        throw CiftiException("noninteger value for MeterExponent in TransformationMatrixVoxelIndicesIJKtoXYZ: " + exponentstring.toString());
+        throw CiftiException("noninteger value for MeterExponent in TransformationMatrixVoxelIndicesIJKtoXYZ: " + transAttrsRes.mandatoryVals[0]);
     }
     float mult = pow(10.0f, exponent + 3);//because our internal units are mm
-    QString accum = xml.readElementText();
+    AString accum = XmlReader_readElementText(xml);
+#ifdef CIFTILIB_USE_QT
     if (xml.hasError()) return;
-    QStringList matrixStrings = accum.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+#endif
+    vector<AString> matrixStrings = AString_split_whitespace(accum);
     if (matrixStrings.size() != 16)
     {
         throw CiftiException("text content of TransformationMatrixVoxelIndicesIJKtoXYZ must have exactly 16 numbers separated by whitespace");
@@ -452,7 +450,7 @@ void VolumeSpace::readCiftiXML2(QXmlStreamReader& xml)
     {
         for (int i = 0; i < 4; ++i)
         {
-            newsform[j][i] = matrixStrings[i + j * 4].toFloat(&ok);
+            newsform[j][i] = AString_toFloat(matrixStrings[i + j * 4], ok);
             if (!ok)
             {
                 throw CiftiException("non-number in text of TransformationMatrixVoxelIndicesIJKtoXYZ: " + matrixStrings[i + j * 4]);
@@ -463,49 +461,49 @@ void VolumeSpace::readCiftiXML2(QXmlStreamReader& xml)
     {
         throw CiftiException("last row of matrix in TransformationMatrixVoxelIndicesIJKtoXYZ must be 0 0 0 1");
     }
-    if (xml.readNextStartElement())//find Volume end element
+    if (XmlReader_readNextStartElement(xml))//find Volume end element
     {
-        throw CiftiException("unexpected element in Volume: " + xml.name().toString());
+        throw CiftiException("unexpected element in Volume: " + XmlReader_elementName(xml));
     }
     newsform *= mult;//apply units
     newsform[3][3] = 1.0f;//reset [3][3], since it isn't spatial
     setSpace(newDims, newsform.getMatrix());
-    CaretAssert(xml.isEndElement() && xml.name() == "Volume");
+    CiftiAssert(XmlReader_checkEndElement(xml, "Volume"));
 }
 
-void VolumeSpace::writeCiftiXML1(QXmlStreamWriter& xml) const
+void VolumeSpace::writeCiftiXML1(XmlWriter& xml) const
 {
     xml.writeStartElement("Volume");
-    QString dimString = QString::number(m_dims[0]) + "," + QString::number(m_dims[1]) + "," + QString::number(m_dims[2]);
+    AString dimString = AString_number(m_dims[0]) + "," + AString_number(m_dims[1]) + "," + AString_number(m_dims[2]);
     xml.writeAttribute("VolumeDimensions", dimString);
     xml.writeStartElement("TransformationMatrixVoxelIndicesIJKtoXYZ");
     xml.writeAttribute("DataSpace", "NIFTI_XFORM_UNKNOWN");//meaningless attribute
-    xml.writeAttribute("TransformedSpace", "NIFTI_XFORM_UNKNOWN");//removed in CIFTI-2, but apparently we have been writing this value for CIFTI-1
-    xml.writeAttribute("UnitsXYZ", "NIFTI_UNITS_MM");//only other choice in cifti-1 is micron, which we will probably never need in cifti-1 - writing cifti-1 is something we won't need soon, hopefully
-    QString matrixString;
+    xml.writeAttribute("TransformedSpace", "NIFTI_XFORM_UNKNOWN");//removed in CIFTI-2, but apparently workbench has been writing this value for CIFTI-1
+    xml.writeAttribute("UnitsXYZ", "NIFTI_UNITS_MM");//only other choice in cifti-1 is micron, which we will probably never need in cifti-1
+    AString matrixString;
     for (int j = 0; j < 3; ++j)
     {
         matrixString += "\n";
         for (int i = 0; i < 4; ++i)
         {
-            matrixString += QString::number(m_sform[j][i], 'f', 7) + " ";
+            matrixString += AString_number_fixed(m_sform[j][i], 7) + " ";
         }
     }
     matrixString += "\n";
     for (int i = 0; i < 3; ++i)
     {
-        matrixString += QString::number(0.0f, 'f', 7) + " ";
+        matrixString += AString_number_fixed(0.0f, 7) + " ";
     }
-    matrixString += QString::number(1.0f, 'f', 7);
+    matrixString += AString_number_fixed(1.0f, 7);
     xml.writeCharacters(matrixString);
     xml.writeEndElement();//Transfor...
     xml.writeEndElement();//Volume
 }
 
-void VolumeSpace::writeCiftiXML2(QXmlStreamWriter& xml) const
+void VolumeSpace::writeCiftiXML2(XmlWriter& xml) const
 {
     xml.writeStartElement("Volume");
-    QString dimString = QString::number(m_dims[0]) + "," + QString::number(m_dims[1]) + "," + QString::number(m_dims[2]);
+    AString dimString = AString_number(m_dims[0]) + "," + AString_number(m_dims[1]) + "," + AString_number(m_dims[2]);
     xml.writeAttribute("VolumeDimensions", dimString);
     xml.writeStartElement("TransformationMatrixVoxelIndicesIJKtoXYZ");
     Vector3D vecs[4];
@@ -521,22 +519,22 @@ void VolumeSpace::writeCiftiXML2(QXmlStreamWriter& xml) const
         myExponent = 3 * (int)floor((log10(minLength) - log10(50.0f)) / 3.0f);//some magic to get the exponent that is a multiple of 3 that puts the length of the smallest spacing vector in [0.05, 50]
     }
     float multiplier = pow(10.0f, -3 - myExponent);//conversion factor from mm
-    xml.writeAttribute("MeterExponent", QString::number(myExponent));
-    QString matrixString;
+    xml.writeAttribute("MeterExponent", AString_number(myExponent));
+    AString matrixString;
     for (int j = 0; j < 3; ++j)
     {
         matrixString += "\n";
         for (int i = 0; i < 4; ++i)
         {
-            matrixString += QString::number(m_sform[j][i] * multiplier, 'f', 7) + " ";
+            matrixString += AString_number_fixed(m_sform[j][i] * multiplier, 7) + " ";
         }
     }
     matrixString += "\n";
     for (int i = 0; i < 3; ++i)
     {
-        matrixString += QString::number(0.0f, 'f', 7) + " ";
+        matrixString += AString_number_fixed(0.0f, 7) + " ";
     }
-    matrixString += QString::number(1.0f, 'f', 7);//doesn't get multiplied, because it isn't spatial
+    matrixString += AString_number_fixed(1.0f, 7);//doesn't get multiplied, because it isn't spatial
     xml.writeCharacters(matrixString);
     xml.writeEndElement();//Transfor...
     xml.writeEndElement();//Volume

@@ -28,7 +28,7 @@
  *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "CaretAssert.h"
+#include "CiftiAssert.h"
 #include "CiftiMappingType.h"
 
 namespace cifti
@@ -64,7 +64,7 @@ namespace cifti
         void setStart(const float& start) { m_start = start; }
         void setStep(const float& step) { m_step = step; }
         void setUnit(const Unit& unit) { m_unit = unit; }
-        void setLength(const int64_t& length) { CaretAssert(length > 0); m_length = length; }
+        void setLength(const int64_t& length) { CiftiAssert(length > 0); m_length = length; }
         
         CiftiMappingType* clone() const { return new CiftiSeriesMap(*this); }
         MappingType getType() const { return SERIES; }
@@ -90,10 +90,10 @@ namespace cifti
                     return false;
             }
         }
-        void readXML1(QXmlStreamReader& xml);
-        void readXML2(QXmlStreamReader& xml);
-        void writeXML1(QXmlStreamWriter& xml) const;
-        void writeXML2(QXmlStreamWriter& xml) const;
+        void readXML1(XmlReader& xml);
+        void readXML2(XmlReader& xml);
+        void writeXML1(XmlWriter& xml) const;
+        void writeXML2(XmlWriter& xml) const;
     private:
         int64_t m_length;
         float m_start, m_step;//exponent gets applied to these on reading

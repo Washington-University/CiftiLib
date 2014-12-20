@@ -30,11 +30,8 @@
 
 #include "nifti1.h"
 
-/*=================*/
-#ifdef  __cplusplus
-extern "C" {
-#endif
-/*=================*/
+namespace cifti
+{
 
 #include <stdint.h>
 /*extended nifti intent codes*/
@@ -122,9 +119,6 @@ typedef struct nifti_2_header nifti_2_header ;
 //and restore packing behavior
 #pragma pack(pop)
 
-/*=================*/
-#ifdef  __cplusplus
-}
-#endif
-/*=================*/
+}//namespace
+
 #endif //__NIFTI2_HEADER

@@ -27,7 +27,7 @@
 
 #include "CiftiLabelsMap.h"
 
-#include "CaretAssert.h"
+#include "CiftiAssert.h"
 #include "CiftiException.h"
 
 #include <iostream>
@@ -42,43 +42,43 @@ void CiftiLabelsMap::clear()
 
 const MetaData& CiftiLabelsMap::getMapMetadata(const int64_t& index) const
 {
-    CaretAssertVectorIndex(m_maps, index);
+    CiftiAssertVectorIndex(m_maps, index);
     return m_maps[index].m_metaData;
 }
 
 const LabelTable& CiftiLabelsMap::getMapLabelTable(const int64_t& index) const
 {
-    CaretAssertVectorIndex(m_maps, index);
+    CiftiAssertVectorIndex(m_maps, index);
     return m_maps[index].m_labelTable;
 }
 
-const QString& CiftiLabelsMap::getMapName(const int64_t& index) const
+const AString& CiftiLabelsMap::getMapName(const int64_t& index) const
 {
-    CaretAssertVectorIndex(m_maps, index);
+    CiftiAssertVectorIndex(m_maps, index);
     return m_maps[index].m_name;
 }
 
 void CiftiLabelsMap::setMapMetadata(const int64_t& index, const MetaData& md)
 {
-    CaretAssertVectorIndex(m_maps, index);
+    CiftiAssertVectorIndex(m_maps, index);
     m_maps[index].m_metaData = md;
 }
 
 void CiftiLabelsMap::setMapLabelTable(const int64_t& index, const LabelTable& lt)
 {
-    CaretAssertVectorIndex(m_maps, index);
+    CiftiAssertVectorIndex(m_maps, index);
     m_maps[index].m_labelTable = lt;
 }
 
-void CiftiLabelsMap::setMapName(const int64_t& index, const QString& mapName)
+void CiftiLabelsMap::setMapName(const int64_t& index, const AString& mapName)
 {
-    CaretAssertVectorIndex(m_maps, index);
+    CiftiAssertVectorIndex(m_maps, index);
     m_maps[index].m_name = mapName;
 }
 
 void CiftiLabelsMap::setLength(const int64_t& length)
 {
-    CaretAssert(length > 0);
+    CiftiAssert(length > 0);
     m_maps.resize(length);
 }
 
@@ -109,10 +109,11 @@ bool CiftiLabelsMap::LabelMap::operator==(const LabelMap& rhs) const
     return (m_metaData == rhs.m_metaData);
 }
 
-void CiftiLabelsMap::readXML1(QXmlStreamReader& xml)
+void CiftiLabelsMap::readXML1(XmlReader& xml)
 {
     cerr << "parsing nonstandard labels mapping type in cifti-1" << endl;
     clear();
+#ifdef CIFTILIB_USE_QT
     for (xml.readNext(); !xml.atEnd() && !xml.isEndElement(); xml.readNext())
     {
         switch (xml.tokenType())
@@ -121,7 +122,7 @@ void CiftiLabelsMap::readXML1(QXmlStreamReader& xml)
             {
                 if (xml.name() != "NamedMap")
                 {
-                    throw CiftiException("unexpected element in labels mapping type: " + xml.name().toString());
+                    throw CiftiException("unexpected element in labels map: " + xml.name().toString());
                 }
                 LabelMap tempMap;
                 tempMap.readXML1(xml);
@@ -133,11 +134,44 @@ void CiftiLabelsMap::readXML1(QXmlStreamReader& xml)
                 break;
         }
     }
+#else
+#ifdef CIFTILIB_USE_XMLPP
+    bool done = xml.is_empty_element();//NOTE: a <blah/> element does NOT give a separate end element state!!!
+    while(!done && xml.read())
+    {
+        switch (xml.get_node_type())
+        {
+            case XmlReader::Element:
+            {
+                AString name = xml.get_local_name();
+                if (name == "NamedMap")
+                {
+                    LabelMap tempMap;
+                    tempMap.readXML1(xml);
+                    m_maps.push_back(tempMap);
+                } else {
+                    throw CiftiException("unexpected element in labels map: " + name);
+                }
+                break;
+            }
+            case XmlReader::EndElement:
+                done = true;
+                break;
+            default:
+                break;
+        }
+    }
+#else
+#error "not implemented"
+#endif
+#endif
+    CiftiAssert(XmlReader_checkEndElement(xml, "MatrixIndicesMap"));
 }
 
-void CiftiLabelsMap::readXML2(QXmlStreamReader& xml)
+void CiftiLabelsMap::readXML2(XmlReader& xml)
 {
     clear();
+#ifdef CIFTILIB_USE_QT
     for (xml.readNext(); !xml.atEnd() && !xml.isEndElement(); xml.readNext())
     {
         switch (xml.tokenType())
@@ -158,11 +192,44 @@ void CiftiLabelsMap::readXML2(QXmlStreamReader& xml)
                 break;
         }
     }
+#else
+#ifdef CIFTILIB_USE_XMLPP
+    bool done = xml.is_empty_element();//NOTE: a <blah/> element does NOT give a separate end element state!!!
+    while(!done && xml.read())
+    {
+        switch (xml.get_node_type())
+        {
+            case XmlReader::Element:
+            {
+                AString name = xml.get_local_name();
+                if (name == "NamedMap")
+                {
+                    LabelMap tempMap;
+                    tempMap.readXML2(xml);
+                    m_maps.push_back(tempMap);
+                } else {
+                    throw CiftiException("unexpected element in labels mapping type: " + name);
+                }
+                break;
+            }
+            case XmlReader::EndElement:
+                done = true;
+                break;
+            default:
+                break;
+        }
+    }
+#else
+#error "not implemented"
+#endif
+#endif
+    CiftiAssert(XmlReader_checkEndElement(xml, "MatrixIndicesMap"));
 }
 
-void CiftiLabelsMap::LabelMap::readXML1(QXmlStreamReader& xml)
+void CiftiLabelsMap::LabelMap::readXML1(XmlReader& xml)
 {
     bool haveName = false, haveTable = false, haveMetaData = false;
+#ifdef CIFTILIB_USE_QT
     for (xml.readNext(); !xml.atEnd() && !xml.isEndElement(); xml.readNext())
     {
         switch (xml.tokenType())
@@ -184,7 +251,7 @@ void CiftiLabelsMap::LabelMap::readXML1(QXmlStreamReader& xml)
                     {
                         throw CiftiException("LabelTable specified multiple times in one NamedMap");
                     }
-                    m_labelTable.readFromQXmlStreamReader(xml);
+                    m_labelTable.readXml(xml);
                     if (xml.hasError()) return;
                     haveTable = true;
                 } else if (name == "MapName") {
@@ -204,6 +271,55 @@ void CiftiLabelsMap::LabelMap::readXML1(QXmlStreamReader& xml)
                 break;
         }
     }
+#else
+#ifdef CIFTILIB_USE_XMLPP
+    bool done = xml.is_empty_element();//NOTE: a <blah/> element does NOT give a separate end element state!!!
+    while(!done && xml.read())
+    {
+        switch (xml.get_node_type())
+        {
+            case XmlReader::Element:
+            {
+                AString name = xml.get_local_name();
+                if (name == "MetaData")
+                {
+                    if (haveMetaData)
+                    {
+                        throw CiftiException("MetaData specified multiple times in one NamedMap");
+                    }
+                    m_metaData.readCiftiXML1(xml);
+                    haveMetaData = true;
+                } else if (name == "LabelTable") {
+                    if (haveTable)
+                    {
+                        throw CiftiException("LabelTable specified multiple times in one NamedMap");
+                    }
+                    m_labelTable.readXml(xml);
+                    haveTable = true;
+                } else if (name == "MapName") {
+                    if (haveName)
+                    {
+                        throw CiftiException("MapName specified multiple times in one NamedMap");
+                    }
+                    m_name = XmlReader_readElementText(xml);//raises error if element encountered
+                    haveName = true;
+                } else {
+                    throw CiftiException("unexpected element in labels mapping type: " + name);
+                }
+                break;
+            }
+            case XmlReader::EndElement:
+                done = true;
+                break;
+            default:
+                break;
+        }
+    }
+#else
+#error "not implemented"
+#endif
+#endif
+    CiftiAssert(XmlReader_checkEndElement(xml, "NamedMap"));
     if (!haveName)
     {
         throw CiftiException("NamedMap missing required child element MapName");
@@ -214,9 +330,10 @@ void CiftiLabelsMap::LabelMap::readXML1(QXmlStreamReader& xml)
     }
 }
 
-void CiftiLabelsMap::LabelMap::readXML2(QXmlStreamReader& xml)
+void CiftiLabelsMap::LabelMap::readXML2(XmlReader& xml)
 {
     bool haveName = false, haveTable = false, haveMetaData = false;
+#ifdef CIFTILIB_USE_QT
     for (xml.readNext(); !xml.atEnd() && !xml.isEndElement(); xml.readNext())
     {
         switch (xml.tokenType())
@@ -238,7 +355,7 @@ void CiftiLabelsMap::LabelMap::readXML2(QXmlStreamReader& xml)
                     {
                         throw CiftiException("LabelTable specified multiple times in one NamedMap");
                     }
-                    m_labelTable.readFromQXmlStreamReader(xml);
+                    m_labelTable.readXml(xml);
                     if (xml.hasError()) return;
                     haveTable = true;
                 } else if (name == "MapName") {
@@ -258,6 +375,55 @@ void CiftiLabelsMap::LabelMap::readXML2(QXmlStreamReader& xml)
                 break;
         }
     }
+#else
+#ifdef CIFTILIB_USE_XMLPP
+    bool done = xml.is_empty_element();//NOTE: a <blah/> element does NOT give a separate end element state!!!
+    while(!done && xml.read())
+    {
+        switch (xml.get_node_type())
+        {
+            case XmlReader::Element:
+            {
+                AString name = xml.get_local_name();
+                if (name == "MetaData")
+                {
+                    if (haveMetaData)
+                    {
+                        throw CiftiException("MetaData specified multiple times in one NamedMap");
+                    }
+                    m_metaData.readCiftiXML2(xml);
+                    haveMetaData = true;
+                } else if (name == "LabelTable") {
+                    if (haveTable)
+                    {
+                        throw CiftiException("LabelTable specified multiple times in one NamedMap");
+                    }
+                    m_labelTable.readXml(xml);
+                    haveTable = true;
+                } else if (name == "MapName") {
+                    if (haveName)
+                    {
+                        throw CiftiException("MapName specified multiple times in one NamedMap");
+                    }
+                    m_name = XmlReader_readElementText(xml);//raises error if element encountered
+                    haveName = true;
+                } else {
+                    throw CiftiException("unexpected element in labels mapping type: " + name);
+                }
+                break;
+            }
+            case XmlReader::EndElement:
+                done = true;
+                break;
+            default:
+                break;
+        }
+    }
+#else
+#error "not implemented"
+#endif
+#endif
+    CiftiAssert(XmlReader_checkEndElement(xml, "NamedMap"));
     if (!haveName)
     {
         throw CiftiException("NamedMap missing required child element MapName");
@@ -268,7 +434,7 @@ void CiftiLabelsMap::LabelMap::readXML2(QXmlStreamReader& xml)
     }
 }
 
-void CiftiLabelsMap::writeXML1(QXmlStreamWriter& xml) const
+void CiftiLabelsMap::writeXML1(XmlWriter& xml) const
 {
     cerr << "writing nonstandard labels mapping type in cifti-1" << endl;
     xml.writeAttribute("IndicesMapToDataType", "CIFTI_INDEX_TYPE_LABELS");
@@ -278,12 +444,12 @@ void CiftiLabelsMap::writeXML1(QXmlStreamWriter& xml) const
         xml.writeStartElement("NamedMap");
         xml.writeTextElement("MapName", m_maps[i].m_name);
         m_maps[i].m_metaData.writeCiftiXML1(xml);
-        m_maps[i].m_labelTable.writeAsXML(xml);
+        m_maps[i].m_labelTable.writeXML(xml);
         xml.writeEndElement();
     }
 }
 
-void CiftiLabelsMap::writeXML2(QXmlStreamWriter& xml) const
+void CiftiLabelsMap::writeXML2(XmlWriter& xml) const
 {
     int64_t numMaps = (int64_t)m_maps.size();
     xml.writeAttribute("IndicesMapToDataType", "CIFTI_INDEX_TYPE_LABELS");
@@ -292,7 +458,7 @@ void CiftiLabelsMap::writeXML2(QXmlStreamWriter& xml) const
         xml.writeStartElement("NamedMap");
         xml.writeTextElement("MapName", m_maps[i].m_name);
         m_maps[i].m_metaData.writeCiftiXML2(xml);
-        m_maps[i].m_labelTable.writeAsXML(xml);
+        m_maps[i].m_labelTable.writeXML(xml);
         xml.writeEndElement();
     }
 }

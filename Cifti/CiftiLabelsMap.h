@@ -30,6 +30,7 @@
 
 #include "CiftiMappingType.h"
 
+#include "AString.h"
 #include "MetaData.h"
 #include "LabelTable.h"
 
@@ -43,32 +44,32 @@ namespace cifti
     public:
         const MetaData& getMapMetadata(const int64_t& index) const;
         const LabelTable& getMapLabelTable(const int64_t& index) const;
-        const QString& getMapName(const int64_t& index) const;
+        const AString& getMapName(const int64_t& index) const;
         
         void setMapMetadata(const int64_t& index, const MetaData& md);
         void setMapLabelTable(const int64_t& index, const LabelTable& lt);
-        void setMapName(const int64_t& index, const QString& mapName);
+        void setMapName(const int64_t& index, const AString& mapName);
         void setLength(const int64_t& length);
-        void clear();//do we need this?
+        void clear();
         
         CiftiMappingType* clone() const { return new CiftiLabelsMap(*this); }
         MappingType getType() const { return LABELS; }
         int64_t getLength() const { return m_maps.size(); }
         bool operator==(const CiftiMappingType& rhs) const;
         bool approximateMatch(const CiftiMappingType& rhs) const;
-        void readXML1(QXmlStreamReader& xml);
-        void readXML2(QXmlStreamReader& xml);
-        void writeXML1(QXmlStreamWriter& xml) const;
-        void writeXML2(QXmlStreamWriter& xml) const;
+        void readXML1(XmlReader& xml);
+        void readXML2(XmlReader& xml);
+        void writeXML1(XmlWriter& xml) const;
+        void writeXML2(XmlWriter& xml) const;
     private:
         struct LabelMap
         {
-            QString m_name;
+            AString m_name;
             MetaData m_metaData;
             LabelTable m_labelTable;
             bool operator==(const LabelMap& rhs) const;
-            void readXML1(QXmlStreamReader& xml);
-            void readXML2(QXmlStreamReader& xml);
+            void readXML1(XmlReader& xml);
+            void readXML2(XmlReader& xml);
         };
         std::vector<LabelMap> m_maps;
     };
