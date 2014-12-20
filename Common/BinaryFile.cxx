@@ -33,6 +33,7 @@
 #endif
 
 #include "BinaryFile.h"
+#include "CiftiAssert.h"
 #include "CiftiException.h"
 
 #ifdef CIFTILIB_USE_QT
@@ -86,8 +87,9 @@ namespace cifti
     class StrFileImpl : public BinaryFile::ImplInterface
     {
         FILE* m_file;
+        int64_t m_curPos;//so we can avoid calling seek when it is to current position - QFile does this, and it makes it much faster for some cases
     public:
-        StrFileImpl() { m_file = NULL; }
+        StrFileImpl() { m_file = NULL; m_curPos = -1; }
         void open(const AString& filename, const BinaryFile::OpenMode& opmode);
         void close();
         void seek(const int64_t& position);
@@ -294,7 +296,7 @@ ZFileImpl::~ZFileImpl()
     } catch (exception& e) {
         cerr << e.what() << endl;
     } catch (...) {
-        cerr << "caught unknown exception type while closing a compressed file" << endl;
+        cerr << AString_to_std_string("caught unknown exception type while closing compressed file '" + m_fileName + "'") << endl;
     }
 }
 #endif //ZLIB_VERSION
@@ -381,6 +383,7 @@ void StrFileImpl::open(const AString& filename, const BinaryFile::OpenMode& opmo
     {
         throw CiftiException("error opening file '" + filename + "'");
     }
+    m_curPos = 0;
 }
 
 void StrFileImpl::close()
@@ -388,6 +391,7 @@ void StrFileImpl::close()
     if (m_file == NULL) return;
     int ret = fclose(m_file);
     m_file = NULL;
+    m_curPos = -1;
     if (ret != 0) throw CiftiException("error closing file '" + m_fileName + "'");
 }
 
@@ -395,6 +399,8 @@ void StrFileImpl::read(void* dataOut, const int64_t& count, int64_t* numRead)
 {
     if (m_file == NULL) throw CiftiException("read called on unopened StrFileImpl");//shouldn't happen
     int64_t readret = fread(dataOut, 1, count, m_file);//expect fread to not have read size limitations comapred to memory
+    m_curPos += readret;//the item size is 1
+    CiftiAssert(m_curPos == ftello(m_file));//double check it in debug, ftello is fast on linux at least
     if (numRead == NULL)
     {
         if (readret != count)
@@ -410,6 +416,7 @@ void StrFileImpl::read(void* dataOut, const int64_t& count, int64_t* numRead)
 void StrFileImpl::seek(const int64_t& position)
 {
     if (m_file == NULL) throw CiftiException("seek called on unopened StrFileImpl");//shouldn't happen
+    if (position == m_curPos) return;//optimization: calling fseeko causes nontrivial system call time, on linux at least
     int ret = fseeko(m_file, position, SEEK_SET);
     if (ret != 0) throw CiftiException("seek failed in file '" + m_fileName + "'");
 }
@@ -417,13 +424,16 @@ void StrFileImpl::seek(const int64_t& position)
 int64_t StrFileImpl::pos()
 {
     if (m_file == NULL) throw CiftiException("pos called on unopened StrFileImpl");//shouldn't happen
-    return ftello(m_file);
+    CiftiAssert(m_curPos == ftello(m_file));//make sure it is right in debug
+    return m_curPos;//we can avoid a call here also
 }
 
 void StrFileImpl::write(const void* dataIn, const int64_t& count)
 {
     if (m_file == NULL) throw CiftiException("write called on unopened StrFileImpl");//shouldn't happen
     int64_t writeret = fwrite(dataIn, 1, count, m_file);//expect fwrite to not have write size limitations compared to memory
+    m_curPos += writeret;//the item size is 1
+    CiftiAssert(m_curPos == ftello(m_file));//double check it in debug, ftello is fast on linux at least
     if (writeret != count) throw CiftiException("failed to write to file '" + m_fileName + "'");
 }
 
@@ -437,7 +447,7 @@ StrFileImpl::~StrFileImpl()
     } catch (exception& e) {
         cerr << e.what() << endl;
     } catch (...) {
-        cerr << "caught unknown exception type while closing a compressed file" << endl;
+        cerr << AString_to_std_string("caught unknown exception type while closing file '" + m_fileName + "'") << endl;
     }
 }
 
