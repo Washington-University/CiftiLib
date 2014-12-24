@@ -75,6 +75,10 @@ namespace cifti
                 xmlBufferFree(m_bufPtr);
                 throw CiftiException("error creating xml writer");
             }
+            if (xmlTextWriterSetIndent(m_xmlPtr, 1) != 0 || xmlTextWriterSetIndentString(m_xmlPtr, BAD_CAST "    ") != 0)
+            {
+                throw CiftiException("error setting xml writer indentation");
+            }
         }
         ~XmlWriter()
         {
