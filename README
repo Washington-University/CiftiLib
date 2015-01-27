@@ -1,4 +1,4 @@
-The CiftiLib library requires boost headers and either QT, or libxml++ (and its dependencies: libxml2, glib, sigc++, gtkmm and glibmm) and the boost filesystem library to compile, and optionally uses zlib if you want to use its NIfTI reading capabilities for other purposes.  4.8.x releases are known to work, newer versions may work, but have not been tested.
+The CiftiLib library requires boost headers and either QT, or libxml++ (and its dependencies: libxml2, glib, sigc++, gtkmm and glibmm) and the boost filesystem library to compile, and optionally uses zlib if you want to use its NIfTI reading capabilities for other purposes.  4.8.x releases of QT are known to work, newer versions may work, but have not been tested.
 
 It is currently set up to be compiled, along with a simple example, by cmake:
 
