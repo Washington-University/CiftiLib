@@ -13,3 +13,9 @@ cmake-gui ../CiftiLib
 
 #build
 make
+
+Troubleshooting:
+
+If you are using manually-installed libraries rather than distribution-packaged libraries, you may need to use the cmake variables CMAKE_LIBRARY_PATH and CMAKE_INCLUDE_PATH.
+
+If you are getting link errors related to boost, try setting a cmake variable Boost_NO_BOOST_CMAKE to true.
