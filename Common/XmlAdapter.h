@@ -54,6 +54,7 @@ namespace cifti
 #include "CiftiAssert.h"
 #include "CiftiException.h"
 #include "libxml++/libxml++.h"
+#include "libxml++/parsers/textreader.h"
 #include "libxml/xmlwriter.h"
 #include "libxml/xmlstring.h"
 namespace cifti

@@ -228,7 +228,7 @@ void CiftiXML::readXML(const vector<char>& text)
 #else
 #ifdef CIFTILIB_USE_XMLPP
     vector<char>::const_iterator end = find(text.begin(), text.end(), '\0');//find the null terminator, if it exists, to prevent "extra content at end of document" errors
-    XmlReader xml((unsigned char*)text.data(), end - text.begin());//get the number of bytes
+    XmlReader xml(Glib::ustring(text.data(), end - text.begin()));//get the number of bytes
 #else
 #error "not implemented"
 #endif
