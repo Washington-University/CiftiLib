@@ -82,7 +82,11 @@ namespace
 #ifdef CIFTILIB_USE_QT
         return QFileInfo(mypath).absoluteFilePath();
 #else
+#ifdef CIFTILIB_BOOST_NO_FSV3
+	return filesystem::complete(AString_to_std_string(mypath)).file_string();
+#else
         return filesystem::absolute(AString_to_std_string(mypath)).native();
+#endif
 #endif
     }
     
@@ -90,6 +94,9 @@ namespace
     {
 #ifdef CIFTILIB_USE_QT
         return QFileInfo(mypath).canonicalFilePath();
+#else
+#ifdef CIFTILIB_BOOST_NO_FSV3
+	return filesystem::complete(AString_to_std_string(mypath)).file_string();
 #else
 #ifdef CIFTILIB_BOOST_NO_CANONICAL
         filesystem::path temp = AString_to_std_string(mypath);
@@ -99,6 +106,7 @@ namespace
         string temp = AString_to_std_string(mypath);
         if (!filesystem::exists(temp)) return "";
         return filesystem::canonical(temp).native();
+#endif
 #endif
 #endif
     }
