@@ -6,6 +6,6 @@
 
 #define CiftiAssert(i) assert(i)
 
-#define CiftiAssertVectorIndex(v, i) assert((i) >= 0 && (i) < static_cast<int64_t>(v.size()))
+#define CiftiAssertVectorIndex(v, i) assert((i) >= 0 && (i) < static_cast<int64_t>((v).size()))
 
 #endif //__CARET_ASSERT_H__
