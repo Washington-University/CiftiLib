@@ -273,7 +273,7 @@ public:
     static bool compareArrays(
                     const float a1[],
                     const float a2[],
-                    const int32_t numElemets,
+                    const int32_t numElements,
                     const float tolerance);
 
     static int32_t clamp(

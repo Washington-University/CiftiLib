@@ -50,7 +50,7 @@ public:
 
     LabelTable& operator=(const LabelTable& glt);
     
-    bool matches(const LabelTable& rhs, const bool checkColors = false, const bool checkCoords = false) const;
+    bool matches(const LabelTable& rhs, const bool checkColors = false) const;
     
     bool operator==(const LabelTable& rhs) const { return matches(rhs, true); }
     
@@ -128,16 +128,6 @@ public:
                     const float green,
                     const float blue,
                     const float alpha);
-
-    void setLabel(const int32_t key,
-                  const AString& name,
-                  const float red,
-                  const float green,
-                  const float blue,
-                  const float alpha,
-                  const float x,
-                  const float y, 
-                  const float z);
     
     bool isLabelSelected(const int32_t key) const;
 

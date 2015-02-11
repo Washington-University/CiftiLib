@@ -1,0 +1,38 @@
+/**
+\mainpage CiftiLib
+
+CiftiLib is a library for the CIFTI file format, as documented here: http://www.nitrc.org/projects/cifti/
+
+It builds with either QT, or libxml++ and libboost-filesystem.
+
+To use it, include CiftiFile.h, and use the CiftiFile class to read and write cifti files.
+
+Reading example:
+
+\code
+CiftiFile myFile(filename);//defaults to reading data on demand
+const CiftiXML& myXML = myFile.getCiftiXML();//mapping and dimension information
+vector<float> rowData(myXML.getDimensionLength(CiftiXML::ALONG_ROW));//allocate array for row data
+myFile.getRow(rowData.data(), 0);//read the first row
+\endcode
+
+Writing example:
+
+\code
+CiftiXML myXML;//first, need to set up the dimension mappings
+CiftiScalarsMap exampleMap;
+exampleMap.setLength(40);//just as an example
+myXML.setNumberOfDimensions(2);//2D matrix
+myXML.setMap(CiftiXML::ALONG_ROW, exampleMap);//set the mappings
+myXML.setMap(CiftiXML::ALONG_COLUMN, exampleMap);
+CiftiFile myFile;
+myFile.setWritingFile(filename);//optional: write rows as they are set
+myFile.setCiftiXML(myXML);//set the file's mappings
+myFile.setRow(somedata, 0);//write a row
+...
+myFile.writeFile(filename);//if filename matches what was given to setWritingFile, this does nothing
+\endcode
+
+See rewrite.cxx for a program that does a row-by-row copy that works on cifti of any dimensionality.
+
+*/

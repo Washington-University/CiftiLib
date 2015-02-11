@@ -33,35 +33,21 @@
 
 using namespace cifti;
 
-/**
- * Constructor.
- *
- */
 MetaData::MetaData()
 {
     this->initializeMembersMetaData();
 }
 
-/**
- * Destructor
- */
 MetaData::~MetaData()
 {
 }
 
-/**
- * Copy Constructor
- * @param Object that is copied.
- */
 MetaData::MetaData(const MetaData& o)
 {
     this->initializeMembersMetaData();
     this->copyHelper(o);
 }
 
-/**
- * Assignment operator.
- */
 MetaData&
 MetaData::operator=(const MetaData& o)
 {
@@ -255,6 +241,7 @@ MetaData::get(const AString& name) const
  * Get the metadata as an integer value.  If the metadata does not exist
  * or its string representation is not a number, zero is returned.
  * @param name - name of metadata.
+ * @param ok - is set to false if key not found, or value not integer
  * @return  Integer value associated with the metadata.
  *
  */
@@ -274,6 +261,7 @@ MetaData::getInt(const AString& name, bool& ok) const
  * Get the metadata as an float value.  If the metadata does not exist
  * or its string representation is not a number, zero is returned.
  * @param name - name of metadata.
+ * @param ok - is set to false if key not found, or value not numeric
  * @return  Float value associated with the metadata.
  *
  */

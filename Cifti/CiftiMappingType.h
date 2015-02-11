@@ -40,11 +40,11 @@ namespace cifti
     public:
         enum MappingType
         {
-            BRAIN_MODELS = 1,//compatibility values with old XML enum, in case someone uses the wrong enum
-            PARCELS = 3,//fibers doesn't exist in 2.0
-            SERIES = 4,
-            SCALARS = 5,
-            LABELS = 6
+            BRAIN_MODELS,
+            PARCELS,
+            SERIES,
+            SCALARS,
+            LABELS
         };
         virtual CiftiMappingType* clone() const = 0;//make a copy, preserving the actual type - NOTE: this returns a dynamic allocation that is not owned by anything
         virtual MappingType getType() const = 0;

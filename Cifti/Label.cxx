@@ -90,39 +90,6 @@ Label::Label(
  * @param alpha - alpha color component, zero to one.
  *
  */
-Label::Label(const int32_t key,
-                       const AString& name,
-                       const float red,
-                       const float green,
-                       const float blue,
-                       const float alpha,
-                       const float x,
-                       const float y,
-                       const float z)
-{
-    this->initializeMembersLabel();
-    this->key = key;
-    this->name = name;
-    this->red = red;
-    this->green = green;
-    this->blue = blue;
-    this->alpha = alpha;
-    this->x = x;
-    this->y = y;
-    this->z = z;
-}
-
-/**
- * Constructor.
- *
- * @param key - Key of the label.
- * @param name - name of label.
- * @param red - red color component, zero to one.
- * @param green - green color component, zero to one.
- * @param blue - blue color component, zero to one.
- * @param alpha - alpha color component, zero to one.
- *
- */
 Label::Label(
                        const int32_t key,
                        const AString& name,
@@ -233,26 +200,16 @@ Label::Label(
     }
 }
 
-/**
- * Destructor
- */
 Label::~Label()
 {
 }
 
-/**
- * Copy Constructor
- * @param Object that is copied.
- */
 Label::Label(const Label& o)
 {
     this->initializeMembersLabel();
     this->copyHelper(o);
 }
 
-/**
- * Assignment operator.
- */
 Label&
 Label::operator=(const Label& o)
 {
@@ -276,9 +233,6 @@ Label::copyHelper(const Label& gl)
     this->green = gl.green;    
     this->blue = gl.blue;    
     this->alpha = gl.alpha;
-    this->x = gl.x;
-    this->y = gl.y;
-    this->z = gl.z;
 }
 
 /**
@@ -294,15 +248,12 @@ Label::initializeMembersLabel()
     this->green = 1.0;    
     this->blue = 1.0;    
     this->alpha = 1.0;
-    this->x = 0.0;
-    this->y = 0.0;
-    this->z = 0.0;
 }
 
 /**
- * Determine if two objects are equal.  Two Labels are equal if they 
+ * Determine if two labels are equal.  Two Labels are equal if they 
  * have the same "key".
- * @param obj Object for comparison.
+ * @param gl label for comparison.
  * @return true if equal, else false.
  *
  */
@@ -479,7 +430,7 @@ Label::setColorInt(const int32_t rgba[])
 /**
  * Get the default color.
  *
- * @param Output with a four-dimensional array of floats
+ * @param rgbaOut ouput, a four-dimensional array of floats
  * containing the red, green, blue, and alpha components with values
  * ranging from 0.0 to 1.0.
  */
@@ -536,99 +487,8 @@ Label::getAlpha() const
     return this->alpha;
 }
 
-/**
- * Get the X-Coordinate.
- * @return
- *    The X-coordinate.
- */
-float 
-Label::getX() const 
-{ 
-    return this->x; 
-}
-
-/**
- * Get the Y-Coordinate.
- * @return
- *    The Y-coordinate.
- */
-float 
-Label::getY() const 
-{ return this->y; 
-}
-
-/**
- * Get the Z-Coordinate.
- * @return
- *    The Z-coordinate.
- */
-float 
-Label::getZ() const 
-{ 
-    return this->z; 
-}
-
-/**
- * Get the XYZ coordiantes.
- * @param  xyz
- *   Array into which coordinates are loaded.
- */
-void 
-Label::getXYZ(float xyz[3]) const
-{
-    xyz[0] = this->x;
-    xyz[1] = this->y;
-    xyz[2] = this->z;
-}
-
-/**
- * Set the X-coordinate.
- * @param x
- *    New value for X-coordinate.
- */
-void 
-Label::setX(const float x)
-{
-    this->x = x;
-}
-
-/**
- * Set the Y-coordinate.
- * @param y
- *    New value for Y-coordinate.
- */
-void 
-Label::setY(const float y)
-{
-    this->y = y;
-}
-
-/**
- * Set the Z-coordinate.
- * @param z
- *    New value for Z-coordinate.
- */
-void 
-Label::setZ(const float z)
-{
-    this->z = z;
-}
-
-/**
- * Set the XYZ coordinates.
- * @param xyz
- *   Array containing XYZ coordiantes.
- */
-void 
-Label::setXYZ(const float xyz[3])
-{
-    this->x = xyz[0];
-    this->y = xyz[1];
-    this->z = xyz[2];
-}
-
 bool
-Label::matches(const Label& rhs, const bool checkColor, const bool checkCoord) const
+Label::matches(const Label& rhs, const bool checkColor) const
 {
     if (key != rhs.key) return false;
     if (name != rhs.name) return false;
@@ -638,12 +498,6 @@ Label::matches(const Label& rhs, const bool checkColor, const bool checkCoord) c
         if (green != rhs.green) return false;
         if (blue != rhs.blue) return false;
         if (alpha != rhs.alpha) return false;
-    }
-    if (checkCoord)
-    {
-        if (x != rhs.x) return false;
-        if (y != rhs.y) return false;
-        if (z != rhs.z) return false;
     }
     return true;
 }

@@ -301,7 +301,7 @@ AString StructureEnum::toGuiName(Enum enumValue) {
 
 /**
  * Get an enumerated value corresponding to its GUI name.
- * @param s 
+ * @param guiName
  *     Name of enumerated value.
  * @param isValidOut 
  *     If not NULL, it is set indicating that a
@@ -352,7 +352,7 @@ AString StructureEnum::toCiftiName(Enum enumValue) {
 
 /**
  * Get an enumerated value corresponding to its GUI name.
- * @param s
+ * @param ciftiName
  *     Name of enumerated value.
  * @param isValidOut
  *     If not NULL, it is set indicating that a

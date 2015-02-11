@@ -35,9 +35,10 @@
 
 #include <vector>
 
+///namespace for all CiftiLib functionality
 namespace cifti
 {
-    
+    ///class for reading and writing cifti files
     class CiftiFile
     {
     public:
@@ -58,26 +59,42 @@ namespace cifti
             virtual ~WriteImplInterface();
         };
         CiftiFile() { }
-        explicit CiftiFile(const AString &fileName);//calls openFile
-        void openFile(const AString& fileName);//starts on-disk reading
-        void setWritingFile(const AString& fileName, const CiftiVersion& writingVersion = CiftiVersion());//starts on-disk writing
-        void writeFile(const AString& fileName, const CiftiVersion& writingVersion = CiftiVersion());//leaves current state as-is, rewrites if already writing to that filename and version mismatch
+        ///starts on-disk reading
+        explicit CiftiFile(const AString &fileName);
+        
+        ///starts on-disk reading
+        void openFile(const AString& fileName);
+        
+        ///starts on-disk writing
+        void setWritingFile(const AString& fileName, const CiftiVersion& writingVersion = CiftiVersion());
+        
+        ///does nothing if filename and version match file currently open, otherwise writes complete file
+        void writeFile(const AString& fileName, const CiftiVersion& writingVersion = CiftiVersion());
+        
+        ///reads file into memory, closes file
         void convertToInMemory();
         
         const CiftiXML& getCiftiXML() const { return m_xml; }
         bool isInMemory() const;
-        void getRow(float* dataOut, const std::vector<int64_t>& indexSelect, const bool& tolerateShortRead = false) const;//tolerateShortRead is useful for on-disk writing when it is easiest to do RMW multiple times on a new file
+        
+        ///the tolerateShortRead parameter is useful for on-disk writing when it is easiest to do RMW multiple times on a new file
+        void getRow(float* dataOut, const std::vector<int64_t>& indexSelect, const bool& tolerateShortRead = false) const;
         const std::vector<int64_t>& getDimensions() const { return m_dims; }
-        void getColumn(float* dataOut, const int64_t& index) const;//for 2D only, will be slow if on disk!
+        
+        ///for 2D only, will be slow if on disk!
+        void getColumn(float* dataOut, const int64_t& index) const;
         
         void setCiftiXML(const CiftiXML& xml, const bool useOldMetadata = true);
         void setRow(const float* dataIn, const std::vector<int64_t>& indexSelect);
-        void setColumn(const float* dataIn, const int64_t& index);//for 2D only, will be slow if on disk!
         
-        void getRow(float* dataOut, const int64_t& index, const bool& tolerateShortRead) const;//for 2D only, if you don't want to pass a vector
-        void getRow(float* dataOut, const int64_t& index) const;
+        ///for 2D only, will be slow if on disk!
+        void setColumn(const float* dataIn, const int64_t& index);
         
-        void setRow(const float* dataIn, const int64_t& index);//for 2D only, if you don't want to pass a vector
+        ///for 2D only, if you don't want to pass a vector for indexing
+        void getRow(float* dataOut, const int64_t& index, const bool& tolerateShortRead = false) const;
+        
+        ///for 2D only, if you don't want to pass a vector for indexing
+        void setRow(const float* dataIn, const int64_t& index);
     private:
         std::vector<int64_t> m_dims;
         boost::shared_ptr<WriteImplInterface> m_writingImpl;//this will be equal to m_readingImpl when non-null

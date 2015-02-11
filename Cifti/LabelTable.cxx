@@ -36,18 +36,11 @@
 using namespace std;
 using namespace cifti;
 
-/**
- * Constructor.
- *
- */
 LabelTable::LabelTable()
 {
     clear();//actually adds the 0: ??? label
 }
 
-/**
- * Destructor
- */
 LabelTable::~LabelTable()
 {
     for (LABELS_MAP_CONST_ITERATOR iter = this->labelsMap.begin();
@@ -58,18 +51,11 @@ LabelTable::~LabelTable()
     this->labelsMap.clear();
 }
 
-/**
- * Copy Constructor
- * @param Object that is copied.
- */
 LabelTable::LabelTable(const LabelTable& glt)
 {
     this->copyHelper(glt);
 }
 
-/**
- * Assignment operator.
- */
 LabelTable&
 LabelTable::operator=(const LabelTable& glt)
 {
@@ -123,7 +109,7 @@ LabelTable::clear()
  * duplicated, the map returned that converts the keys of
  * the appended LabelTable to keys for "this" label table.
  *
- * @param lt  Label table that is to be appended.
+ * @param glt  Label table that is to be appended.
  *
  * @return  A map where the keys are the keys in the label table
  *    that is passed as a parameter and the values are the keys
@@ -646,48 +632,6 @@ LabelTable::setLabel(
 }
 
 /**
- * Set a label.  If a label with the specified key exists,
- * it is replaced.
- * 
- * @param key    Key for label.
- * @param name   Name of label.
- * @param red    Red color component.
- * @param green  Green color component.
- * @param blue   Blue color component.
- * @param alpha  Alpha color component.
- * @param x      The X-coordinate.
- * @param y      The Y-coordinate.
- * @param z      The Z-coordinate.
- *
- */
-void
-LabelTable::setLabel(const int32_t key,
-                          const AString& name,
-                          const float red,
-                          const float green,
-                          const float blue,
-                          const float alpha,
-                          const float x,
-                          const float y,
-                          const float z)
-{
-    LABELS_MAP_ITERATOR iter = this->labelsMap.find(key);
-    if (iter != this->labelsMap.end()) {
-        Label* gl = iter->second;
-        gl->setName(name);
-        float rgba[4] = { red, green, blue, alpha };
-        gl->setColor(rgba);
-        gl->setX(x);
-        gl->setY(y);
-        gl->setZ(z);
-    }
-    else {
-        Label gl(key, name, red, green, blue, alpha, x, y, z);
-        this->addLabel(&gl);
-    }
-}
-
-/**
  * Get the selection status of the label at the specified key.  If there
  * is no label at the key, false is returned.
  * @param key - key of label
@@ -757,7 +701,7 @@ LabelTable::getLabelAlpha(const int32_t key) const
 /**
  * Get the color for a label.
  * @param key - key of label.
- * @return Its color components or null if it is an invalid key.
+ * @param rgbaOut - output, its color components
  *
  */
 void
@@ -954,7 +898,7 @@ void LabelTable::getKeys(std::vector<int32_t>& keysOut) const
 /**
  * Get all keys and names.
  * 
- * @parm keysAndNamesOut
+ * @param keysAndNamesOut
  *     Map containing the pairs of corresponding keys and names.
  */
 void
@@ -971,14 +915,14 @@ LabelTable::getKeysAndNames(std::map<int32_t, AString>& keysAndNamesOut) const
     }
 }
 
-bool LabelTable::matches(const LabelTable& rhs, const bool checkColors, const bool checkCoords) const
+bool LabelTable::matches(const LabelTable& rhs, const bool checkColors) const
 {
     if (labelsMap.size() != rhs.labelsMap.size()) return false;
     for (LABELS_MAP::const_iterator iter = labelsMap.begin(); iter != labelsMap.end(); ++iter)
     {
         LABELS_MAP::const_iterator riter = rhs.labelsMap.find(iter->first);
         if (riter == rhs.labelsMap.end()) return false;
-        if (!iter->second->matches(*(riter->second), checkColors, checkCoords)) return false;
+        if (!iter->second->matches(*(riter->second), checkColors)) return false;
     }
     return true;
 }

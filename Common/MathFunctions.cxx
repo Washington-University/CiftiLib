@@ -534,7 +534,7 @@ MathFunctions::distance3D(
  * subtract vectors (3d)  result = v1 - v2.
  * @param v1  1st vector input
  * @param v2  2nd vector input
- * @return  3D vector containing result of subtraction.
+ * @param resultOut output, 3D vector containing result of subtraction.
  *
  */
 void
@@ -561,20 +561,20 @@ void MathFunctions::addVectors(const float v1[3], const float v2[3], float resul
  * 
  * @param startXYZ - Starting position of vector.
  * @param endXYZ - Ending position of vector.
- * @param  Unit vector starting at startXYZ and pointing to endXYZ.
+ * @param unitVectorOut - output, vector starting at startXYZ and pointing to endXYZ.
  *
  */
 void
 MathFunctions::createUnitVector(
                    const float startXYZ[3],
                    const float endXYZ[3],
-                                float resultOut[3])
+                                float unitVectorOut[3])
 {
-    resultOut[0] = endXYZ[0] - startXYZ[0];
-    resultOut[1] = endXYZ[1] - startXYZ[1];
-    resultOut[2] = endXYZ[2] - startXYZ[2];
+    unitVectorOut[0] = endXYZ[0] - startXYZ[0];
+    unitVectorOut[1] = endXYZ[1] - startXYZ[1];
+    unitVectorOut[2] = endXYZ[2] - startXYZ[2];
     
-    MathFunctions::normalizeVector(resultOut);
+    MathFunctions::normalizeVector(unitVectorOut);
 }
 
 /**
@@ -583,20 +583,20 @@ MathFunctions::createUnitVector(
  *
  * @param startXYZ - Starting position of vector.
  * @param endXYZ - Ending position of vector.
- * @param  Unit vector starting at startXYZ and pointing to endXYZ.
+ * @param unitVectorOut - output, vector starting at startXYZ and pointing to endXYZ.
  *
  */
 void
 MathFunctions::createUnitVector(
                                 const double startXYZ[3],
                                 const double endXYZ[3],
-                                double resultOut[3])
+                                double unitVectorOut[3])
 {
-    resultOut[0] = endXYZ[0] - startXYZ[0];
-    resultOut[1] = endXYZ[1] - startXYZ[1];
-    resultOut[2] = endXYZ[2] - startXYZ[2];
+    unitVectorOut[0] = endXYZ[0] - startXYZ[0];
+    unitVectorOut[1] = endXYZ[1] - startXYZ[1];
+    unitVectorOut[2] = endXYZ[2] - startXYZ[2];
     
-    MathFunctions::normalizeVector(resultOut);
+    MathFunctions::normalizeVector(unitVectorOut);
 }
 
 /**
@@ -911,7 +911,7 @@ MathFunctions::rayIntersectPlane(
  * @param pt - the point to project.
  * @param origin - point in the plane.
  * @param normal - normal vector of plane.
- * @return  The projected position of "pt" on the plane.
+ * @param projectedPointOut - output, the projected position of "pt" on the plane.
  *
  */
 void
@@ -1338,7 +1338,7 @@ MathFunctions::toRadians(float degrees)
 /**
  * convert radians to degrees.
  * @param 
- *    degrees value converted to degrees.
+ *    radians value converted to degrees.
  * @return
  *    the corresponding degrees value.
  */

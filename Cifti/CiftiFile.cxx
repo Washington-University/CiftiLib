@@ -254,11 +254,6 @@ void CiftiFile::getRow(float* dataOut, const int64_t& index, const bool& tolerat
     m_readingImpl->getRow(dataOut, tempvec, tolerateShortRead);
 }
 
-void CiftiFile::getRow(float* dataOut, const int64_t& index) const
-{
-    getRow(dataOut, index, false);//once CiftiInterface is gone, we can collapse this into a default value
-}
-
 void CiftiFile::setRow(const float* dataIn, const int64_t& index)
 {
     verifyWriteImpl();

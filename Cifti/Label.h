@@ -54,17 +54,6 @@ namespace cifti {
         explicit Label(
                             const int32_t key,
                             const AString& name,
-                            const float red,
-                            const float green,
-                            const float blue,
-                            const float alpha,
-                            const float x,
-                            const float y,
-                            const float z);
-        
-        explicit Label(
-                            const int32_t key,
-                            const AString& name,
                             const double red,
                             const double green,
                             const double blue,
@@ -141,23 +130,7 @@ namespace cifti {
         
         float getAlpha() const;
         
-        float getX() const;
-        
-        float getY() const;
-        
-        float getZ() const;
-        
-        void getXYZ(float xyz[3]) const;
-        
-        void setX(const float x);
-        
-        void setY(const float y);
-        
-        void setZ(const float z);
-        
-        void setXYZ(const float xyz[3]);
-        
-        bool matches(const Label& rhs, const bool checkColor = false, const bool checkCoord = false) const;
+        bool matches(const Label& rhs, const bool checkColor = false) const;
         
         /**
          * @return The invalid label key.
@@ -178,12 +151,6 @@ namespace cifti {
         float blue;
         
         float alpha;
-        
-        float x;
-        
-        float y;
-        
-        float z;
         
         /** The invalid label key */
         const static int32_t s_invalidLabelKey;

@@ -55,8 +55,12 @@ namespace cifti
         };
         int getNumberOfDimensions() const { return m_indexMaps.size(); }
         const CiftiVersion& getParsedVersion() const { return m_parsedVersion; }
-        const CiftiMappingType* getMap(const int& direction) const;//can return null in unfilled XML object
-        CiftiMappingType* getMap(const int& direction);//can return null in unfilled XML object
+        
+        ///can return null in unfilled XML object
+        const CiftiMappingType* getMap(const int& direction) const;
+        
+        ///can return null in unfilled XML object
+        CiftiMappingType* getMap(const int& direction);
         const MetaData& getFileMetaData() const;
         
         CiftiMappingType::MappingType getMappingType(const int& direction) const;//convenience functions

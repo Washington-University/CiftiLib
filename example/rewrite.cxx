@@ -8,10 +8,13 @@
 using namespace std;
 using namespace cifti;
 
-//this program reads a Cifti file from argv[1], and writes it out to argv[2] with a second CiftiFile object
-//it uses on-disk reading and writing, so DO NOT have both filenames point to the same file!
-//CiftiFile truncates without any warning when told to write to an existing file
+/**\file rewrite.cxx
+This program reads a Cifti file from argv[1], and writes it out to argv[2] with a second CiftiFile object.
+It uses on-disk reading and writing, so DO NOT have both filenames point to the same file,
+CiftiFile truncates without any warning when told to write to an existing file.
 
+\include rewrite.cxx
+*/
 int main(int argc, char** argv)
 {
     if (argc < 3)
@@ -33,7 +36,7 @@ int main(int argc, char** argv)
             inputFile.getRow(scratchRow.data(), *iter);
             outputFile.setRow(scratchRow.data(), *iter);
         }
-        //outputFile.writeFile(argv[2]);//you don't need to call writeFile afterwards if writing on-disk, but it won't make it do anything strange
+        outputFile.writeFile(argv[2]);//because we called setWritingFile with this filename (and default cifti version), this will return immediately
         //NOTE: if you call writeFile with a different writing version (takes its default from CiftiVersion constructor) than setWritingFile, it will rewrite the entire file after reading it into memory
     } catch (CiftiException& e) {
         cout << "Caught CiftiException: " + AString_to_std_string(e.whatString()) << endl;
