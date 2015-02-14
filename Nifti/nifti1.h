@@ -30,6 +30,9 @@
 /*
  * NOTE: our version is somewhat modified, turning constant #defines into const int32_t, namespacing, removal of some other #defines, to try to coexist with the original header
 */
+namespace cifti
+{
+
 /*****************************************************************************
       ** This file defines the "NIFTI-1" header format.               **
       ** It is derived from 2 meetings at the NIH (31 Mar 2003 and    **
@@ -146,9 +149,6 @@
    The presumption below is that the various C types have particular sizes:
      sizeof(int) = sizeof(float) = 4 ;  sizeof(short) = 2
 -----------------------------------------------------------------------------*/
-
-namespace cifti
-{
 
 //hopefully cross-platform solution to byte padding added by some compilers
 #pragma pack(push)

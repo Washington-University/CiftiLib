@@ -30,12 +30,12 @@
 
 #include <stdint.h>
 
+namespace cifti {
+
 /**
  * This class contains static methods for byte swapping data, typically used
  * when reading binary data files.
  */
-
-namespace cifti {
 
     class ByteSwapping {
     public:
