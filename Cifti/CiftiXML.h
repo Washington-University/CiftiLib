@@ -44,6 +44,7 @@
 
 namespace cifti
 {
+    ///class for retrieving and setting mapping information of cifti files
     class CiftiXML
     {
     public:

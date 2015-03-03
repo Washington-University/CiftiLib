@@ -14,6 +14,8 @@ cmake-gui ../CiftiLib
 #build
 make
 
+The resulting static libraries and example executable will be in subdirectories of the build directory, not in the source directory.
+
 Troubleshooting:
 
 If you are using manually-installed libraries rather than distribution-packaged libraries, you may need to use the cmake variables CMAKE_LIBRARY_PATH and CMAKE_INCLUDE_PATH.

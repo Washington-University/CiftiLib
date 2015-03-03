@@ -28,7 +28,7 @@ int main(int argc, char** argv)
         //inputFile.convertToInMemory();//if you want to read it into memory first
         CiftiFile outputFile;
         outputFile.setWritingFile(argv[2]);//sets up on-disk writing with default writing version, from CiftiVersion's default constructor
-        outputFile.setCiftiXML(inputFile.getCiftiXML());
+        outputFile.setCiftiXML(inputFile.getCiftiXML());//the CiftiXML is how you access all the mapping information
         const vector<int64_t>& dims = inputFile.getDimensions();
         vector<float> scratchRow(dims[0]);//read/write a row at a time
         for (MultiDimIterator<int64_t> iter(vector<int64_t>(dims.begin() + 1, dims.end())); !iter.atEnd(); ++iter)
