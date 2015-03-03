@@ -16,6 +16,8 @@ make
 
 The resulting static libraries and example executable will be in subdirectories of the build directory, not in the source directory.
 
+You may want to set CMAKE_BUILD_TYPE to Release or Debug before building, as the default build behavior may be non-optimized and without debug symbols.
+
 Troubleshooting:
 
 If you are using manually-installed libraries rather than distribution-packaged libraries, you may need to use the cmake variables CMAKE_LIBRARY_PATH and CMAKE_INCLUDE_PATH.
