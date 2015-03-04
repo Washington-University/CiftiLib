@@ -35,4 +35,6 @@ myFile.writeFile(filename);//if filename matches what was given to setWritingFil
 
 See rewrite.cxx for a program that does a row-by-row copy that works on cifti of any dimensionality.
 
+See xmlinfo.cxx for a program that prints XML summary information of all dimensions of a cifti file.
+
 */

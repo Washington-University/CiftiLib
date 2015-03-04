@@ -15,6 +15,7 @@ CiftiFile truncates without any warning when told to write to an existing file.
 
 \include rewrite.cxx
 */
+
 int main(int argc, char** argv)
 {
     if (argc < 3)

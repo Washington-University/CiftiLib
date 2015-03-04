@@ -11,6 +11,16 @@ Common
 ${QT_LIBRARIES}
 ${LIBS})
 
+ADD_EXECUTABLE(xmlinfo
+xmlinfo.cxx)
+
+TARGET_LINK_LIBRARIES(xmlinfo
+Cifti
+Nifti
+Common
+${QT_LIBRARIES}
+${LIBS})
+
 INCLUDE_DIRECTORIES(
 ${CMAKE_SOURCE_DIR}/example
 ${CMAKE_SOURCE_DIR}/Common
