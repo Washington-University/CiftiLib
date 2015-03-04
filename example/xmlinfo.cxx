@@ -15,7 +15,7 @@ This program reads a Cifti file from argv[1], and prints out a summary of the XM
 
 int main(int argc, char** argv)
 {
-    if (argc < 1)
+    if (argc < 2)
     {
         cout << "this program requires one argument: an input cifti file" << endl;
         return 1;
