@@ -1,6 +1,6 @@
 The CiftiLib library requires boost headers and either QT, or libxml++ 2.17.x or newer (and its dependencies: libxml2, glib, sigc++, gtkmm and glibmm) and the boost filesystem library to compile, and optionally uses zlib if you want to use its NIfTI reading capabilities for other purposes.  4.8.x releases of QT are known to work, newer versions may work, but have not been tested.
 
-It is currently set up to be compiled, along with a simple example, by cmake:
+It is currently set up to be compiled, along with a few simple examples, by cmake:
 
 #start one level up from the source tree
 #make build directory beside the source tree, enter it
@@ -14,7 +14,7 @@ cmake-gui ../CiftiLib
 #build
 make
 
-The resulting static libraries and example executable will be in subdirectories of the build directory, not in the source directory.
+The resulting static libraries and example executables will be in subdirectories of the build directory, not in the source directory.
 
 You may want to set CMAKE_BUILD_TYPE to Release or Debug before building, as the default build behavior may be non-optimized and without debug symbols.
 
