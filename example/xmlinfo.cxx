@@ -115,7 +115,7 @@ int main(int argc, char** argv)
             cout << endl;//extra line break between dimensions
         }
     } catch (CiftiException& e) {
-        cout << "Caught CiftiException: " + AString_to_std_string(e.whatString()) << endl;
+        cerr << "Caught CiftiException: " + AString_to_std_string(e.whatString()) << endl;
         return 1;
     }
     return 0;
