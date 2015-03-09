@@ -39,11 +39,11 @@ int main(int argc, char** argv)
                         switch (myInfo[i].m_type)
                         {
                             case CiftiBrainModelsMap::SURFACE:
-                                cout << "   Surface " << StructureEnum::toName(myInfo[i].m_structure) << ": ";
+                                cout << "   Surface " << AString_to_std_string(StructureEnum::toName(myInfo[i].m_structure)) << ": ";
                                 cout << myInfo[i].m_indexCount << " out of " << myMap.getSurfaceNumberOfNodes(myInfo[i].m_structure) << " vertices" << endl;
                                 break;
                             case CiftiBrainModelsMap::VOXELS:
-                                cout << "   Voxels " << StructureEnum::toName(myInfo[i].m_structure) << ": ";
+                                cout << "   Voxels " << AString_to_std_string(StructureEnum::toName(myInfo[i].m_structure)) << ": ";
                                 cout << myInfo[i].m_indexCount << " voxels" << endl;
                                 break;
                         }
@@ -56,7 +56,7 @@ int main(int argc, char** argv)
                     cout << "Labels, length " << myMap.getLength() << endl;
                     for (int i = 0; i < myMap.getLength(); ++i)
                     {
-                        cout << "   Index " << i << ": " << myMap.getMapName(i) << endl;
+                        cout << "   Index " << i << ": " << AString_to_std_string(myMap.getMapName(i)) << endl;
                     }
                     break;
                 }
@@ -67,7 +67,7 @@ int main(int argc, char** argv)
                     const vector<CiftiParcelsMap::Parcel>& myParcels = myMap.getParcels();
                     for (int i = 0; i < (int)myParcels.size(); ++i)
                     {
-                        cout << "   Index " << i << ", name '" << myParcels[i].m_name << "': ";
+                        cout << "   Index " << i << ", name '" << AString_to_std_string(myParcels[i].m_name) << "': ";
                         int numVerts = 0;
                         for (map<StructureEnum::Enum, set<int64_t> >::const_iterator iter = myParcels[i].m_surfaceNodes.begin(); iter != myParcels[i].m_surfaceNodes.end(); ++iter)
                         {
@@ -83,7 +83,7 @@ int main(int argc, char** argv)
                     cout << "Scalars, length " << myMap.getLength() << endl;
                     for (int i = 0; i < myMap.getLength(); ++i)
                     {
-                        cout << "   Index " << i << ": " << myMap.getMapName(i) << endl;
+                        cout << "   Index " << i << ": " << AString_to_std_string(myMap.getMapName(i)) << endl;
                     }
                     break;
                 }
