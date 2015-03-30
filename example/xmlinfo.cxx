@@ -93,22 +93,7 @@ int main(int argc, char** argv)
                     cout << "Series, length " << myMap.getLength() << endl;
                     cout << "   Start: " << myMap.getStart() << endl;
                     cout << "   Step: " << myMap.getStep() << endl;
-                    cout << "   Unit: ";
-                    switch (myMap.getUnit())
-                    {
-                        case CiftiSeriesMap::SECOND:
-                            cout << "Seconds" << endl;
-                            break;
-                        case CiftiSeriesMap::HERTZ:
-                            cout << "Hertz" << endl;
-                            break;
-                        case CiftiSeriesMap::METER:
-                            cout << "Meters" << endl;
-                            break;
-                        case CiftiSeriesMap::RADIAN:
-                            cout << "Radians" << endl;
-                            break;
-                    }
+                    cout << "   Unit: " << AString_to_std_string(CiftiSeriesMap::unitToString(myMap.getUnit())) << endl;
                     break;
                 }
             }

@@ -66,6 +66,10 @@ namespace cifti
         void setUnit(const Unit& unit) { m_unit = unit; }
         void setLength(const int64_t& length) { CiftiAssert(length > 0); m_length = length; }
         
+        static Unit stringToUnit(const AString& string, bool& ok);
+        static AString unitToString(const Unit& theUnit);
+        static std::vector<Unit> getAllUnits();
+        
         CiftiMappingType* clone() const { return new CiftiSeriesMap(*this); }
         MappingType getType() const { return SERIES; }
         int64_t getLength() const { return m_length; }
