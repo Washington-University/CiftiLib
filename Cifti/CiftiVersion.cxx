@@ -53,13 +53,13 @@ CiftiVersion::CiftiVersion(const AString& versionString)
     {
         m_minor = 0;
         m_major = versionString.toShort(&ok);
-        if (!ok) throw CiftiException("improperly formatted version string: " + versionString);
+        if (!ok) throw CiftiException("improperly formatted CIFTI version string: '" + versionString + "'");
     } else {
-        if (result == 0) throw CiftiException("improperly formatted version string: " + versionString);
+        if (result == 0) throw CiftiException("improperly formatted CIFTI version string: '" + versionString + "'");
         m_major = versionString.mid(0, result).toShort(&ok);
-        if (!ok) throw CiftiException("improperly formatted version string: " + versionString);
+        if (!ok) throw CiftiException("improperly formatted CIFTI version string: '" + versionString + "'");
         m_minor = versionString.mid(result + 1).toShort(&ok);
-        if (!ok) throw CiftiException("improperly formatted version string: " + versionString);
+        if (!ok) throw CiftiException("improperly formatted CIFTI version string: '" + versionString + "'");
     }
 #else
 #ifdef CIFTILIB_USE_XMLPP
