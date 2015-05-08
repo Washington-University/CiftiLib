@@ -30,6 +30,7 @@
 #include "CiftiException.h"
 
 #include <cmath>
+#include <iostream>
 
 using namespace cifti;
 using namespace std;
@@ -236,7 +237,7 @@ void CiftiSeriesMap::writeXML1(XmlWriter& xml) const
     CiftiAssert(m_length != -1);
     if (m_unit != SECOND)
     {
-        throw CiftiException("cifti-1 does not support writing series with non-time units");
+        cerr << "WARNING: changing series units to seconds for CIFTI-1 XML" << endl;
     }
     xml.writeAttribute("IndicesMapToDataType", "CIFTI_INDEX_TYPE_TIME_POINTS");
     float mult = 1.0f;
