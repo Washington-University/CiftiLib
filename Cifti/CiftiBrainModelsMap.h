@@ -100,7 +100,7 @@ namespace cifti
         MappingType getType() const { return BRAIN_MODELS; }
         int64_t getLength() const;
         bool operator==(const CiftiMappingType& rhs) const;
-        bool approximateMatch(const CiftiMappingType& rhs) const;
+        bool approximateMatch(const CiftiMappingType& rhs, AString* explanation = NULL) const;
         void readXML1(XmlReader& xml);
         void readXML2(XmlReader& xml);
         void writeXML1(XmlWriter& xml) const;

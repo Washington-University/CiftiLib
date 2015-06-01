@@ -82,15 +82,20 @@ void CiftiLabelsMap::setLength(const int64_t& length)
     m_maps.resize(length);
 }
 
-bool CiftiLabelsMap::approximateMatch(const CiftiMappingType& rhs) const
+bool CiftiLabelsMap::approximateMatch(const CiftiMappingType& rhs, AString* explanation) const
 {
     switch (rhs.getType())
     {
         case SCALARS:
         case SERIES://maybe?
         case LABELS:
-            return getLength() == rhs.getLength();
+            if (getLength() != rhs.getLength())
+            {
+                if (explanation != NULL) *explanation = "mappings have different length";
+                return false;
+            } else return true;
         default:
+            if (explanation != NULL) *explanation = CiftiMappingType::mappingTypeToName(rhs.getType()) + " mapping never matches " + CiftiMappingType::mappingTypeToName(getType());
             return false;
     }
 }

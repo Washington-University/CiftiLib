@@ -27,8 +27,29 @@
 
 #include "CiftiMappingType.h"
 
+#include "CiftiAssert.h"
+
 using namespace cifti;
 
 CiftiMappingType::~CiftiMappingType()
 {//to ensure that the class's vtable gets defined in an object file
+}
+
+AString CiftiMappingType::mappingTypeToName(const CiftiMappingType::MappingType& type)
+{
+    switch (type)
+    {
+        case BRAIN_MODELS:
+            return "BRAIN_MODELS";
+        case PARCELS:
+            return "PARCELS";
+        case SERIES:
+            return "SERIES";
+        case SCALARS:
+            return "SCALARS";
+        case LABELS:
+            return "LABELS";
+    }
+    CiftiAssert(0);
+    return "";
 }

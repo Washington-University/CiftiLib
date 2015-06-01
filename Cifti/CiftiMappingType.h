@@ -51,12 +51,14 @@ namespace cifti
         virtual int64_t getLength() const = 0;
         virtual bool operator==(const CiftiMappingType& rhs) const = 0;//used to check for merging mappings when writing the XML - must compare EVERYTHING that goes into the XML
         bool operator!=(const CiftiMappingType& rhs) const { return !((*this) == rhs); }
-        virtual bool approximateMatch(const CiftiMappingType& rhs) const = 0;//check if things like doing index-wise math would make sense
+        virtual bool approximateMatch(const CiftiMappingType& rhs, AString* explanation = NULL) const = 0;//check if things like doing index-wise math would make sense
         virtual void readXML1(XmlReader& xml) = 0;//mainly to shorten the type-specific code in CiftiXML
         virtual void readXML2(XmlReader& xml) = 0;
         virtual void writeXML1(XmlWriter& xml) const = 0;
         virtual void writeXML2(XmlWriter& xml) const = 0;
         virtual ~CiftiMappingType();
+        
+        static AString mappingTypeToName(const MappingType& type);
     };
 }
 
