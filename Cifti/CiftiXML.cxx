@@ -55,7 +55,7 @@ void CiftiXML::copyHelper(const CiftiXML& rhs)
     m_indexMaps.resize(numDims);
     for (int i = 0; i < numDims; ++i)
     {
-        m_indexMaps[i] = shared_ptr<CiftiMappingType>(rhs.m_indexMaps[i]->clone());
+        m_indexMaps[i] = boost::shared_ptr<CiftiMappingType>(rhs.m_indexMaps[i]->clone());
     }
     m_parsedVersion = rhs.m_parsedVersion;
     m_fileMetaData = rhs.m_fileMetaData;
@@ -204,7 +204,7 @@ CiftiMappingType::MappingType CiftiXML::getMappingType(const int& direction) con
 void CiftiXML::setMap(const int& direction, const CiftiMappingType& mapIn)
 {
     CiftiAssertVectorIndex(m_indexMaps, direction);
-    m_indexMaps[direction] = shared_ptr<CiftiMappingType>(mapIn.clone());
+    m_indexMaps[direction] = boost::shared_ptr<CiftiMappingType>(mapIn.clone());
 }
 
 void CiftiXML::setNumberOfDimensions(const int& num)
@@ -771,19 +771,19 @@ void CiftiXML::parseMatrixIndicesMap1(XmlReader& xml)
         }
         used.insert(parsed);
     }
-    shared_ptr<CiftiMappingType> toRead;
+    boost::shared_ptr<CiftiMappingType> toRead;
     AString type = myAttrs.mandatoryVals[1];
     if (type == "CIFTI_INDEX_TYPE_BRAIN_MODELS")
     {
-        toRead = shared_ptr<CiftiBrainModelsMap>(new CiftiBrainModelsMap());
+        toRead = boost::shared_ptr<CiftiBrainModelsMap>(new CiftiBrainModelsMap());
     } else if (type == "CIFTI_INDEX_TYPE_TIME_POINTS") {
-        toRead = shared_ptr<CiftiSeriesMap>(new CiftiSeriesMap());
+        toRead = boost::shared_ptr<CiftiSeriesMap>(new CiftiSeriesMap());
     } else if (type == "CIFTI_INDEX_TYPE_LABELS") {//this and below are nonstandard
-        toRead = shared_ptr<CiftiLabelsMap>(new CiftiLabelsMap());
+        toRead = boost::shared_ptr<CiftiLabelsMap>(new CiftiLabelsMap());
     } else if (type == "CIFTI_INDEX_TYPE_PARCELS") {
-        toRead = shared_ptr<CiftiParcelsMap>(new CiftiParcelsMap());
+        toRead = boost::shared_ptr<CiftiParcelsMap>(new CiftiParcelsMap());
     } else if (type == "CIFTI_INDEX_TYPE_SCALARS") {
-        toRead = shared_ptr<CiftiScalarsMap>(new CiftiScalarsMap());
+        toRead = boost::shared_ptr<CiftiScalarsMap>(new CiftiScalarsMap());
     } else {
         throw CiftiException("invalid value for IndicesMapToDataType in CIFTI-1: " + type);
     }
@@ -801,7 +801,7 @@ void CiftiXML::parseMatrixIndicesMap1(XmlReader& xml)
             m_indexMaps[*iter] = toRead;
             first = false;
         } else {
-            m_indexMaps[*iter] = shared_ptr<CiftiMappingType>(toRead->clone());//make in-memory information independent per-dimension, rather than dealing with deduplication everywhere
+            m_indexMaps[*iter] = boost::shared_ptr<CiftiMappingType>(toRead->clone());//make in-memory information independent per-dimension, rather than dealing with deduplication everywhere
         }
     }
     CiftiAssert(XmlReader_checkEndElement(xml, "MatrixIndicesMap"));
@@ -829,19 +829,19 @@ void CiftiXML::parseMatrixIndicesMap2(XmlReader& xml)
         }
         used.insert(parsed);
     }
-    shared_ptr<CiftiMappingType> toRead;
+    boost::shared_ptr<CiftiMappingType> toRead;
     AString type = myAttrs.mandatoryVals[1];
     if (type == "CIFTI_INDEX_TYPE_BRAIN_MODELS")
     {
-        toRead = shared_ptr<CiftiBrainModelsMap>(new CiftiBrainModelsMap());
+        toRead = boost::shared_ptr<CiftiBrainModelsMap>(new CiftiBrainModelsMap());
     } else if (type == "CIFTI_INDEX_TYPE_LABELS") {
-        toRead = shared_ptr<CiftiLabelsMap>(new CiftiLabelsMap());
+        toRead = boost::shared_ptr<CiftiLabelsMap>(new CiftiLabelsMap());
     } else if (type == "CIFTI_INDEX_TYPE_PARCELS") {
-        toRead = shared_ptr<CiftiParcelsMap>(new CiftiParcelsMap());
+        toRead = boost::shared_ptr<CiftiParcelsMap>(new CiftiParcelsMap());
     } else if (type == "CIFTI_INDEX_TYPE_SCALARS") {
-        toRead = shared_ptr<CiftiScalarsMap>(new CiftiScalarsMap());
+        toRead = boost::shared_ptr<CiftiScalarsMap>(new CiftiScalarsMap());
     } else if (type == "CIFTI_INDEX_TYPE_SERIES") {
-        toRead = shared_ptr<CiftiSeriesMap>(new CiftiSeriesMap());
+        toRead = boost::shared_ptr<CiftiSeriesMap>(new CiftiSeriesMap());
     } else {
         throw CiftiException("invalid value for IndicesMapToDataType in CIFTI-1: " + type);
     }
@@ -859,7 +859,7 @@ void CiftiXML::parseMatrixIndicesMap2(XmlReader& xml)
             m_indexMaps[*iter] = toRead;
             first = false;
         } else {
-            m_indexMaps[*iter] = shared_ptr<CiftiMappingType>(toRead->clone());//make in-memory information independent per-dimension, rather than dealing with deduplication everywhere
+            m_indexMaps[*iter] = boost::shared_ptr<CiftiMappingType>(toRead->clone());//make in-memory information independent per-dimension, rather than dealing with deduplication everywhere
         }
     }
     CiftiAssert(XmlReader_checkEndElement(xml, "MatrixIndicesMap"));

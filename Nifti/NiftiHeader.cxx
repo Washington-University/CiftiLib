@@ -500,7 +500,7 @@ void NiftiHeader::read(BinaryFile& inFile)
             inFile.read(&ecode, sizeof(int32_t));
             if (swapped) ByteSwapping::swap(ecode);
             if (esize < 8 || esize + extStart > m_header.vox_offset) break;
-            shared_ptr<NiftiExtension> tempExtension(new NiftiExtension());
+            boost::shared_ptr<NiftiExtension> tempExtension(new NiftiExtension());
             if ((size_t)esize > 2 * sizeof(int32_t))//don't try to read 0 bytes
             {
                 tempExtension->m_bytes.resize(esize - 2 * sizeof(int32_t));

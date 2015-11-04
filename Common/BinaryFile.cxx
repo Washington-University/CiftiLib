@@ -141,15 +141,15 @@ void BinaryFile::open(const AString& filename, const OpenMode& opmode)
     if (AString_substr(filename, filename.size() - 3) == ".gz")
     {
 #ifdef ZLIB_VERSION
-        m_impl = shared_ptr<ZFileImpl>(new ZFileImpl());
+        m_impl = boost::shared_ptr<ZFileImpl>(new ZFileImpl());
 #else //ZLIB_VERSION
         throw CiftiException("can't open .gz file '" + filename + "', compiled without zlib support");
 #endif //ZLIB_VERSION
     } else {
 #ifdef CIFTILIB_USE_QT
-        m_impl = shared_ptr<QFileImpl>(new QFileImpl());
+        m_impl = boost::shared_ptr<QFileImpl>(new QFileImpl());
 #else
-        m_impl = shared_ptr<StrFileImpl>(new StrFileImpl());
+        m_impl = boost::shared_ptr<StrFileImpl>(new StrFileImpl());
 #endif
     }
     m_impl->open(filename, opmode);

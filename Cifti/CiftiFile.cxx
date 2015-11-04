@@ -130,7 +130,7 @@ void CiftiFile::openFile(const AString& fileName)
     m_writingImpl.reset();
     m_readingImpl.reset();//to make sure it closes everything first, even if the open throws
     m_dims.clear();
-    shared_ptr<CiftiOnDiskImpl> newRead(new CiftiOnDiskImpl(pathToAbsolute(fileName)));//this constructor opens existing file read-only
+    boost::shared_ptr<CiftiOnDiskImpl> newRead(new CiftiOnDiskImpl(pathToAbsolute(fileName)));//this constructor opens existing file read-only
     m_readingImpl = newRead;//it should be noted that if the constructor throws (if the file isn't readable), new guarantees the memory allocated for the object will be freed
     m_xml = newRead->getCiftiXML();
     m_dims = m_xml.getDimensions();
@@ -154,12 +154,12 @@ void CiftiFile::writeFile(const AString& fileName, const CiftiVersion& writingVe
     {//empty string test is so that we don't say collision if both are nonexistant - could happen if file is removed/unlinked while reading on some filesystems
         if (m_onDiskVersion == writingVersion) return;//don't need to copy to itself
         collision = true;//we need to copy to memory temporarily
-        shared_ptr<WriteImplInterface> tempMemory(new CiftiMemoryImpl(m_xml));//because tempRead is a ReadImpl, can't be used to copy to
+        boost::shared_ptr<WriteImplInterface> tempMemory(new CiftiMemoryImpl(m_xml));//because tempRead is a ReadImpl, can't be used to copy to
         copyImplData(m_readingImpl.get(), tempMemory.get(), m_dims);
         m_readingImpl = tempMemory;//we are about to make the old reading impl very unhappy, replace it so that if we get an error while writing, we hang onto the memory version
         m_writingImpl.reset();//and make it re-magic the writing implementation again if it tries to write again
     }
-    shared_ptr<WriteImplInterface> tempWrite(new CiftiOnDiskImpl(pathToAbsolute(fileName), m_xml, writingVersion));
+    boost::shared_ptr<WriteImplInterface> tempWrite(new CiftiOnDiskImpl(pathToAbsolute(fileName), m_xml, writingVersion));
     copyImplData(m_readingImpl.get(), tempWrite.get(), m_dims);
     if (collision)//if we rewrote the file, we need the handle to the new file, and to dump the temporary in-memory version
     {
@@ -180,7 +180,7 @@ void CiftiFile::convertToInMemory()
         m_writingFile = "";//make sure it doesn't do on-disk when set...() is called
         return;
     }
-    shared_ptr<WriteImplInterface> tempWrite(new CiftiMemoryImpl(m_xml));//if we get an error while reading, free the memory immediately, and don't leave m_readingImpl and m_writingImpl pointing to different things
+    boost::shared_ptr<WriteImplInterface> tempWrite(new CiftiMemoryImpl(m_xml));//if we get an error while reading, free the memory immediately, and don't leave m_readingImpl and m_writingImpl pointing to different things
     copyImplData(m_readingImpl.get(), tempWrite.get(), m_dims);
     m_writingImpl = tempWrite;
     m_readingImpl = tempWrite;
@@ -274,7 +274,7 @@ void CiftiFile::verifyWriteImpl()
         {
             convertToInMemory();
         } else {
-            m_writingImpl = shared_ptr<CiftiMemoryImpl>(new CiftiMemoryImpl(m_xml));
+            m_writingImpl = boost::shared_ptr<CiftiMemoryImpl>(new CiftiMemoryImpl(m_xml));
         }
     } else {//NOTE: m_onDiskVersion gets set in setWritingFile
         if (m_readingImpl != NULL)
@@ -289,7 +289,7 @@ void CiftiFile::verifyWriteImpl()
                 }
             }
         }
-        m_writingImpl = shared_ptr<CiftiOnDiskImpl>(new CiftiOnDiskImpl(m_writingFile, m_xml, m_onDiskVersion));//this constructor makes new file for writing
+        m_writingImpl = boost::shared_ptr<CiftiOnDiskImpl>(new CiftiOnDiskImpl(m_writingFile, m_xml, m_onDiskVersion));//this constructor makes new file for writing
         if (m_readingImpl != NULL)
         {
             copyImplData(m_readingImpl.get(), m_writingImpl.get(), m_dims);
@@ -413,7 +413,7 @@ CiftiOnDiskImpl::CiftiOnDiskImpl(const AString& filename, const CiftiXML& xml, c
     char intentName[16];
     int32_t intentCode = xml.getIntentInfo(version, intentName);
     outHeader.setIntent(intentCode, intentName);
-    shared_ptr<NiftiExtension> outExtension(new NiftiExtension());
+    boost::shared_ptr<NiftiExtension> outExtension(new NiftiExtension());
     outExtension->m_ecode = NIFTI_ECODE_CIFTI;
     outExtension->m_bytes = xml.writeXMLToVector(version);
     outHeader.m_extensions.push_back(outExtension);
