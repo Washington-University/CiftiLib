@@ -1,15 +1,21 @@
 
 project (Nifti)
 
+SET(HEADERS
+NiftiHeader.h
+NiftiIO.h
+)
+
+SET(SOURCES
+NiftiHeader.cxx
+NiftiIO.cxx
+)
 #
 # Create the NIFTI library
 #
 ADD_LIBRARY(Nifti
-NiftiHeader.h
-NiftiIO.h
-
-NiftiHeader.cxx
-NiftiIO.cxx
+${HEADERS}
+${SOURCES}
 )
 
 #
