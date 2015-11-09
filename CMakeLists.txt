@@ -64,39 +64,42 @@ ADD_SUBDIRECTORY(example)
 
 #shared library, as a single file
 #helper macro to deal with adding subdirectories to each file
-macro(append_subdir_files variable dirname)
-get_directory_property(holder DIRECTORY ${dirname} DEFINITION ${variable})
-foreach(depfile ${holder})
-  list(APPEND ${variable} "${dirname}/${depfile}")
-endforeach()
-endmacro()
+SET (CIFTI_BUILD_SHARED FALSE CACHE BOOL "build shared library and enable installation as system library")
+IF (CIFTI_BUILD_SHARED)
+    macro(append_subdir_files variable dirname)
+        get_directory_property(holder DIRECTORY ${dirname} DEFINITION ${variable})
+        foreach(depfile ${holder})
+            list(APPEND ${variable} "${dirname}/${depfile}")
+        endforeach()
+    endmacro()
 
-append_subdir_files(SOURCES Common)
-append_subdir_files(HEADERS Common)
-append_subdir_files(SOURCES Nifti)
-append_subdir_files(HEADERS Nifti)
-append_subdir_files(SOURCES Cifti)
-append_subdir_files(HEADERS Cifti)
+    append_subdir_files(SOURCES Common)
+    append_subdir_files(HEADERS Common)
+    append_subdir_files(SOURCES Nifti)
+    append_subdir_files(HEADERS Nifti)
+    append_subdir_files(SOURCES Cifti)
+    append_subdir_files(HEADERS Cifti)
 
-ADD_LIBRARY(Cifti-shared SHARED
-${SOURCES}
-${HEADERS}
-)
+    ADD_LIBRARY(Cifti-shared SHARED
+    ${SOURCES}
+    ${HEADERS}
+    )
 
-#NOTE: soversion/version may need to change major version even when library version doesn't, as ABI stability was not designed for
-#soversion defines what symlinks are created, version defines what to put on the end of the actual library file
-SET_TARGET_PROPERTIES(Cifti-shared
-PROPERTIES
-OUTPUT_NAME Cifti
-SOVERSION 1
-VERSION 1.3
-)
+    #NOTE: soversion/version may need to change major version even when library version doesn't, as ABI stability was not designed for
+    #soversion defines what symlinks are created, version defines what to put on the end of the actual library file
+    SET_TARGET_PROPERTIES(Cifti-shared
+    PROPERTIES
+    OUTPUT_NAME Cifti
+    SOVERSION 1
+    VERSION 1.3
+    )
 
-INCLUDE_DIRECTORIES(
-${CMAKE_SOURCE_DIR}/Cifti
-${CMAKE_SOURCE_DIR}/Nifti
-${CMAKE_SOURCE_DIR}/Common
-)
-#TODO: lib64 handling?
-INSTALL(TARGETS Cifti-shared DESTINATION lib)
-INSTALL(FILES ${HEADERS} DESTINATION include/Cifti)
+    INCLUDE_DIRECTORIES(
+    ${CMAKE_SOURCE_DIR}/Cifti
+    ${CMAKE_SOURCE_DIR}/Nifti
+    ${CMAKE_SOURCE_DIR}/Common
+    )
+    #TODO: lib64 handling?
+    INSTALL(TARGETS Cifti-shared DESTINATION lib${LIB_SUFFIX})
+    INSTALL(FILES ${HEADERS} DESTINATION include/Cifti)
+ENDIF (CIFTI_BUILD_SHARED)
