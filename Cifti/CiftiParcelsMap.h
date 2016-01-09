@@ -54,6 +54,7 @@ namespace cifti
             bool approximateMatch(const Parcel& rhs, AString* explanation = NULL) const;
         };
         bool hasVolumeData() const;
+        bool hasSurface(const StructureEnum::Enum& structure) const;//only checks whether surface has been added/read
         bool hasSurfaceData(const StructureEnum::Enum& structure) const;
         const VolumeSpace& getVolumeSpace() const;
         int64_t getSurfaceNumberOfNodes(const StructureEnum::Enum& structure) const;
@@ -64,7 +65,7 @@ namespace cifti
         const std::vector<Parcel>& getParcels() const { return m_parcels; }
         
         CiftiParcelsMap() { m_haveVolumeSpace = false; m_ignoreVolSpace = false; }
-        void addSurface(const int& numberOfNodes, const StructureEnum::Enum& structure);
+        void addSurface(const int64_t& numberOfNodes, const StructureEnum::Enum& structure);
         void setVolumeSpace(const VolumeSpace& space);
         void addParcel(const Parcel& parcel);
         void clear();

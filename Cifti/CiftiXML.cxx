@@ -204,6 +204,16 @@ CiftiMappingType::MappingType CiftiXML::getMappingType(const int& direction) con
 void CiftiXML::setMap(const int& direction, const CiftiMappingType& mapIn)
 {
     CiftiAssertVectorIndex(m_indexMaps, direction);
+    if (mapIn.getType() == CiftiMappingType::LABELS)
+    {
+        for (int i = 0; i < getNumberOfDimensions(); ++i)
+        {
+            if (i != direction && m_indexMaps[i] != NULL && m_indexMaps[i]->getType() == CiftiMappingType::LABELS)
+            {
+                throw CiftiException("Cifti XML cannot contain more than one label mapping");
+            }
+        }
+    }
     m_indexMaps[direction] = boost::shared_ptr<CiftiMappingType>(mapIn.clone());
 }
 
