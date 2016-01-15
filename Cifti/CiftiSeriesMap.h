@@ -28,7 +28,6 @@
  *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "CiftiAssert.h"
 #include "CiftiMappingType.h"
 
 namespace cifti
@@ -64,7 +63,7 @@ namespace cifti
         void setStart(const float& start) { m_start = start; }
         void setStep(const float& step) { m_step = step; }
         void setUnit(const Unit& unit) { m_unit = unit; }
-        void setLength(const int64_t& length) { CiftiAssert(length > 0); m_length = length; }
+        void setLength(const int64_t& length);
         
         static Unit stringToUnit(const AString& string, bool& ok);
         static AString unitToString(const Unit& theUnit);

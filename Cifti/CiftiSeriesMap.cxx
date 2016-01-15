@@ -27,6 +27,7 @@
 
 #include "CiftiSeriesMap.h"
 
+#include "CiftiAssert.h"
 #include "CiftiException.h"
 
 #include <cmath>
@@ -34,6 +35,12 @@
 
 using namespace cifti;
 using namespace std;
+
+void CiftiSeriesMap::setLength(const int64_t& length)
+{
+    CiftiAssert(length > 0);
+    m_length = length;
+}
 
 CiftiSeriesMap::Unit CiftiSeriesMap::stringToUnit(const AString& string, bool& ok)
 {
