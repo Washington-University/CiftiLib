@@ -1,10 +1,14 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-PROJECT(CiftiLib_and_example)
+PROJECT(CiftiLib)
 
 SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall")
 
 SET(IGNORE_QT FALSE CACHE BOOL "don't try to use QT")
+
+SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/" "${CMAKE_SOURCE_DIR}/cmake/Modules/UseDoxygen/")
+
+include(UseDoxygen)
 
 #
 # Use QT for xml/string
@@ -21,7 +25,6 @@ IF (NOT IGNORE_QT)
 ENDIF (NOT IGNORE_QT)
 
 IF (NOT QT_FOUND)
-    SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
     FIND_PACKAGE(libxml++ REQUIRED)
     INCLUDE_DIRECTORIES(${libxml++_INCLUDE_DIRS})
     SET(LIBS ${LIBS} ${libxml++_LIBRARIES})
