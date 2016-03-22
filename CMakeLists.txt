@@ -85,13 +85,13 @@ IF (CIFTI_BUILD_SHARED)
     ${HEADERS}
     )
 
-    #NOTE: soversion/version may need to change major version even when library version doesn't, as ABI stability was not designed for
+    #NOTE: soversion/version set to 0 because ABI compatibility was not designed into the interface
     #soversion defines what symlinks are created, version defines what to put on the end of the actual library file
     SET_TARGET_PROPERTIES(Cifti-shared
     PROPERTIES
     OUTPUT_NAME Cifti
-    SOVERSION 1
-    VERSION 1.3
+    SOVERSION 0
+    VERSION 0
     )
 
     INCLUDE_DIRECTORIES(
