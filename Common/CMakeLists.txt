@@ -21,6 +21,24 @@ VoxelIJK.h
 XmlAdapter.h
 )
 
+SET(PUBLIC_HEADERS
+AString.h #API
+ByteSwapping.h #NiftiIO.h
+CiftiAssert.h #NiftiIO.h
+BinaryFile.h  #NiftiIO.h
+CiftiException.h #API
+Compact3DLookup.h #CiftiBrainModelsMap.h
+CompactLookup.h #Compact3DLookup.h
+#FloatMatrix.h
+#MatrixFunctions.h
+#MathFunctions.h
+#MultiDimArray.h
+MultiDimIterator.h #API
+Vector3D.h #API
+VoxelIJK.h #API
+XmlAdapter.h #could forward declare everywhere
+)
+
 SET(SOURCES
 AString.cxx
 BinaryFile.cxx

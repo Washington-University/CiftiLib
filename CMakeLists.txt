@@ -49,12 +49,12 @@ ENDIF (Boost_VERSION LESS 105600)
 
 FIND_PACKAGE(ZLIB)
 IF (ZLIB_FOUND)
-    ADD_DEFINITIONS("-DCARET_HAVE_ZLIB")
+    ADD_DEFINITIONS("-DCIFTILIB_HAVE_ZLIB")
 ENDIF (ZLIB_FOUND)
 
 #OS X has some weirdness in its zlib, so let the preprocessor know
 IF (APPLE)
-    ADD_DEFINITIONS(-DCARET_OS_MACOSX)
+    ADD_DEFINITIONS(-DCIFTILIB_OS_MACOSX)
 ENDIF (APPLE)
 
 ADD_SUBDIRECTORY(Common)
@@ -73,12 +73,17 @@ IF (CIFTI_BUILD_SHARED)
         endforeach()
     endmacro()
 
-    append_subdir_files(SOURCES Common)
-    append_subdir_files(HEADERS Common)
+    #all headers of these are public
     append_subdir_files(SOURCES Nifti)
     append_subdir_files(HEADERS Nifti)
     append_subdir_files(SOURCES Cifti)
     append_subdir_files(HEADERS Cifti)
+    SET(PUBLIC_HEADERS ${HEADERS})
+
+    #some headers of this are private
+    append_subdir_files(SOURCES Common)
+    append_subdir_files(HEADERS Common)
+    append_subdir_files(PUBLIC_HEADERS Common)
 
     ADD_LIBRARY(Cifti-shared SHARED
     ${SOURCES}
@@ -101,5 +106,5 @@ IF (CIFTI_BUILD_SHARED)
     )
 
     INSTALL(TARGETS Cifti-shared DESTINATION lib${LIB_SUFFIX})
-    INSTALL(FILES ${HEADERS} DESTINATION include/Cifti)
+    INSTALL(FILES ${PUBLIC_HEADERS} DESTINATION include/Cifti)
 ENDIF (CIFTI_BUILD_SHARED)

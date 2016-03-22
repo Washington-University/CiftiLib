@@ -28,7 +28,6 @@
 #include "CiftiFile.h"
 
 #include "CiftiAssert.h"
-#include "CiftiException.h"
 #include "MultiDimArray.h"
 #include "MultiDimIterator.h"
 #include "NiftiIO.h"

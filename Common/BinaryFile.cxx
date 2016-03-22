@@ -26,7 +26,7 @@
  */
 
 //try to force large file support from zlib, any other file reading calls
-#ifndef CARET_OS_MACOSX
+#ifndef CIFTILIB_OS_MACOSX
 #define _LARGEFILE64_SOURCE
 #define _LFS64_LARGEFILE 1
 #define _FILE_OFFSET_BITS 64
@@ -42,9 +42,9 @@
 #include "stdio.h"
 #endif
 
-#ifdef CARET_HAVE_ZLIB
+#ifdef CIFTILIB_HAVE_ZLIB
 #include "zlib.h"
-#endif //CARET_HAVE_ZLIB
+#endif //CIFTILIB_HAVE_ZLIB
 
 #include <iostream>
 
@@ -197,7 +197,7 @@ void ZFileImpl::open(const AString& filename, const BinaryFile::OpenMode& opmode
         default:
             throw CiftiException("compressed file only supports READ and WRITE_TRUNCATE modes");
     }
-#if !defined(CARET_OS_MACOSX) && ZLIB_VERNUM > 0x1232
+#if !defined(CIFTILIB_OS_MACOSX) && ZLIB_VERNUM > 0x1232
     m_zfile = gzopen64(ASTRING_TO_CSTR(filename), mode);
 #else
     m_zfile = gzopen(ASTRING_TO_CSTR(filename), mode);
@@ -249,7 +249,7 @@ void ZFileImpl::seek(const int64_t& position)
 {
     if (m_zfile == NULL) throw CiftiException("seek called on unopened ZFileImpl");//shouldn't happen
     if (pos() == position) return;//slight hack, since gzseek is slow or nonfunctional for some cases, so don't try it unless necessary
-#if !defined(CARET_OS_MACOSX) && ZLIB_VERNUM > 0x1232
+#if !defined(CIFTILIB_OS_MACOSX) && ZLIB_VERNUM > 0x1232
     int64_t ret = gzseek64(m_zfile, position, SEEK_SET);
 #else
     int64_t ret = gzseek(m_zfile, position, SEEK_SET);
@@ -260,7 +260,7 @@ void ZFileImpl::seek(const int64_t& position)
 int64_t ZFileImpl::pos()
 {
     if (m_zfile == NULL) throw CiftiException("pos called on unopened ZFileImpl");//shouldn't happen
-#if !defined(CARET_OS_MACOSX) && ZLIB_VERNUM > 0x1232
+#if !defined(CIFTILIB_OS_MACOSX) && ZLIB_VERNUM > 0x1232
     return gztell64(m_zfile);
 #else
     return gztell(m_zfile);

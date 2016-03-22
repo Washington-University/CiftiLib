@@ -29,6 +29,7 @@
  */
 
 #include "AString.h"
+#include "CiftiException.h"
 #include "CiftiXML.h"
 
 #include "boost/shared_ptr.hpp"

@@ -1,4 +1,3 @@
-#include "CiftiException.h"
 #include "CiftiFile.h"
 #include "MultiDimIterator.h"
 
