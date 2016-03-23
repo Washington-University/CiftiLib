@@ -6,9 +6,6 @@ rewrite.cxx)
 
 TARGET_LINK_LIBRARIES(rewrite
 Cifti
-Nifti
-Common
-${QT_LIBRARIES}
 ${LIBS})
 
 ADD_EXECUTABLE(xmlinfo
@@ -16,9 +13,6 @@ xmlinfo.cxx)
 
 TARGET_LINK_LIBRARIES(xmlinfo
 Cifti
-Nifti
-Common
-${QT_LIBRARIES}
 ${LIBS})
 
 INCLUDE_DIRECTORIES(

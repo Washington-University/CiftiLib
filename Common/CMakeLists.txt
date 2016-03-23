@@ -1,8 +1,6 @@
 
 PROJECT(Common)
 
-INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
-
 SET(HEADERS
 AString.h
 ByteSwapping.h
@@ -47,16 +45,4 @@ FloatMatrix.cxx
 MathFunctions.cxx
 Vector3D.cxx
 XmlAdapter.cxx
-)
-
-#
-# Create Common Library
-#
-ADD_LIBRARY(Common
-${HEADERS}
-${SOURCES}
-)
-
-INCLUDE_DIRECTORIES(
-${CMAKE_SOURCE_DIR}/Common
 )

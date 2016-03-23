@@ -10,9 +10,7 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/" 
 
 include(UseDoxygen)
 
-#
-# Use QT for xml/string
-#
+#QT
 IF (NOT IGNORE_QT)
     FIND_PACKAGE(Qt4 4.8)
     IF (QT_FOUND)
@@ -24,6 +22,7 @@ IF (NOT IGNORE_QT)
     ENDIF (QT_FOUND)
 ENDIF (NOT IGNORE_QT)
 
+#alternative to QT xml, string
 IF (NOT QT_FOUND)
     FIND_PACKAGE(libxml++ REQUIRED)
     INCLUDE_DIRECTORIES(${libxml++_INCLUDE_DIRS})
@@ -31,12 +30,15 @@ IF (NOT QT_FOUND)
     ADD_DEFINITIONS(-DCIFTILIB_USE_XMLPP)
 ENDIF (NOT QT_FOUND)
 
+#boost, including filesystem if not using QT
 IF (NOT QT_FOUND)
     FIND_PACKAGE(Boost REQUIRED COMPONENTS filesystem system)
 ELSE (NOT QT_FOUND)
     FIND_PACKAGE(Boost REQUIRED)
 ENDIF (NOT QT_FOUND)
+INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
 SET(LIBS ${LIBS} ${Boost_LIBRARIES})
+#boost quirks
 IF (Boost_VERSION LESS 104400)
     #absolute() was added in 1.44.0, with filesystem v3
     ADD_DEFINITIONS(-DCIFTILIB_BOOST_NO_FSV3)
@@ -50,66 +52,65 @@ IF (Boost_VERSION LESS 105600)
     ADD_DEFINITIONS(-DCIFTILIB_BOOST_NO_TRY_LEXICAL)
 ENDIF (Boost_VERSION LESS 105600)
 
+#zlib
 FIND_PACKAGE(ZLIB)
 IF (ZLIB_FOUND)
     INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIRS})
     SET(LIBS ${LIBS} ${ZLIB_LIBRARIES})
     ADD_DEFINITIONS("-DCIFTILIB_HAVE_ZLIB")
 ENDIF (ZLIB_FOUND)
-
 #OS X has some weirdness in its zlib, so let the preprocessor know
 IF (APPLE)
     ADD_DEFINITIONS(-DCIFTILIB_OS_MACOSX)
 ENDIF (APPLE)
 
+#these subdirectories only define the sources contained in them, don't define any build targets
+#but we must do this before trying to access variables from these directories
 ADD_SUBDIRECTORY(Common)
 ADD_SUBDIRECTORY(Nifti)
 ADD_SUBDIRECTORY(Cifti)
+
+#example directory does define build targets
 ADD_SUBDIRECTORY(example)
 
-#shared library, as a single file
-#helper macro to deal with adding subdirectories to each file
-SET (CIFTI_BUILD_SHARED FALSE CACHE BOOL "build shared library and enable installation as system library")
-IF (CIFTI_BUILD_SHARED)
-    macro(append_subdir_files variable dirname)
-        get_directory_property(holder DIRECTORY ${dirname} DEFINITION ${variable})
-        foreach(depfile ${holder})
-            list(APPEND ${variable} "${dirname}/${depfile}")
-        endforeach()
-    endmacro()
+macro(append_subdir_files variable dirname)
+    get_directory_property(holder DIRECTORY ${dirname} DEFINITION ${variable})
+    foreach(depfile ${holder})
+        list(APPEND ${variable} "${dirname}/${depfile}")
+    endforeach()
+endmacro()
 
-    #all headers of these are public
-    append_subdir_files(SOURCES Nifti)
-    append_subdir_files(HEADERS Nifti)
-    append_subdir_files(SOURCES Cifti)
-    append_subdir_files(HEADERS Cifti)
-    SET(PUBLIC_HEADERS ${HEADERS})
+#all headers of these are public
+append_subdir_files(SOURCES Nifti)
+append_subdir_files(HEADERS Nifti)
+append_subdir_files(SOURCES Cifti)
+append_subdir_files(HEADERS Cifti)
+SET(PUBLIC_HEADERS ${HEADERS})
 
-    #some headers of this are private
-    append_subdir_files(SOURCES Common)
-    append_subdir_files(HEADERS Common)
-    append_subdir_files(PUBLIC_HEADERS Common)
+#some headers of this are private
+append_subdir_files(SOURCES Common)
+append_subdir_files(HEADERS Common)
+append_subdir_files(PUBLIC_HEADERS Common)
 
-    ADD_LIBRARY(Cifti-shared SHARED
-    ${SOURCES}
-    ${HEADERS}
-    )
+ADD_LIBRARY(Cifti
+${SOURCES}
+${HEADERS}
+)
 
-    #NOTE: soversion set to 0 because ABI compatibility was not designed into the interface
-    #soversion defines what symlinks are created, version defines what to put on the end of the actual library file
-    SET_TARGET_PROPERTIES(Cifti-shared
-    PROPERTIES
-    OUTPUT_NAME Cifti
-    SOVERSION 0
-    VERSION 1.3
-    )
+#NOTE: soversion set to 0 because ABI compatibility was not designed into the interface
+#soversion defines what symlinks are created, version defines what to put on the end of the actual library file
+SET_TARGET_PROPERTIES(Cifti
+PROPERTIES
+OUTPUT_NAME Cifti
+SOVERSION 0
+VERSION 1.3
+)
 
-    INCLUDE_DIRECTORIES(
-    ${CMAKE_SOURCE_DIR}/Cifti
-    ${CMAKE_SOURCE_DIR}/Nifti
-    ${CMAKE_SOURCE_DIR}/Common
-    )
+INCLUDE_DIRECTORIES(
+${CMAKE_SOURCE_DIR}/Cifti
+${CMAKE_SOURCE_DIR}/Nifti
+${CMAKE_SOURCE_DIR}/Common
+)
 
-    INSTALL(TARGETS Cifti-shared DESTINATION lib${LIB_SUFFIX})
-    INSTALL(FILES ${PUBLIC_HEADERS} DESTINATION include/Cifti)
-ENDIF (CIFTI_BUILD_SHARED)
+INSTALL(TARGETS Cifti DESTINATION lib${LIB_SUFFIX})
+INSTALL(FILES ${PUBLIC_HEADERS} DESTINATION include/Cifti)

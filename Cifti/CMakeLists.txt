@@ -1,8 +1,6 @@
 
 PROJECT(Cifti)
 
-INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
-
 SET(HEADERS
 CiftiFile.h
 CiftiXML.h
@@ -41,18 +39,4 @@ MetaData.cxx
 
 StructureEnum.cxx
 VolumeSpace.cxx
-)
-
-#
-# Create CIFTI Library
-#
-ADD_LIBRARY(Cifti
-${HEADERS}
-${SOURCES}
-)
-
-INCLUDE_DIRECTORIES(
-${CMAKE_SOURCE_DIR}/Cifti
-${CMAKE_SOURCE_DIR}/Nifti
-${CMAKE_SOURCE_DIR}/Common
 )
