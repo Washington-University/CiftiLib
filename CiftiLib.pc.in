@@ -1,0 +1,10 @@
+includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
+libdir=@CMAKE_INSTALL_FULL_LIBDIR@
+
+Name: CiftiLib
+Description: C++ Library for reading and writing CIFTI-2 and CIFTI-1 files
+Version: @CIFTILIB_VERSION@
+URL: https://github.com/Washington-University/CiftiLib
+Cflags: -I${includedir}/Cifti
+Libs: -L${libdir} -lCifti
+@CIFTILIB_PKGCONFIG_REQUIRES_LINE@
