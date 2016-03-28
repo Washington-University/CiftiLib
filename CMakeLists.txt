@@ -21,7 +21,9 @@ IF (NOT IGNORE_QT)
         ADD_DEFINITIONS(-DCIFTILIB_USE_QT)
         INCLUDE(${QT_USE_FILE})
         SET(LIBS ${LIBS} ${QT_LIBRARIES})
+        #for pkg-config file
         SET(CIFTILIB_PKGCONFIG_REQUIRES_LINE "Requires: QtCore >= 4.8.0 QtXml")
+        SET(CIFTILIB_PKGCONFIG_DEFINE "-DCIFTILIB_USE_QT")
     ENDIF (QT_FOUND)
 ENDIF (NOT IGNORE_QT)
 
@@ -33,6 +35,7 @@ IF (NOT QT_FOUND)
     ADD_DEFINITIONS(-DCIFTILIB_USE_XMLPP)
     #for pkg-config file
     SET(CIFTILIB_PKGCONFIG_REQUIRES_LINE "Requires: libxml++-2.6 >= 2.17.0")
+    SET(CIFTILIB_PKGCONFIG_DEFINE "-DCIFTILIB_USE_XMLPP")
 ENDIF (NOT QT_FOUND)
 
 #boost, including filesystem if not using QT
