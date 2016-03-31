@@ -1,5 +1,12 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
+#UseDoxygen trips over a policy change in cmake 3, suppress the warning
+CMAKE_POLICY(VERSION 2.8.7)
+#the suggested version-type policy command doesn't shut this warning up, so set it manually
+IF (POLICY CMP0045)
+    CMAKE_POLICY(SET CMP0045 OLD)
+ENDIF (POLICY CMP0045)
+
 PROJECT(CiftiLib)
 
 SET(CIFTILIB_VERSION 1.3)
@@ -14,16 +21,26 @@ INCLUDE(UseDoxygen)
 
 #QT
 IF (NOT IGNORE_QT)
-    FIND_PACKAGE(Qt4 4.8.0)
+    FIND_PACKAGE(Qt4 4.8.0 QUIET)
     IF (QT_FOUND)
         SET(QT_DONT_USE_QTGUI TRUE)
-        SET(CIFTILIB_USE_QT TRUE)
         ADD_DEFINITIONS(-DCIFTILIB_USE_QT)
         INCLUDE(${QT_USE_FILE})
         SET(LIBS ${LIBS} ${QT_LIBRARIES})
         #for pkg-config file
         SET(CIFTILIB_PKGCONFIG_REQUIRES_LINE "Requires: QtCore >= 4.8.0 QtXml")
         SET(CIFTILIB_PKGCONFIG_DEFINE "-DCIFTILIB_USE_QT")
+    ELSE (QT_FOUND)
+        FIND_PACKAGE(Qt5Core)
+        IF (Qt5Core_FOUND)
+            SET(QT_FOUND TRUE)
+            INCLUDE_DIRECTORIES(${Qt5Core_INCLUDE_DIRS})
+            SET(LIBS ${LIBS} Qt5::Core)
+            #whatever that means
+            ADD_DEFINITIONS(-DCIFTILIB_USE_QT)
+            SET(CIFTILIB_PKGCONFIG_REQUIRES_LINE "Requires: Qt5Core Qt5Xml")
+            SET(CIFTILIB_PKGCONFIG_DEFINE "-DCIFTILIB_USE_QT")
+        ENDIF (Qt5Core_FOUND)
     ENDIF (QT_FOUND)
 ENDIF (NOT IGNORE_QT)
 
