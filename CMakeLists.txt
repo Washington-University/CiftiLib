@@ -122,6 +122,9 @@ ${SOURCES}
 ${HEADERS}
 )
 
+#one way to get qt5's new compiler flag restrictions into the build - does it have other consequences?
+TARGET_LINK_LIBRARIES(Cifti ${LIBS})
+
 #NOTE: soversion set to 0 because ABI compatibility was not designed into the interface
 #soversion defines what symlinks are created, version defines what to put on the end of the actual library file
 SET_TARGET_PROPERTIES(Cifti
