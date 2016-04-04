@@ -89,13 +89,15 @@ IF (APPLE)
     ADD_DEFINITIONS(-DCIFTILIB_OS_MACOSX)
 ENDIF (APPLE)
 
+ENABLE_TESTING()
+
 #these subdirectories only define the sources contained in them, don't define any build targets
 #but we must do this before trying to access variables from these directories
 ADD_SUBDIRECTORY(Common)
 ADD_SUBDIRECTORY(Nifti)
 ADD_SUBDIRECTORY(Cifti)
 
-#example directory does define build targets
+#example directory does define build targets and tests
 ADD_SUBDIRECTORY(example)
 
 macro(append_subdir_files variable dirname)

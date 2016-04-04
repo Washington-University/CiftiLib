@@ -419,6 +419,7 @@ void StrFileImpl::seek(const int64_t& position)
     if (position == m_curPos) return;//optimization: calling fseeko causes nontrivial system call time, on linux at least
     int ret = fseeko(m_file, position, SEEK_SET);
     if (ret != 0) throw CiftiException("seek failed in file '" + m_fileName + "'");
+    m_curPos = position;
 }
 
 int64_t StrFileImpl::pos()

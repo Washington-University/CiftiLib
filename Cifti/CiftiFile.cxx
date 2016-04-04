@@ -95,12 +95,12 @@ namespace
         return QFileInfo(mypath).canonicalFilePath();
 #else
 #ifdef CIFTILIB_BOOST_NO_FSV3
-	return filesystem::complete(AString_to_std_string(mypath)).file_string();
+        return filesystem::complete(AString_to_std_string(mypath)).file_string();
 #else
 #ifdef CIFTILIB_BOOST_NO_CANONICAL
         filesystem::path temp = AString_to_std_string(mypath);
         if (!filesystem::exists(temp)) return "";
-        return temp.normalize().native();
+        return absolute(temp).normalize().native();
 #else
         string temp = AString_to_std_string(mypath);
         if (!filesystem::exists(temp)) return "";
