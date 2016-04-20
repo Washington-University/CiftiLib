@@ -41,7 +41,6 @@
 #endif
 
 #include <iostream>
-#include <zconf.h>
 
 using namespace std;
 using namespace boost;
