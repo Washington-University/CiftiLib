@@ -19,15 +19,30 @@ int main(int argc, char** argv)
 {
     if (argc < 3)
     {
-        cout << "this program requires two arguments: an input cifti file, and an output filename to write it to" << endl;
+        cout << "usage: " << argv[0] << " <input cifti> <output cifti> [<endian>]" << endl;
+        cout << "  rewrite the input cifti file to the output filename." << endl;
+        cout << "  endian can be 'LITTLE' or 'BIG', and uses native endianness if not specified" << endl;
         return 1;
+    }
+    CiftiFile::ENDIAN myEndian = CiftiFile::NATIVE;
+    if (argc > 3)
+    {
+        if (AString(argv[3]) == "LITTLE")
+        {
+            myEndian = CiftiFile::LITTLE;
+        } else if (AString(argv[3]) == "BIG") {
+            myEndian = CiftiFile::BIG;
+        } else {
+            cerr << "unrecognized endianness string: " << argv[3] << endl;
+            return 1;
+        }
     }
     try
     {
         CiftiFile inputFile(argv[1]);//on-disk reading by default
         //inputFile.convertToInMemory();//if you want to read it into memory first
         CiftiFile outputFile;
-        outputFile.setWritingFile(argv[2]);//sets up on-disk writing with default writing version, from CiftiVersion's default constructor
+        outputFile.setWritingFile(argv[2], CiftiVersion(), myEndian);//sets up on-disk writing with default writing version, from CiftiVersion's default constructor
         outputFile.setCiftiXML(inputFile.getCiftiXML());//the CiftiXML is how you access all the mapping information
         const vector<int64_t>& dims = inputFile.getDimensions();
         vector<float> scratchRow(dims[0]);//read/write a row at a time
@@ -38,6 +53,7 @@ int main(int argc, char** argv)
         }
         outputFile.writeFile(argv[2]);//because we called setWritingFile with this filename (and default cifti version), this will return immediately
         //NOTE: if you call writeFile with a different writing version (takes its default from CiftiVersion constructor) than setWritingFile, it will rewrite the entire file after reading it into memory
+        //it will also rewrite it if you specify an endianness other than ANY (which is the default), and the endianness doesn't match what it was already written as (via setWritingFile)
     } catch (CiftiException& e) {
         cerr << "Caught CiftiException: " + AString_to_std_string(e.whatString()) << endl;
         return 1;

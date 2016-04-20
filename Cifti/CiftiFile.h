@@ -43,23 +43,17 @@ namespace cifti
     class CiftiFile
     {
     public:
-        class ReadImplInterface
+        
+        enum ENDIAN
         {
-        public:
-            virtual void getRow(float* dataOut, const std::vector<int64_t>& indexSelect, const bool& tolerateShortRead) const = 0;
-            virtual void getColumn(float* dataOut, const int64_t& index) const = 0;
-            virtual bool isInMemory() const { return false; }
-            virtual ~ReadImplInterface();
+            ANY,//so that writeFile() with default endian argument can do nothing after setWritingFile with any endian argument - uses native if there is no rewrite to avoid
+            NATIVE,//as long as there are more than two options anyway, provide a convenience option so people don't need to figure out the machine endianness for a common case
+            LITTLE,
+            BIG
         };
-        //assume if you can write to it, you can also read from it
-        class WriteImplInterface : public ReadImplInterface
-        {
-        public:
-            virtual void setRow(const float* dataIn, const std::vector<int64_t>& indexSelect) = 0;
-            virtual void setColumn(const float* dataIn, const int64_t& index) = 0;
-            virtual ~WriteImplInterface();
-        };
-        CiftiFile() { }
+        
+        CiftiFile() { m_endianPref = NATIVE; }
+        
         ///starts on-disk reading
         explicit CiftiFile(const AString &fileName);
         
@@ -67,10 +61,10 @@ namespace cifti
         void openFile(const AString& fileName);
         
         ///starts on-disk writing
-        void setWritingFile(const AString& fileName, const CiftiVersion& writingVersion = CiftiVersion());
+        void setWritingFile(const AString& fileName, const CiftiVersion& writingVersion = CiftiVersion(), const ENDIAN& endian = NATIVE);
         
-        ///does nothing if filename and version match file currently open, otherwise writes complete file
-        void writeFile(const AString& fileName, const CiftiVersion& writingVersion = CiftiVersion());
+        ///does nothing if filename, version, and effective endianness match file currently open, otherwise writes complete file
+        void writeFile(const AString& fileName, const CiftiVersion& writingVersion = CiftiVersion(), const ENDIAN& endian = ANY);
         
         ///reads file into memory, closes file
         void convertToInMemory();
@@ -96,6 +90,24 @@ namespace cifti
         
         ///for 2D only, if you don't want to pass a vector for indexing
         void setRow(const float* dataIn, const int64_t& index);
+
+        //implementation details from here down
+        class ReadImplInterface
+        {
+        public:
+            virtual void getRow(float* dataOut, const std::vector<int64_t>& indexSelect, const bool& tolerateShortRead) const = 0;
+            virtual void getColumn(float* dataOut, const int64_t& index) const = 0;
+            virtual bool isInMemory() const { return false; }
+            virtual ~ReadImplInterface();
+        };
+        //assume if you can write to it, you can also read from it
+        class WriteImplInterface : public ReadImplInterface
+        {
+        public:
+            virtual void setRow(const float* dataIn, const std::vector<int64_t>& indexSelect) = 0;
+            virtual void setColumn(const float* dataIn, const int64_t& index) = 0;
+            virtual ~WriteImplInterface();
+        };
     private:
         std::vector<int64_t> m_dims;
         boost::shared_ptr<WriteImplInterface> m_writingImpl;//this will be equal to m_readingImpl when non-null
@@ -103,6 +115,8 @@ namespace cifti
         AString m_writingFile;
         CiftiXML m_xml;
         CiftiVersion m_onDiskVersion;
+        ENDIAN m_endianPref;
+        
         void verifyWriteImpl();
         static void copyImplData(const ReadImplInterface* from, WriteImplInterface* to, const std::vector<int64_t>& dims);
     };

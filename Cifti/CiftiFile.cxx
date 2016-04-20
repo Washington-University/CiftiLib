@@ -41,6 +41,7 @@
 #endif
 
 #include <iostream>
+#include <zconf.h>
 
 using namespace std;
 using namespace boost;
@@ -55,11 +56,12 @@ namespace
         CiftiXML m_xml;//because we need to parse it to set up the dimensions anyway
     public:
         CiftiOnDiskImpl(const AString& filename);//read-only
-        CiftiOnDiskImpl(const AString& filename, const CiftiXML& xml, const CiftiVersion& version);//make new empty file with read/write
+        CiftiOnDiskImpl(const AString& filename, const CiftiXML& xml, const CiftiVersion& version, const bool& swapEndian);//make new empty file with read/write
         void getRow(float* dataOut, const std::vector<int64_t>& indexSelect, const bool& tolerateShortRead) const;
         void getColumn(float* dataOut, const int64_t& index) const;
         const CiftiXML& getCiftiXML() const { return m_xml; }
         AString getFilename() const { return m_nifti.getFilename(); }
+        bool isSwapped() const { return m_nifti.getHeader().isSwapped(); }
         void setRow(const float* dataIn, const std::vector<int64_t>& indexSelect);
         void setColumn(const float* dataIn, const int64_t& index);
     };
@@ -75,6 +77,22 @@ namespace
         void setRow(const float* dataIn, const std::vector<int64_t>& indexSelect);
         void setColumn(const float* dataIn, const int64_t& index);
     };
+    
+    bool shouldSwap(const CiftiFile::ENDIAN& endian)
+    {
+        if (ByteSwapping::isBigEndian())
+        {
+            if (endian == CiftiFile::LITTLE) return true;
+        } else {
+            if (endian == CiftiFile::BIG) return true;
+        }
+        return false;//default for all other enum values is to write native endian
+    }
+    
+    bool dontRewrite(const CiftiFile::ENDIAN& endian)
+    {
+        return (endian == CiftiFile::ANY);
+    }
     
     AString pathToAbsolute(const AString& mypath)
     {
@@ -121,6 +139,7 @@ CiftiFile::WriteImplInterface::~WriteImplInterface()
 
 CiftiFile::CiftiFile(const AString& fileName)
 {
+    m_endianPref = NATIVE;
     openFile(fileName);
 }
 
@@ -136,29 +155,31 @@ void CiftiFile::openFile(const AString& fileName)
     m_onDiskVersion = m_xml.getParsedVersion();
 }
 
-void CiftiFile::setWritingFile(const AString& fileName, const CiftiVersion& writingVersion)
+void CiftiFile::setWritingFile(const AString& fileName, const CiftiVersion& writingVersion, const ENDIAN& endian)
 {
     m_writingFile = pathToAbsolute(fileName);//always resolve paths as soon as they enter CiftiFile, in case some clown changes directory before writing data
     m_writingImpl.reset();//prevent writing to previous writing implementation, let the next set...() set up for writing
     m_onDiskVersion = writingVersion;
+    m_endianPref = endian;
 }
 
-void CiftiFile::writeFile(const AString& fileName, const CiftiVersion& writingVersion)
+void CiftiFile::writeFile(const AString& fileName, const CiftiVersion& writingVersion, const ENDIAN& endian)
 {
     if (m_readingImpl == NULL || m_dims.empty()) throw CiftiException("writeFile called on uninitialized CiftiFile");
+    bool writeSwapped = shouldSwap(endian);
     AString canonicalFilename = pathToCanonical(fileName);//NOTE: returns EMPTY STRING for nonexistant file
     const CiftiOnDiskImpl* testImpl = dynamic_cast<CiftiOnDiskImpl*>(m_readingImpl.get());
     bool collision = false, hadWriter = (m_writingImpl != NULL);
     if (testImpl != NULL && canonicalFilename != "" && pathToCanonical(testImpl->getFilename()) == canonicalFilename)
     {//empty string test is so that we don't say collision if both are nonexistant - could happen if file is removed/unlinked while reading on some filesystems
-        if (m_onDiskVersion == writingVersion) return;//don't need to copy to itself
+        if (m_onDiskVersion == writingVersion && (dontRewrite(endian) || writeSwapped == testImpl->isSwapped())) return;//don't need to copy to itself
         collision = true;//we need to copy to memory temporarily
         boost::shared_ptr<WriteImplInterface> tempMemory(new CiftiMemoryImpl(m_xml));//because tempRead is a ReadImpl, can't be used to copy to
         copyImplData(m_readingImpl.get(), tempMemory.get(), m_dims);
         m_readingImpl = tempMemory;//we are about to make the old reading impl very unhappy, replace it so that if we get an error while writing, we hang onto the memory version
         m_writingImpl.reset();//and make it re-magic the writing implementation again if it tries to write again
     }
-    boost::shared_ptr<WriteImplInterface> tempWrite(new CiftiOnDiskImpl(pathToAbsolute(fileName), m_xml, writingVersion));
+    boost::shared_ptr<WriteImplInterface> tempWrite(new CiftiOnDiskImpl(pathToAbsolute(fileName), m_xml, writingVersion, writeSwapped));
     copyImplData(m_readingImpl.get(), tempWrite.get(), m_dims);
     if (collision)//if we rewrote the file, we need the handle to the new file, and to dump the temporary in-memory version
     {
@@ -288,7 +309,7 @@ void CiftiFile::verifyWriteImpl()
                 }
             }
         }
-        m_writingImpl = boost::shared_ptr<CiftiOnDiskImpl>(new CiftiOnDiskImpl(m_writingFile, m_xml, m_onDiskVersion));//this constructor makes new file for writing
+        m_writingImpl = boost::shared_ptr<CiftiOnDiskImpl>(new CiftiOnDiskImpl(m_writingFile, m_xml, m_onDiskVersion, shouldSwap(m_endianPref)));//this constructor makes new file for writing
         if (m_readingImpl != NULL)
         {
             copyImplData(m_readingImpl.get(), m_writingImpl.get(), m_dims);
@@ -405,7 +426,7 @@ CiftiOnDiskImpl::CiftiOnDiskImpl(const AString& filename)
     }
 }
 
-CiftiOnDiskImpl::CiftiOnDiskImpl(const AString& filename, const CiftiXML& xml, const CiftiVersion& version)
+CiftiOnDiskImpl::CiftiOnDiskImpl(const AString& filename, const CiftiXML& xml, const CiftiVersion& version, const bool& swapEndian)
 {//starts writing new file
     NiftiHeader outHeader;
     outHeader.setDataType(NIFTI_TYPE_FLOAT32);//actually redundant currently, default is float32
@@ -427,11 +448,11 @@ CiftiOnDiskImpl::CiftiOnDiskImpl(const AString& filename, const CiftiXML& xml, c
         headerDims[4] = headerDims[5];
         headerDims[5] = temp;
         outHeader.setDimensions(headerDims);//give the header the reversed dimensions
-        m_nifti.writeNew(filename, outHeader, 2, true);
+        m_nifti.writeNew(filename, outHeader, 2, true, swapEndian);
         m_nifti.overrideDimensions(niftiDims);//and then tell the nifti reader to use the correct dimensions
     } else {
         outHeader.setDimensions(niftiDims);
-        m_nifti.writeNew(filename, outHeader, 2, true);
+        m_nifti.writeNew(filename, outHeader, 2, true, swapEndian);
     }
     m_xml = xml;
 }

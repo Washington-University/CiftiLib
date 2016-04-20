@@ -700,7 +700,7 @@ void NiftiHeader::swapHeaderBytes(nifti_2_header& header)
 }
 
 void NiftiHeader::write(BinaryFile& outFile, const int& version, const bool& swapEndian)
-{//always write in native byte order, until there is a real reason to do otherwise
+{
     if (!canWriteVersion(version)) throw CiftiException("unable to write NIfTI version " + AString_number(version) + " for file " + outFile.getFilename());
     const char padding[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     int64_t voxOffset;
