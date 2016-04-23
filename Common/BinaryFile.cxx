@@ -40,6 +40,7 @@
     #include <QFile>
 #else
     #include "stdio.h"
+    #include "errno.h"
     #define BOOST_FILESYSTEM_VERSION 3
     #include "boost/filesystem.hpp"
 #endif
@@ -408,7 +409,9 @@ void StrFileImpl::open(const AString& filename, const BinaryFile::OpenMode& opmo
         default:
             throw CiftiException("unsupported open mode in StrFileImpl");
     }
+    errno = 0;
     m_file = fopen(ASTRING_TO_CSTR(filename), mode);
+    int save_err = errno;
     if (m_file == NULL)
     {
         if (!boost::filesystem::exists(AString_to_std_string(filename)))
@@ -420,7 +423,14 @@ void StrFileImpl::open(const AString& filename, const BinaryFile::OpenMode& opmo
                 throw CiftiException("failed to open file '" + filename + "', unable to create file");
             }
         }
-        throw CiftiException("failed to open file '" + filename + "'");
+        switch (save_err)
+        {
+            case EMFILE:
+            case ENFILE:
+                throw CiftiException("failed to open file '" + filename + "', too many open files");
+            default:
+                throw CiftiException("failed to open file '" + filename + "'");
+        }
     }
     m_curPos = 0;
 }
