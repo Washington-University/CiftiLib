@@ -37,9 +37,11 @@
 #include "CiftiException.h"
 
 #ifdef CIFTILIB_USE_QT
-#include <QFile>
+    #include <QFile>
 #else
-#include "stdio.h"
+    #include "stdio.h"
+    #define BOOST_FILESYSTEM_VERSION 3
+    #include "boost/filesystem.hpp"
 #endif
 
 #ifdef CIFTILIB_HAVE_ZLIB
@@ -204,7 +206,20 @@ void ZFileImpl::open(const AString& filename, const BinaryFile::OpenMode& opmode
 #endif
     if (m_zfile == NULL)
     {
-        throw CiftiException("error opening compressed file '" + filename + "'");
+#ifdef CIFTILIB_USE_QT
+        if (QFile::exists(filename))
+#else
+        if (boost::filesystem::exists(AString_to_std_string(filename)))
+#endif
+        {
+            if (!(opmode & BinaryFile::TRUNCATE))
+            {
+                throw CiftiException("failed to open compressed file '" + filename + "', file does not exist, or folder permissions prevent seeing it");
+            } else {//m_file.error() doesn't help identify this case, see below
+                throw CiftiException("failed to open compressed file '" + filename + "', unable to create file");
+            }
+        }
+        throw CiftiException("failed to open compressed file '" + filename + "'");
     }
 }
 
@@ -314,7 +329,22 @@ void QFileImpl::open(const AString& filename, const BinaryFile::OpenMode& opmode
     m_file.setFileName(filename);
     if (!m_file.open(mode))
     {
-        throw CiftiException("failed to open file '" + m_fileName + "'");
+        if (!m_file.exists())
+        {
+            if (!(opmode & BinaryFile::TRUNCATE))
+            {
+                throw CiftiException("failed to open file '" + filename + "', file does not exist, or folder permissions prevent seeing it");
+            } else {//m_file.error() doesn't help identify this case, see below
+                throw CiftiException("failed to open file '" + filename + "', unable to create file");
+            }
+        }
+        switch (m_file.error())
+        {
+            case QFile::ResourceError://on linux at least, it never gives another code besides the unhelpful OpenError
+                throw CiftiException("failed to open file '" + filename + "', too many open files");
+            default:
+                throw CiftiException("failed to open file '" + filename + "'");
+        }
     }
 }
 
@@ -381,7 +411,16 @@ void StrFileImpl::open(const AString& filename, const BinaryFile::OpenMode& opmo
     m_file = fopen(ASTRING_TO_CSTR(filename), mode);
     if (m_file == NULL)
     {
-        throw CiftiException("error opening file '" + filename + "'");
+        if (!boost::filesystem::exists(AString_to_std_string(filename)))
+        {
+            if (!(opmode & BinaryFile::TRUNCATE))
+            {
+                throw CiftiException("failed to open file '" + filename + "', file does not exist, or folder permissions prevent seeing it");
+            } else {
+                throw CiftiException("failed to open file '" + filename + "', unable to create file");
+            }
+        }
+        throw CiftiException("failed to open file '" + filename + "'");
     }
     m_curPos = 0;
 }
