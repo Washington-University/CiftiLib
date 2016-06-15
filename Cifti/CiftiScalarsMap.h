@@ -40,6 +40,11 @@ namespace cifti
     class CiftiScalarsMap : public CiftiMappingType
     {
     public:
+        CiftiScalarsMap() { }
+        CiftiScalarsMap(const CiftiScalarsMap& rhs) { m_maps = rhs.m_maps; }
+        CiftiScalarsMap& operator=(const CiftiScalarsMap& rhs) { m_maps = rhs.m_maps; return *this; }
+        explicit CiftiScalarsMap(const int64_t& length) { setLength(length); }
+        
         const MetaData& getMapMetadata(const int64_t& index) const;
         const AString& getMapName(const int64_t& index) const;
         

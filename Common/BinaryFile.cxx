@@ -49,6 +49,7 @@
 #include "zlib.h"
 #endif //CIFTILIB_HAVE_ZLIB
 
+#include <algorithm>
 #include <iostream>
 
 using namespace cifti;
@@ -62,6 +63,7 @@ namespace cifti
     class ZFileImpl : public BinaryFile::ImplInterface
     {
         gzFile m_zfile;
+        const static int64_t CHUNK_SIZE;
     public:
         ZFileImpl() { m_zfile = NULL; }
         void open(const AString& filename, const BinaryFile::OpenMode& opmode);
@@ -72,12 +74,15 @@ namespace cifti
         void write(const void* dataIn, const int64_t& count);
         ~ZFileImpl();
     };
+
+    const int64_t ZFileImpl::CHUNK_SIZE = 1<<26;//64MiB, large enough for good performance, small enough for zlib, must convert to uint32
 #endif //ZLIB_VERSION
 
 #ifdef CIFTILIB_USE_QT
     class QFileImpl : public BinaryFile::ImplInterface
     {
         QFile m_file;
+        const static int64_t CHUNK_SIZE;
     public:
         void open(const AString& filename, const BinaryFile::OpenMode& opmode);
         void close();
@@ -86,6 +91,8 @@ namespace cifti
         void read(void* dataOut, const int64_t& count, int64_t* numRead);
         void write(const void* dataIn, const int64_t& count);
     };
+
+    const int64_t QFileImpl::CHUNK_SIZE = 1<<30;//1GiB, QT4 apparently chokes at more than 2GiB via buffer.read using int32
 #else
     class StrFileImpl : public BinaryFile::ImplInterface
     {
@@ -235,17 +242,12 @@ void ZFileImpl::close()
 void ZFileImpl::read(void* dataOut, const int64_t& count, int64_t* numRead)
 {
     if (m_zfile == NULL) throw CiftiException("read called on unopened ZFileImpl");//shouldn't happen
-    const int64_t CHUNK_SIZE = (1<<26);//64MB, should be large enough for good performance, and small enough not to give zlib trouble - needs to convert to unsigned int
     int64_t totalRead = 0;
     int readret = 0;//to preserve the info of the read that broke early
     while (totalRead < count)
     {
-        int64_t iterSize = count - totalRead;
-        if (iterSize > CHUNK_SIZE)
-        {
-            iterSize = CHUNK_SIZE;
-        }
-        readret = gzread(m_zfile, (uint8_t*)dataOut + totalRead, iterSize);
+        int64_t iterSize = min(count - totalRead, CHUNK_SIZE);
+        readret = gzread(m_zfile, ((uint8_t*)dataOut) + totalRead, iterSize);
         if (readret < 1) break;//0 or -1 indicate eof or error
         totalRead += readret;
     }
@@ -286,16 +288,11 @@ int64_t ZFileImpl::pos()
 void ZFileImpl::write(const void* dataIn, const int64_t& count)
 {
     if (m_zfile == NULL) throw CiftiException("write called on unopened ZFileImpl");//shouldn't happen
-    const int64_t CHUNK_SIZE = (1<<26);//64MB, should be large enough for good performance, and small enough not to give zlib trouble - needs to convert to unsigned int
     int64_t totalWritten = 0;
     while (totalWritten < count)
     {
-        int64_t iterSize = count - totalWritten;
-        if (iterSize > CHUNK_SIZE)
-        {
-            iterSize = CHUNK_SIZE;
-        }
-        int writeret = gzwrite(m_zfile, (uint8_t*)dataIn + totalWritten, iterSize);
+        int64_t iterSize = min(count - totalWritten, CHUNK_SIZE);
+        int writeret = gzwrite(m_zfile, ((uint8_t*)dataIn) + totalWritten, iterSize);
         if (writeret < 1) break;//0 or -1 indicate eof or error
         totalWritten += writeret;
     }
@@ -356,16 +353,24 @@ void QFileImpl::close()
 
 void QFileImpl::read(void* dataOut, const int64_t& count, int64_t* numRead)
 {
-    int64_t readret = m_file.read((char*)dataOut, count);//expect QFile to handle it without manual chunking
+    int64_t total = 0;
+    int64_t readret = -1;
+    while (total < count)
+    {
+        int64_t maxToRead = min(count - total, CHUNK_SIZE);
+        readret = m_file.read(((char*)dataOut) + total, maxToRead);//QFile chokes on large reads also
+        if (readret < 1) break;//0 or -1 means error or eof
+        total += readret;
+    }
     if (numRead == NULL)
     {
-        if (readret != count)
+        if (total != count)
         {
             if (readret < 0) throw CiftiException("error while reading file '" + m_fileName + "'");
             throw CiftiException("premature end of file in '" + m_fileName + "'");
         }
     } else {
-        *numRead = readret;
+        *numRead = total;
     }
 }
 
@@ -381,8 +386,16 @@ int64_t QFileImpl::pos()
 
 void QFileImpl::write(const void* dataIn, const int64_t& count)
 {
-    int64_t writeret = m_file.write((const char*)dataIn, count);//again, expect QFile to handle it in one shot
-    if (writeret != count) throw CiftiException("failed to write to file '" + m_fileName + "'");
+    int64_t total = 0;
+    int64_t writeret = -1;
+    while (total < count)
+    {
+        int64_t maxToWrite = min(count - total, CHUNK_SIZE);
+        writeret = m_file.write((const char*)dataIn, maxToWrite);//QFile probably also chokes on large writes
+        if (writeret < 1) break;//0 or -1 means error or eof
+        total += writeret;
+    }
+    if (total != count) throw CiftiException("failed to write to file '" + m_fileName + "'");
 }
 
 #else //CIFTILIB_USE_QT
