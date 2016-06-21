@@ -9,14 +9,14 @@ compiler:
     - gcc
 
 env:
-    - IGNORE_QT=false
-    - IGNORE_QT=true
-    - SHARED=true
-    - SHARED=false
+    - IGNORE_QT=false SHARED=true
+    - IGNORE_QT=false SHARED=false
+    - IGNORE_QT=true SHARED=true
+    - IGNORE_QT=true SHARED=false
 
 before_install:
     - sudo apt-get -qq update
-    - sudo apt-get install -y libqt4-dev libxml++2.6-dev libboost-dev zlib1g-dev
+    - sudo apt-get install -y libqt4-dev libxml++2.6-dev libboost-dev libboost-filesystem-dev zlib1g-dev
     - mkdir ../build
     - cd ../build
 
