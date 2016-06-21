@@ -1,8 +1,18 @@
 language: cpp
+sudo: false
 
 cache:
     - apt
     - ccache
+
+addons:
+    apt:
+        packages:
+            - libqt4-dev
+            - libxml++2.6-dev
+            - libboost-dev
+            - libboost-filesystem-dev
+            - zlib1g-dev
 
 compiler:
     - clang
@@ -15,8 +25,6 @@ env:
     - IGNORE_QT=true SHARED=false
 
 before_install:
-    - sudo apt-get -qq update
-    - sudo apt-get install -y libqt4-dev libxml++2.6-dev libboost-dev libboost-filesystem-dev zlib1g-dev
     - mkdir ../build
     - cd ../build
 
@@ -24,4 +32,3 @@ script:
     - "cmake -D CMAKE_BUILD_TYPE=Debug -D BUILD_SHARED_LIBS:BOOL=$SHARED -D IGNORE_QT:BOOL=$IGNORE_QT ../CiftiLib"
     - make -j 4
     - ctest
-    - sudo make install
