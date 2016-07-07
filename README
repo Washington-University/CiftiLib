@@ -6,17 +6,22 @@ It is currently set up to be compiled, along with a few simple examples, by cmak
 #make build directory beside the source tree, enter it
 mkdir build; cd build
 
+#you may want to set the cmake variable CMAKE_BUILD_TYPE to Release or Debug before building
+#the default build behavior may be non-optimized and without debug symbols.
+
 #run cmake to generate makefiles
-cmake ../CiftiLib
+cmake ../CiftiLib -D CMAKE_BUILD_TYPE=Release
 #OR
 cmake-gui ../CiftiLib
 
 #build
 make
 
-The resulting static libraries and example executables will be in subdirectories of the build directory, not in the source directory.
+#OPTIONAL: run tests, make docs
+make test
+make doc
 
-You may want to set the cmake variable CMAKE_BUILD_TYPE to Release or Debug before building, as the default build behavior may be non-optimized and without debug symbols.
+The resulting libraries and example executables will be in subdirectories of the build directory, not in the source directory.
 
 Troubleshooting:
 
