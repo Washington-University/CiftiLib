@@ -21,7 +21,7 @@ make
 make test
 make doc
 
-The resulting libraries and example executables will be in subdirectories of the build directory, not in the source directory.
+The resulting libraries and example executables will be in subdirectories of the build directory, not in the source directory.  You can install the libraries and headers (location controlled by cmake variable CMAKE_INSTALL PREFIX and make variable DESTDIR) with 'make install'.
 
 Troubleshooting:
 
