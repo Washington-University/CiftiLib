@@ -91,13 +91,10 @@ ENDIF (APPLE)
 
 ENABLE_TESTING()
 
-#these subdirectories only define the sources contained in them, don't define any build targets
-#but we must do this before trying to access variables from these directories
-ADD_SUBDIRECTORY(Common)
-ADD_SUBDIRECTORY(Nifti)
-ADD_SUBDIRECTORY(Cifti)
+#the library source, doesn't contain build targets
+ADD_SUBDIRECTORY(src)
 
-#example directory does define build targets and tests
+#example directory, has build targets and tests
 ADD_SUBDIRECTORY(example)
 
 macro(append_subdir_files variable dirname)
@@ -107,17 +104,11 @@ macro(append_subdir_files variable dirname)
     endforeach()
 endmacro()
 
-#all headers of these are public
-append_subdir_files(SOURCES Nifti)
-append_subdir_files(HEADERS Nifti)
-append_subdir_files(SOURCES Cifti)
-append_subdir_files(HEADERS Cifti)
-SET(PUBLIC_HEADERS ${HEADERS})
-
-#some headers of this are private
-append_subdir_files(SOURCES Common)
-append_subdir_files(HEADERS Common)
-append_subdir_files(PUBLIC_HEADERS Common)
+#get the sources and install info
+append_subdir_files(SOURCES src)
+append_subdir_files(HEADERS src)
+append_subdir_files(PUBLIC_HEADERS src)
+append_subdir_files(PRIVATE_DIRS src)
 
 ADD_LIBRARY(Cifti
 ${SOURCES}
@@ -137,9 +128,7 @@ VERSION ${CIFTILIB_VERSION}
 )
 
 INCLUDE_DIRECTORIES(
-${CMAKE_SOURCE_DIR}/Cifti
-${CMAKE_SOURCE_DIR}/Nifti
-${CMAKE_SOURCE_DIR}/Common
+${CMAKE_SOURCE_DIR}/src
 )
 
 #install dirs
@@ -151,4 +140,5 @@ INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/CiftiLib.pc DESTINATION ${CMAKE_INSTAL
 
 #install
 INSTALL(TARGETS Cifti DESTINATION ${CMAKE_INSTALL_LIBDIR})
-INSTALL(FILES ${PUBLIC_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/Cifti)
+INSTALL(FILES ${PUBLIC_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/CiftiLib)
+INSTALL(DIRECTORY ${PRIVATE_DIRS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/CiftiLib FILES_MATCHING PATTERN "*.h")

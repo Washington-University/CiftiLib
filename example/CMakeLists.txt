@@ -17,9 +17,7 @@ ${LIBS})
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_SOURCE_DIR}/example
-${CMAKE_SOURCE_DIR}/Common
-${CMAKE_SOURCE_DIR}/Nifti
-${CMAKE_SOURCE_DIR}/Cifti
+${CMAKE_SOURCE_DIR}/src
 )
 
 SET(cifti_files
