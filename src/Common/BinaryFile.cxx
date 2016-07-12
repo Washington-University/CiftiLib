@@ -39,8 +39,8 @@
 #ifdef CIFTILIB_USE_QT
     #include <QFile>
 #else
-    #include "stdint.h"
-    #include "stdint.h"
+    #include "stdio.h"
+    #include "errno.h"
     #define BOOST_FILESYSTEM_VERSION 3
     #include "boost/filesystem.hpp"
 #endif
