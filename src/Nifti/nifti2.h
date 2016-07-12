@@ -28,7 +28,7 @@
  *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "Nifti/nifti1.h"
+#include "nifti1.h"
 
 namespace cifti
 {

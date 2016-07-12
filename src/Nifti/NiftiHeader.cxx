@@ -25,7 +25,7 @@
  *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "Nifti/NiftiHeader.h"
+#include "NiftiHeader.h"
 
 #include "Common/ByteSwapping.h"
 #include "Common/CiftiAssert.h"
