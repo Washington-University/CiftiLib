@@ -51,7 +51,6 @@ namespace cifti
 
 #ifdef CIFTILIB_USE_XMLPP
 #define __XML_ADAPTER_H_HAVE_IMPL__
-#include "CiftiAssert.h"
 #include "libxml++/libxml++.h"
 #include "libxml++/parsers/textreader.h"
 #include "libxml/xmlwriter.h"
@@ -101,7 +100,7 @@ namespace cifti
         }
         void writeEndElement()
         {
-            CiftiAssert(m_elementStack.size() > 0);
+            if (m_elementStack.empty()) throw CiftiException("internal error: attempted writing end element outside root element");
             if (xmlTextWriterEndElement(m_xmlPtr) == -1) throw CiftiException("error writing end element for " + m_elementStack.back());
             m_elementStack.pop_back();
         }
@@ -118,7 +117,7 @@ namespace cifti
         }
         void writeAttribute(const AString& name, const AString& text)
         {
-            CiftiAssert(m_elementStack.size() > 0);
+            if (m_elementStack.empty()) throw CiftiException("internal error: attempted writing attribute outside root element");
             if (xmlTextWriterWriteAttribute(m_xmlPtr, BAD_CAST ASTRING_UTF8_RAW(name), BAD_CAST ASTRING_UTF8_RAW(text)) == -1)
             {
                 throw CiftiException("error writing " + name + " attribute of " + m_elementStack.back() + " element");

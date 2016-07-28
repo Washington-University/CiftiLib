@@ -28,7 +28,6 @@
  *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "Common/CiftiAssert.h"
 #include "Common/Vector3D.h"
 
 #include "Common/XmlAdapter.h"
@@ -129,7 +128,6 @@ namespace cifti
         
         inline int64_t getIndex(const int64_t& indexIn1, const int64_t& indexIn2, const int64_t& indexIn3) const
         {
-            CiftiAssert(indexValid(indexIn1, indexIn2, indexIn3));
             return indexIn1 + m_dims[0] * (indexIn2 + m_dims[1] * indexIn3);
         }
         

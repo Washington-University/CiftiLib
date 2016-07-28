@@ -27,6 +27,7 @@
 
 #include "VolumeSpace.h"
 
+#include "Common/CiftiAssert.h"
 #include "Common/CiftiException.h"
 #include "Common/FloatMatrix.h"
 

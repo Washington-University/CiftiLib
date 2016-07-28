@@ -31,7 +31,6 @@
 #include "Common/AString.h"
 
 #include "Common/ByteSwapping.h"
-#include "Common/CiftiAssert.h"
 #include "Common/BinaryFile.h"
 #include "Common/CiftiException.h"
 #include "Nifti/NiftiHeader.h"
@@ -74,8 +73,12 @@ namespace cifti
     template<typename T>
     void NiftiIO::readData(T* dataOut, const int& fullDims, const std::vector<int64_t>& indexSelect, const bool& tolerateShortRead)
     {
-        CiftiAssert(fullDims >= 0 && fullDims <= (int)m_dims.size());
-        CiftiAssert((size_t)fullDims + indexSelect.size() == m_dims.size());//could be >=, but should catch more stupid mistakes as ==
+        if (fullDims < 0) throw CiftiException("NiftiIO: fulldims must not be negative");
+        if (fullDims > (int)m_dims.size()) throw CiftiException("NiftiIO: fulldims must not be greater than number of dimensions");
+        if ((size_t)fullDims + indexSelect.size() != m_dims.size())
+        {//could be >=, but should catch more stupid mistakes as ==
+            throw CiftiException("NiftiIO: fulldims plus length of indexSelect must equal number of dimensions");
+        }
         int64_t numElems = getNumComponents();//for now, calculate read size on the fly, as the read call will be the slowest part
         int curDim;
         for (curDim = 0; curDim < fullDims; ++curDim)
@@ -85,7 +88,8 @@ namespace cifti
         int64_t numDimSkip = numElems, numSkip = 0;
         for (; curDim < (int)m_dims.size(); ++curDim)
         {
-            CiftiAssert(indexSelect[curDim - fullDims] >= 0 && indexSelect[curDim - fullDims] < m_dims[curDim]);
+            if (indexSelect[curDim - fullDims] < 0) throw CiftiException("NiftiIO: indices must not be negative");
+            if (indexSelect[curDim - fullDims] >= m_dims[curDim]) throw CiftiException("NiftiIO: index exceeds nifti dimension length");
             numSkip += indexSelect[curDim - fullDims] * numDimSkip;
             numDimSkip *= m_dims[curDim];
         }
@@ -137,7 +141,6 @@ namespace cifti
                 convertRead(dataOut, (long double*)m_scratch.data(), numElems);
                 break;
             default:
-                CiftiAssert(0);
                 throw CiftiException("internal error, tell the developers what you just tried to do");
         }
     }
@@ -145,8 +148,12 @@ namespace cifti
     template<typename T>
     void NiftiIO::writeData(const T* dataIn, const int& fullDims, const std::vector<int64_t>& indexSelect)
     {
-        CiftiAssert(fullDims >= 0 && fullDims <= (int)m_dims.size());
-        CiftiAssert((size_t)fullDims + indexSelect.size() == m_dims.size());//could be >=, but should catch more stupid mistakes as ==
+        if (fullDims < 0) throw CiftiException("NiftiIO: fulldims must not be negative");
+        if (fullDims > (int)m_dims.size()) throw CiftiException("NiftiIO: fulldims must not be greater than number of dimensions");
+        if ((size_t)fullDims + indexSelect.size() != m_dims.size())
+        {//could be >=, but should catch more stupid mistakes as ==
+            throw CiftiException("NiftiIO: fulldims plus length of indexSelect must equal number of dimensions");
+        }
         int64_t numElems = getNumComponents();//for now, calculate read size on the fly, as the read call will be the slowest part
         int curDim;
         for (curDim = 0; curDim < fullDims; ++curDim)
@@ -156,7 +163,8 @@ namespace cifti
         int64_t numDimSkip = numElems, numSkip = 0;
         for (; curDim < (int)m_dims.size(); ++curDim)
         {
-            CiftiAssert(indexSelect[curDim - fullDims] >= 0 && indexSelect[curDim - fullDims] < m_dims[curDim]);
+            if (indexSelect[curDim - fullDims] < 0) throw CiftiException("NiftiIO: indices must not be negative");
+            if (indexSelect[curDim - fullDims] >= m_dims[curDim]) throw CiftiException("NiftiIO: index exceeds nifti dimension length");
             numSkip += indexSelect[curDim - fullDims] * numDimSkip;
             numDimSkip *= m_dims[curDim];
         }
@@ -202,7 +210,6 @@ namespace cifti
                 convertWrite((long double*)m_scratch.data(), dataIn, numElems);
                 break;
             default:
-                CiftiAssert(0);
                 throw CiftiException("internal error, tell the developers what you just tried to do");
         }
         m_file.write(m_scratch.data(), m_scratch.size());
