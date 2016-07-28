@@ -1,5 +1,5 @@
 #include "CiftiFile.h"
-#include "MultiDimIterator.h"
+#include "CiftiMultiDimIterator.h"
 
 #include <iostream>
 #include <vector>

@@ -25,6 +25,7 @@
  *  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "Common/CiftiAssert.h"
 #include "NiftiIO.h"
 
 #include "Common/CiftiException.h"

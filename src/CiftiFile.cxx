@@ -29,7 +29,7 @@
 
 #include "Common/CiftiAssert.h"
 #include "Common/MultiDimArray.h"
-#include "MultiDimIterator.h"
+#include "CiftiMultiDimIterator.h"
 #include "NiftiIO.h"
 
 #ifdef CIFTILIB_USE_QT
