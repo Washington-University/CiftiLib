@@ -30,6 +30,7 @@
 
 #include "Common/AString.h"
 #include "Common/CiftiException.h"
+#include "Common/MultiDimIterator.h"
 #include "Cifti/CiftiXML.h"
 
 #include "boost/shared_ptr.hpp"
@@ -75,6 +76,12 @@ namespace cifti
         ///the tolerateShortRead parameter is useful for on-disk writing when it is easiest to do RMW multiple times on a new file
         void getRow(float* dataOut, const std::vector<int64_t>& indexSelect, const bool& tolerateShortRead = false) const;
         const std::vector<int64_t>& getDimensions() const { return m_dims; }
+        
+        ///convenience function for iterating over arbitrary numbers of dimensions
+        MultiDimIterator<int64_t> getIteratorOverRows() const
+        {
+            return MultiDimIterator<int64_t>(std::vector<int64_t>(getDimensions().begin() + 1, getDimensions().end()));
+        }
         
         ///for 2D only, will be slow if on disk!
         void getColumn(float* dataOut, const int64_t& index) const;

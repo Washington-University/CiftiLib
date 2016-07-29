@@ -35,6 +35,9 @@
 #include "Common/CiftiException.h"
 #include "Nifti/NiftiHeader.h"
 
+//include MultiDimIterator from a private include directory, in case people want to use it with NiftiIO
+#include "Common/MultiDimIterator.h"
+
 #include <cmath>
 #include <limits>
 #include <vector>

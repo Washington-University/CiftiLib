@@ -3,7 +3,6 @@ PROJECT(src)
 SET(HEADERS
 CiftiFile.h
 NiftiIO.h
-CiftiMultiDimIterator.h
 )
 
 SET(SOURCES

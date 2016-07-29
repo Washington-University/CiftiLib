@@ -13,6 +13,7 @@ FloatMatrix.h
 MatrixFunctions.h
 MathFunctions.h
 MultiDimArray.h
+MultiDimIterator.h
 Vector3D.h
 VoxelIJK.h
 XmlAdapter.h
