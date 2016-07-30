@@ -9,7 +9,7 @@ ENDIF (POLICY CMP0045)
 
 PROJECT(CiftiLib)
 
-SET(CIFTILIB_VERSION 1.4)
+SET(CIFTILIB_VERSION 1.5)
 
 #MSVC seems like the only compiler that chokes on -W -Wall
 IF (NOT MSVC)
