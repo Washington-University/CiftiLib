@@ -7,6 +7,7 @@ ByteSwapping.h
 CiftiAssert.h
 BinaryFile.h
 CiftiException.h
+CiftiMutex.h
 Compact3DLookup.h
 CompactLookup.h
 FloatMatrix.h

@@ -11,7 +11,10 @@ PROJECT(CiftiLib)
 
 SET(CIFTILIB_VERSION 1.4)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall")
+#MSVC seems like the only compiler that chokes on -W -Wall
+IF (NOT MSVC)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -W -Wall")
+ENDIF (NOT MSVC)
 
 SET(IGNORE_QT FALSE CACHE BOOL "don't try to use QT")
 
@@ -77,7 +80,7 @@ IF (Boost_VERSION LESS 105600)
     ADD_DEFINITIONS(-DCIFTILIB_BOOST_NO_TRY_LEXICAL)
 ENDIF (Boost_VERSION LESS 105600)
 
-#zlib
+#zlib, useful for volume reading
 FIND_PACKAGE(ZLIB)
 IF (ZLIB_FOUND)
     INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIRS})
@@ -88,6 +91,12 @@ ENDIF (ZLIB_FOUND)
 IF (APPLE)
     ADD_DEFINITIONS(-DCIFTILIB_OS_MACOSX)
 ENDIF (APPLE)
+
+#openmp provides a fast mutex implementation, faster than QT (and probably faster than glibmm)
+FIND_PACKAGE(OpenMP)
+IF (OPENMP_FOUND)
+    SET(CMAKE_CXX_FLAGS "${OpenMP_CXX_FLAGS} ${CMAKE_CXX_FLAGS}")
+ENDIF (OPENMP_FOUND)
 
 ENABLE_TESTING()
 

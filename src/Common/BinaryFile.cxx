@@ -168,12 +168,14 @@ void BinaryFile::open(const AString& filename, const OpenMode& opmode)
 
 void BinaryFile::read(void* dataOut, const int64_t& count, int64_t* numRead)
 {
+    CiftiAssert(count >= 0);//not sure about allowing 0
     if (!getOpenForRead()) throw CiftiException("file is not open for reading");
     m_impl->read(dataOut, count, numRead);
 }
 
 void BinaryFile::seek(const int64_t& position)
 {
+    CiftiAssert(position >= 0);
     if (m_curMode == NONE) throw CiftiException("file is not open, can't seek");
     m_impl->seek(position);
 }
@@ -186,6 +188,7 @@ int64_t BinaryFile::pos()
 
 void BinaryFile::write(const void* dataIn, const int64_t& count)
 {
+    CiftiAssert(count >= 0);//not sure about allowing 0
     if (!getOpenForWrite()) throw CiftiException("file is not open for writing");
     m_impl->write(dataIn, count);
 }
@@ -247,7 +250,7 @@ void ZFileImpl::read(void* dataOut, const int64_t& count, int64_t* numRead)
     while (totalRead < count)
     {
         int64_t iterSize = min(count - totalRead, CHUNK_SIZE);
-        readret = gzread(m_zfile, ((uint8_t*)dataOut) + totalRead, iterSize);
+        readret = gzread(m_zfile, ((char*)dataOut) + totalRead, iterSize);
         if (readret < 1) break;//0 or -1 indicate eof or error
         totalRead += readret;
     }
@@ -292,7 +295,7 @@ void ZFileImpl::write(const void* dataIn, const int64_t& count)
     while (totalWritten < count)
     {
         int64_t iterSize = min(count - totalWritten, CHUNK_SIZE);
-        int writeret = gzwrite(m_zfile, ((uint8_t*)dataIn) + totalWritten, iterSize);
+        int writeret = gzwrite(m_zfile, ((const char*)dataIn) + totalWritten, iterSize);
         if (writeret < 1) break;//0 or -1 indicate eof or error
         totalWritten += writeret;
     }

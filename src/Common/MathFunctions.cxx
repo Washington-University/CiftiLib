@@ -1321,34 +1321,6 @@ MathFunctions::clamp(
 }
 
 /**
- * convert degrees to radians.
- * @param 
- *    degrees value converted to radians.
- * @return
- *    the corresponding radians value.
- */
-float 
-MathFunctions::toRadians(float degrees)
-{
-    float radians = degrees * (M_PI / 180.0f);
-    return radians;
-}
-    
-/**
- * convert radians to degrees.
- * @param 
- *    radians value converted to degrees.
- * @return
- *    the corresponding degrees value.
- */
-float 
-MathFunctions::toDegrees(float radians)
-{
-    float degrees = radians * (180.0f / M_PI);
-    return degrees;
-}
-
-/**
  * Distance SQUARED from (x1, y1) to (x2, y2)
  * @param X-coordinate of first point.
  * @param Y-coordinate of first point.

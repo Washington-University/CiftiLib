@@ -286,24 +286,8 @@ public:
                     const float minimum,
                     const float maximum);
 
-    static float toRadians(float angle);
-    
-    static float toDegrees(float radians);
-    
     ///greatest common divisor
     static uint32_t gcd(uint32_t num1, uint32_t num2);
-    
-    /**
-     * Is the value very, very close to zero?
-     * @param value
-     *    Value to test.
-     * @return true if approximately zero, else false.
-     */
-    static inline bool isZero(const float value) {
-        if (value >  0.00001) return false;
-        if (value < -0.00001) return false;
-        return true;
-    }
     
     ///convert quaternion to rotation matrix
     static void quaternToMatrix(const float cijk[4], float matrix[3][3]);
