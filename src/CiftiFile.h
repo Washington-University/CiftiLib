@@ -80,7 +80,7 @@ namespace cifti
         ///convenience function for iterating over arbitrary numbers of dimensions
         MultiDimIterator<int64_t> getIteratorOverRows() const
         {
-            return MultiDimIterator<int64_t>(std::vector<int64_t>(getDimensions().begin() + 1, getDimensions().end()));
+            return MultiDimIterator<int64_t>(std::vector<int64_t>(m_dims.begin() + 1, m_dims.end()));
         }
         
         ///for 2D only, will be slow if on disk!
