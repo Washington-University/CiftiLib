@@ -31,34 +31,34 @@ ones.dscalar.nii
 IF(QT_FOUND)
     #QT4
     SET(cifti_be_md5s
-        ab40340d86eb5ba8fad31ad3445d944e
-        ae51bb3fb97a0cb666399989cd613164
-        95918d752f86f27c2b585232082937ac
-        d7026fe27d47336629beda31a932cb32
-        517001a95841a8cf7ed4cc6b714bdf39
+        3ba20f6ef590735c1211991f8e0144e6
+        e3a1639ef4b354752b0abb0613eedb73
+        9fd1b6fb7b938155226ca53fdaff5a12
+        48903d80589d294b5421cad9a7ba9264
+        93bb7f76c8d273817601ea5be236f83d
     )
     SET(cifti_le_md5s
-        e359977a01c81d35fdf2742d161d1865
-        8fa2e4efec70e1cdecf2ecad3097c292
-        8d5529875f8ad811416f05d2670dc17b
-        4ade8f44e0da86c1de404ea30de2029d
-        efa021c4049f4ae2d32264857d4b3864
+        3e24e7908122905c2a2d357347ecee7c
+        4ee31da414dcd26fe37855601ae3e9e2
+        e096a1cf0713f7a36590445e9f6564b1
+        32345267599b07083092b7dedfd8796c
+        512e0359c64d69dde93d605f8797f3a2
     )
 ELSE(QT_FOUND)
     #xml++
     SET(cifti_be_md5s
-        ecc2f8d9bcc7cb9c8d7a4efcf3c1a8d6
-        92dd447e15b39521c00439ddb76a4fdb
-        abaee50490045fe4205077354be114ca
-        b7e23fd47880ec59b9b3431a4ad496d1
-        900ed1c7a1c22d45853d99ab52ed5130
+        a2581f76a94b7c4371d6970f1262e1bc
+        ca4cfb02fb7f0d8f167f546aab85e91d
+        892c26e691fe62c4edf358f7f91942a3
+        e761d405c945e724b37f96e356dc19ad
+        2e4efa4e36cdb13f514c265e6c9c8c4b
     )
     SET(cifti_le_md5s
-        81e248f13f4787143e0a2be63739eda4
-        25e83e94d6a2bd7622e4ca9c409470a5
-        6e5f9d5db255227a18a23c3c5c35e458
-        0e06db5f7e7b04ec47493bc0e6eba3fa
-        952e56391c9fef2fce5a39cbae10e5af
+        39ecfba4c1dade1a2ce3e95b325bd8b1
+        921a42e4181052ef4f211d389a2e9328
+        764c816004ebe23d188d98f9f29c7337
+        6fabac021e377efd35dede7198feefd4
+        fe0cbb768e26aa12a0e03990f4f50a30
     )
 ENDIF(QT_FOUND)
 
