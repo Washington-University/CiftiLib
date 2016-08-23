@@ -1,4 +1,4 @@
-The CiftiLib library requires boost headers and either QT, or libxml++ 2.17.x or newer (and its dependencies: libxml2, glib, sigc++, gtkmm and glibmm) and the boost filesystem library to compile, and optionally uses zlib if you want to use its NIfTI reading capabilities for other purposes.  4.8.x releases of QT are known to work, newer versions may work, but have not been tested.
+The CiftiLib library requires boost headers and either QT (4.8.x or 5), or libxml++ 2.17.x or newer (and its dependencies: libxml2, glib, sigc++, gtkmm and glibmm) and the boost filesystem library to compile, and optionally uses zlib if you want to use its NIfTI reading capabilities for other purposes.
 
 It is currently set up to be compiled, along with a few simple examples, by cmake:
 
@@ -21,7 +21,7 @@ make
 make test
 make doc
 
-The resulting libraries and example executables will be in subdirectories of the build directory, not in the source directory.  You can install the libraries and headers (location controlled by cmake variable CMAKE_INSTALL_PREFIX and make variable DESTDIR) with 'make install'.
+The resulting library and example executables will be in subdirectories of the build directory, not in the source directory.  You can install the library and headers (location controlled by cmake variable CMAKE_INSTALL_PREFIX and make variable DESTDIR) with 'make install'.
 
 Troubleshooting:
 
