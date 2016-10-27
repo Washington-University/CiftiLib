@@ -412,7 +412,7 @@ CiftiOnDiskImpl::CiftiOnDiskImpl(const AString& filename)
     if (m_xml.getNumberOfDimensions() + 4 != (int)dimCheck.size()) throw CiftiException("XML does not match number of nifti dimensions in file " + filename + "'");
     for (int i = 4; i < (int)dimCheck.size(); ++i)
     {
-        if (m_xml.getDimensionLength(i - 4) < 1)//CiftiXML will only let this happen with cifti-1
+        if (m_xml.getDimensionLength(i - 4) < 0)//CiftiXML will only let this happen with cifti-1
         {
             m_xml.getSeriesMap(i - 4).setLength(dimCheck[i]);//and only in a series map
         } else {
