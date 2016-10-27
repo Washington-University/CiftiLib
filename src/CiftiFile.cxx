@@ -231,9 +231,14 @@ void CiftiFile::getColumn(float* dataOut, const int64_t& index) const
 
 void CiftiFile::setCiftiXML(const CiftiXML& xml, const bool useOldMetadata)
 {
+    if (xml.getNumberOfDimensions() == 0) throw CiftiException("setCiftiXML called with 0-dimensional CiftiXML");
+    vector<int64_t> xmlDims = xml.getDimensions();
+    for (size_t i = 0; i < xmlDims.size(); ++i)
+    {
+        if (xmlDims[i] < 1) throw CiftiException("cifti xml dimensions must be greater than zero");
+    }
     m_readingImpl.reset();//drop old implementation, as it is now invalid due to XML (and therefore matrix size) change
     m_writingImpl.reset();
-    if (xml.getNumberOfDimensions() == 0) throw CiftiException("setCiftiXML called with 0-dimensional CiftiXML");
     if (useOldMetadata)
     {
         MetaData newmd = m_xml.getFileMetaData();//make a copy
@@ -242,11 +247,7 @@ void CiftiFile::setCiftiXML(const CiftiXML& xml, const bool useOldMetadata)
     } else {
         m_xml = xml;
     }
-    m_dims = m_xml.getDimensions();
-    for (size_t i = 0; i < m_dims.size(); ++i)
-    {
-        if (m_dims[i] < 1) throw CiftiException("cifti xml dimensions must be greater than zero");
-    }
+    m_dims = xmlDims;
 }
 
 void CiftiFile::setRow(const float* dataIn, const vector<int64_t>& indexSelect)
