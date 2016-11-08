@@ -1,6 +1,4 @@
 
-PROJECT(Common)
-
 SET(HEADERS
 AString.h
 ByteSwapping.h

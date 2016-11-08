@@ -1,6 +1,4 @@
 
-PROJECT(example)
-
 ADD_EXECUTABLE(rewrite
 rewrite.cxx)
 

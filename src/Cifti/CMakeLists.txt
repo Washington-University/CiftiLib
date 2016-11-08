@@ -1,6 +1,4 @@
 
-PROJECT(Cifti)
-
 SET(HEADERS
 CiftiXML.h
 CiftiVersion.h

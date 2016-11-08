@@ -1,4 +1,3 @@
-PROJECT(src)
 
 SET(HEADERS
 CiftiFile.h

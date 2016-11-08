@@ -1,6 +1,4 @@
 
-project (Nifti)
-
 SET(HEADERS
 NiftiHeader.h
 )
