@@ -165,11 +165,11 @@ void CiftiFile::writeFile(const AString& fileName, const CiftiVersion& writingVe
 {
     if (m_readingImpl == NULL || m_dims.empty()) throw CiftiException("writeFile called on uninitialized CiftiFile");
     bool writeSwapped = shouldSwap(endian);
-    AString canonicalFilename = pathToCanonical(fileName);//NOTE: returns EMPTY STRING for nonexistant file
+    AString canonicalFilename = pathToCanonical(fileName);//NOTE: returns EMPTY STRING for nonexistent file
     const CiftiOnDiskImpl* testImpl = dynamic_cast<CiftiOnDiskImpl*>(m_readingImpl.get());
     bool collision = false, hadWriter = (m_writingImpl != NULL);
     if (testImpl != NULL && canonicalFilename != "" && pathToCanonical(testImpl->getFilename()) == canonicalFilename)
-    {//empty string test is so that we don't say collision if both are nonexistant - could happen if file is removed/unlinked while reading on some filesystems
+    {//empty string test is so that we don't say collision if both are nonexistent - could happen if file is removed/unlinked while reading on some filesystems
         if (m_onDiskVersion == writingVersion && (dontRewrite(endian) || writeSwapped == testImpl->isSwapped())) return;//don't need to copy to itself
         collision = true;//we need to copy to memory temporarily
         boost::shared_ptr<WriteImplInterface> tempMemory(new CiftiMemoryImpl(m_xml));//because tempRead is a ReadImpl, can't be used to copy to
@@ -301,7 +301,7 @@ void CiftiFile::verifyWriteImpl()
             CiftiOnDiskImpl* testImpl = dynamic_cast<CiftiOnDiskImpl*>(m_readingImpl.get());
             if (testImpl != NULL)
             {
-                AString canonicalCurrent = pathToCanonical(testImpl->getFilename());//returns "" if nonexistant, if unlinked while open
+                AString canonicalCurrent = pathToCanonical(testImpl->getFilename());//returns "" if nonexistent, if unlinked while open
                 if (canonicalCurrent != "" && canonicalCurrent == pathToCanonical(m_writingFile))//these were already absolute
                 {
                     convertToInMemory();//save existing data in memory before we clobber file
