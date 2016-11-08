@@ -262,7 +262,7 @@ const vector<int64_t>& CiftiBrainModelsMap::getNodeList(const StructureEnum::Enu
     map<StructureEnum::Enum, int>::const_iterator iter = m_surfUsed.find(structure);
     if (iter == m_surfUsed.end())
     {
-        throw CiftiException("getNodeList called for nonexistant structure");//throw if it doesn't exist, because we don't have a reference to return - things should identify which structures exist before calling this
+        throw CiftiException("getNodeList called for nonexistent structure");//throw if it doesn't exist, because we don't have a reference to return - things should identify which structures exist before calling this
     }
     CiftiAssertVectorIndex(m_modelsInfo, iter->second);
     return m_modelsInfo[iter->second].m_nodeIndices;
@@ -274,7 +274,7 @@ vector<CiftiBrainModelsMap::SurfaceMap> CiftiBrainModelsMap::getSurfaceMap(const
     map<StructureEnum::Enum, int>::const_iterator iter = m_surfUsed.find(structure);
     if (iter == m_surfUsed.end())
     {
-        throw CiftiException("getSurfaceMap called for nonexistant structure");//also throw, for consistency
+        throw CiftiException("getSurfaceMap called for nonexistent structure");//also throw, for consistency
     }
     CiftiAssertVectorIndex(m_modelsInfo, iter->second);
     const BrainModelPriv& myModel = m_modelsInfo[iter->second];
@@ -380,7 +380,7 @@ vector<CiftiBrainModelsMap::VolumeMap> CiftiBrainModelsMap::getVolumeStructureMa
     map<StructureEnum::Enum, int>::const_iterator iter = m_volUsed.find(structure);
     if (iter == m_volUsed.end())
     {
-        throw CiftiException("getVolumeStructureMap called for nonexistant structure");//also throw, for consistency
+        throw CiftiException("getVolumeStructureMap called for nonexistent structure");//also throw, for consistency
     }
     CiftiAssertVectorIndex(m_modelsInfo, iter->second);
     const BrainModelPriv& myModel = m_modelsInfo[iter->second];
@@ -404,7 +404,7 @@ const vector<int64_t>& CiftiBrainModelsMap::getVoxelList(const StructureEnum::En
     map<StructureEnum::Enum, int>::const_iterator iter = m_volUsed.find(structure);
     if (iter == m_volUsed.end())
     {
-        throw CiftiException("getVoxelList called for nonexistant structure");//throw if it doesn't exist, because we don't have a reference to return - things should identify which structures exist before calling this
+        throw CiftiException("getVoxelList called for nonexistent structure");//throw if it doesn't exist, because we don't have a reference to return - things should identify which structures exist before calling this
     }
     CiftiAssertVectorIndex(m_modelsInfo, iter->second);
     return m_modelsInfo[iter->second].m_voxelIndicesIJK;
