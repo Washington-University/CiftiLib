@@ -21,7 +21,16 @@ make
 make test
 make doc
 
-The resulting library and example executables will be in subdirectories of the build directory, not in the source directory.  You can install the library and headers (location controlled by cmake variable CMAKE_INSTALL_PREFIX and make variable DESTDIR) with 'make install'.
+The resulting library and example executables will be in subdirectories of the build directory, not in the source directory.  You can install the library, headers, and pkg-config file (location controlled by cmake variable CMAKE_INSTALL_PREFIX) with 'make install'.
+
+To use the installed library, use pkg-config to get the needed directories and libraries.  For instance, in cmake:
+
+find_package(PkgConfig)
+pkg_check_modules(PC_CIFTI REQUIRED CiftiLib)
+
+You can then use cmake variables PC_CIFTI_LIBRARIES, PC_CIFTI_INCLUDE_DIRS, and similar, see here for descriptions:
+
+https://cmake.org/cmake/help/v3.0/module/FindPkgConfig.html
 
 Troubleshooting:
 
