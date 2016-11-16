@@ -40,12 +40,14 @@ ENDIF (${CMAKE_VERSION} VERSION_LESS "3.1")
 
 #QT
 IF (NOT IGNORE_QT)
+    SET(QT_USE_IMPORTED_TARGETS TRUE)
     FIND_PACKAGE(Qt4 4.8.0 QUIET)
     IF (QT_FOUND)
         SET(QT_DONT_USE_QTGUI TRUE)
         ADD_DEFINITIONS(-DCIFTILIB_USE_QT)
         INCLUDE(${QT_USE_FILE})
         SET(LIBS ${LIBS} ${QT_LIBRARIES})
+#        INSTALL(TARGETS ${QT_LIBRARIES} EXPORT CiftiLib-export)
         #for pkg-config file
         SET(CIFTILIB_PKGCONFIG_REQUIRES_LINE "Requires: QtCore >= 4.8.0 QtXml")
         SET(CIFTILIB_PKGCONFIG_DEFINE "-DCIFTILIB_USE_QT")
@@ -53,10 +55,9 @@ IF (NOT IGNORE_QT)
         FIND_PACKAGE(Qt5Core)
         IF (Qt5Core_FOUND)
             SET(QT_FOUND TRUE)
-            INCLUDE_DIRECTORIES(${Qt5Core_INCLUDE_DIRS})
-            SET(LIBS ${LIBS} Qt5::Core)
-            #whatever that means
             ADD_DEFINITIONS(-DCIFTILIB_USE_QT)
+            SET(LIBS ${LIBS} Qt5::Core)
+#            INSTALL(TARGETS Qt5::Core EXPORT CiftiLib-export)
             SET(CIFTILIB_PKGCONFIG_REQUIRES_LINE "Requires: Qt5Core")
             SET(CIFTILIB_PKGCONFIG_DEFINE "-DCIFTILIB_USE_QT")
         ENDIF (Qt5Core_FOUND)
@@ -66,8 +67,10 @@ ENDIF (NOT IGNORE_QT)
 #alternative to QT xml, string
 IF (NOT QT_FOUND)
     FIND_PACKAGE(libxml++ 2.17.0 REQUIRED)
+    #still need to do include_directories for at least cmake 2.8.7
     INCLUDE_DIRECTORIES(${libxml++_INCLUDE_DIRS})
-    SET(LIBS ${LIBS} ${libxml++_LIBRARIES})
+    SET(LIBS ${LIBS} CiftiLib::libxml++)
+#    INSTALL(TARGETS CiftiLib::libxml++ EXPORT CiftiLib-export)
     ADD_DEFINITIONS(-DCIFTILIB_USE_XMLPP)
     #for pkg-config file
     SET(CIFTILIB_PKGCONFIG_REQUIRES_LINE "Requires: libxml++-2.6 >= 2.17.0")
@@ -81,7 +84,16 @@ ELSE (NOT QT_FOUND)
     FIND_PACKAGE(Boost REQUIRED)
 ENDIF (NOT QT_FOUND)
 INCLUDE_DIRECTORIES(${Boost_INCLUDE_DIRS})
-SET(LIBS ${LIBS} ${Boost_LIBRARIES})
+#boost imported target
+ADD_LIBRARY(CiftiLib::boost UNKNOWN IMPORTED)
+SET_TARGET_PROPERTIES(CiftiLib::boost PROPERTIES
+    IMPORTED_LOCATION "${Boost_LIBRARIES}"
+    INTERFACE_INCLUDE_DIRECTORIES "${Boost_INCLUDE_DIRS}"
+    INTERFACE_LINK_LIBRARIES "${Boost_LIBRARIES}")
+#use the target
+SET(LIBS ${LIBS} CiftiLib::boost)
+#INSTALL(TARGETS CiftiLib::boost EXPORT CiftiLib-export)
+
 #boost quirks
 IF (Boost_VERSION LESS 104400)
     #absolute() was added in 1.44.0, with filesystem v3
@@ -99,8 +111,15 @@ ENDIF (Boost_VERSION LESS 105600)
 #zlib, useful for volume reading
 FIND_PACKAGE(ZLIB)
 IF (ZLIB_FOUND)
-    INCLUDE_DIRECTORIES(${ZLIB_INCLUDE_DIRS})
-    SET(LIBS ${LIBS} ${ZLIB_LIBRARIES})
+    #zlib imported target
+    ADD_LIBRARY(CiftiLib::zlib UNKNOWN IMPORTED)
+    SET_TARGET_PROPERTIES(CiftiLib::zlib PROPERTIES
+        IMPORTED_LOCATION ${ZLIB_LIBRARIES}
+        INTERFACE_INCLUDE_DIRECTORIES ${ZLIB_INCLUDE_DIRS}
+        INTERFACE_LINK_LIBRARIES ${ZLIB_LIBRARIES})
+    #use target
+    SET(LIBS ${LIBS} CiftiLib::zlib)
+#    INSTALL(TARGETS CiftiLib::zlib EXPORT CiftiLib-export)
     ADD_DEFINITIONS("-DCIFTILIB_HAVE_ZLIB")
 ENDIF (ZLIB_FOUND)
 #OS X has some weirdness in its zlib, so let the preprocessor know
@@ -140,7 +159,6 @@ ${SOURCES}
 ${HEADERS}
 )
 
-#one way to get qt5's new compiler flag restrictions into the build - does it have other consequences?
 TARGET_LINK_LIBRARIES(Cifti ${LIBS})
 
 #NOTE: soversion set to 0 because ABI compatibility was not designed into the interface
@@ -159,11 +177,14 @@ ${CMAKE_SOURCE_DIR}/src
 #install dirs
 INCLUDE(GNUInstallDirs)
 
+#install
+INSTALL(TARGETS Cifti DESTINATION ${CMAKE_INSTALL_LIBDIR} EXPORT CiftiLib-export)
+INSTALL(FILES ${PUBLIC_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/CiftiLib)
+INSTALL(DIRECTORY ${PRIVATE_DIRS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/CiftiLib FILES_MATCHING PATTERN "*.h")
+
 #pkg-config
 CONFIGURE_FILE(CiftiLib.pc.in CiftiLib.pc @ONLY)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/CiftiLib.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
-#install
-INSTALL(TARGETS Cifti DESTINATION ${CMAKE_INSTALL_LIBDIR})
-INSTALL(FILES ${PUBLIC_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/CiftiLib)
-INSTALL(DIRECTORY ${PRIVATE_DIRS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/CiftiLib FILES_MATCHING PATTERN "*.h")
+#cmake
+INSTALL(EXPORT CiftiLib-export DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CiftiLib FILE CiftiLibConfig.cmake)

@@ -30,3 +30,11 @@ INCLUDE(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(libxml++ DEFAULT_MSG libxml++_LIBRARY libxml++_INCLUDE_DIR)
 
 MARK_AS_ADVANCED(libxml++_INCLUDE_DIR libxml++_config_INCLUDE_DIR libxml++_LIBRARY)
+
+#imported target
+#for now, just cram all the transitive stuff straight into this target
+ADD_LIBRARY(CiftiLib::libxml++ UNKNOWN IMPORTED)
+SET_TARGET_PROPERTIES(CiftiLib::libxml++ PROPERTIES
+    IMPORTED_LOCATION ${libxml++_LIBRARY}
+    INTERFACE_INCLUDE_DIRECTORIES ${libxml++_INCLUDE_DIRS}
+    INTERFACE_LINK_LIBRARIES ${libxml++_LIBRARIES})
