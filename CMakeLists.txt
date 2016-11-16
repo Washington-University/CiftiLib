@@ -41,7 +41,7 @@ IF (NOT IGNORE_QT)
             SET(LIBS ${LIBS} Qt5::Core)
             #whatever that means
             ADD_DEFINITIONS(-DCIFTILIB_USE_QT)
-            SET(CIFTILIB_PKGCONFIG_REQUIRES_LINE "Requires: Qt5Core Qt5Xml")
+            SET(CIFTILIB_PKGCONFIG_REQUIRES_LINE "Requires: Qt5Core")
             SET(CIFTILIB_PKGCONFIG_DEFINE "-DCIFTILIB_USE_QT")
         ENDIF (Qt5Core_FOUND)
     ENDIF (QT_FOUND)
