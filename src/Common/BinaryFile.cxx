@@ -40,6 +40,8 @@
     #include <QFile>
 #else
     #include "stdio.h"
+    #include "sys/stat.h"
+    #include "sys/types.h"
     #include "errno.h"
     #define BOOST_FILESYSTEM_VERSION 3
     #include "boost/filesystem.hpp"
@@ -70,6 +72,7 @@ namespace cifti
         void close();
         void seek(const int64_t& position);
         int64_t pos();
+        int64_t size() { return -1; }
         void read(void* dataOut, const int64_t& count, int64_t* numRead);
         void write(const void* dataIn, const int64_t& count);
         ~ZFileImpl();
@@ -88,6 +91,7 @@ namespace cifti
         void close();
         void seek(const int64_t& position);
         int64_t pos();
+        int64_t size() { return m_file.size(); }
         void read(void* dataOut, const int64_t& count, int64_t* numRead);
         void write(const void* dataIn, const int64_t& count);
     };
@@ -104,6 +108,7 @@ namespace cifti
         void close();
         void seek(const int64_t& position);
         int64_t pos();
+        int64_t size();
         void read(void* dataOut, const int64_t& count, int64_t* numRead);
         void write(const void* dataIn, const int64_t& count);
         ~StrFileImpl();
@@ -184,6 +189,12 @@ int64_t BinaryFile::pos()
 {
     if (m_curMode == NONE) throw CiftiException("file is not open, can't report position");
     return m_impl->pos();
+}
+
+int64_t BinaryFile::size()
+{
+    if (m_curMode == NONE) throw CiftiException("file is not open, can't report size");
+    return m_impl->size();
 }
 
 void BinaryFile::write(const void* dataIn, const int64_t& count)
@@ -492,6 +503,14 @@ int64_t StrFileImpl::pos()
     if (m_file == NULL) throw CiftiException("pos called on unopened StrFileImpl");//shouldn't happen
     CiftiAssert(m_curPos == ftello(m_file));//make sure it is right in debug
     return m_curPos;//we can avoid a call here also
+}
+
+int64_t StrFileImpl::size()
+{
+    struct stat mystat;
+    int result = fstat(fileno(m_file), &mystat);
+    if (result != 0) return -1;
+    return mystat.st_size;
 }
 
 void StrFileImpl::write(const void* dataIn, const int64_t& count)
