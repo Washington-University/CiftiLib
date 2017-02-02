@@ -37,6 +37,7 @@
 #include <cstring>
 #include <iostream>
 #include <limits>
+#include "stdint.h"
 
 using namespace std;
 using namespace boost;
@@ -447,6 +448,141 @@ void NiftiHeader::setDataScaling(const double& mult, const double& offset)
     m_header.scl_inter = offset;
 }
 
+namespace
+{
+    template<typename T>
+    struct Scaling
+    {
+        double mult, offset;
+        Scaling(const double& minval, const double& maxval)
+        {
+            std::numeric_limits<T> mylimits;
+            double mymin = mylimits.min();
+            if (!mylimits.is_integer) mymin = -mylimits.max();//again, c++11 can use lowest() instead of these lines
+            mult = (maxval - minval) / ((double)mylimits.max() - mymin);//multiplying is the first step of decoding (after byteswap), so start with the range
+            offset = minval - mymin * mult;//offset is added after multiplying the encoded value by mult
+        }
+    };
+}
+
+void NiftiHeader::setDataTypeAndScaleRange(const int16_t& type, const double& minval, const double& maxval)
+{
+    setDataType(type);
+    switch (type)
+    {
+        case NIFTI_TYPE_RGB24:
+            clearDataScaling();//RGB ignores scaling fields
+            break;
+        case DT_BINARY://currently not supported in read/write functions anyway
+            setDataScaling(maxval - minval, minval);//make the two possible decoded values equal to the min and max
+            break;
+        case NIFTI_TYPE_INT8:
+        {
+            Scaling<int8_t> myscale(minval, maxval);
+            setDataScaling(myscale.mult, myscale.offset);
+            break;
+        }
+        case NIFTI_TYPE_UINT8:
+        {
+            Scaling<uint8_t> myscale(minval, maxval);
+            setDataScaling(myscale.mult, myscale.offset);
+            break;
+        }
+        case NIFTI_TYPE_INT16:
+        {
+            Scaling<int16_t> myscale(minval, maxval);
+            setDataScaling(myscale.mult, myscale.offset);
+            break;
+        }
+        case NIFTI_TYPE_UINT16:
+        {
+            Scaling<uint16_t> myscale(minval, maxval);
+            setDataScaling(myscale.mult, myscale.offset);
+            break;
+        }
+        case NIFTI_TYPE_INT32:
+        {
+            Scaling<int32_t> myscale(minval, maxval);
+            setDataScaling(myscale.mult, myscale.offset);
+            break;
+        }
+        case NIFTI_TYPE_UINT32:
+        {
+            Scaling<uint32_t> myscale(minval, maxval);
+            setDataScaling(myscale.mult, myscale.offset);
+            break;
+        }
+        case NIFTI_TYPE_INT64:
+        {
+            Scaling<int64_t> myscale(minval, maxval);
+            setDataScaling(myscale.mult, myscale.offset);
+            break;
+        }
+        case NIFTI_TYPE_UINT64:
+        {
+            Scaling<uint64_t> myscale(minval, maxval);
+            setDataScaling(myscale.mult, myscale.offset);
+            break;
+        }
+        case NIFTI_TYPE_FLOAT32:
+        case NIFTI_TYPE_COMPLEX64:
+        {
+            Scaling<float> myscale(minval, maxval);
+            setDataScaling(myscale.mult, myscale.offset);
+            break;
+        }
+        case NIFTI_TYPE_FLOAT64:
+        case NIFTI_TYPE_COMPLEX128:
+        {
+            Scaling<double> myscale(minval, maxval);
+            setDataScaling(myscale.mult, myscale.offset);
+            break;
+        }
+        case NIFTI_TYPE_FLOAT128:
+        case NIFTI_TYPE_COMPLEX256:
+        {
+            Scaling<long double> myscale(minval, maxval);
+            setDataScaling(myscale.mult, myscale.offset);
+            break;
+        }
+        default:
+            CiftiAssert(0);
+            throw CiftiException("internal error, report what you did to the developers");
+    }
+}
+
+int NiftiHeader::getNumComponents() const
+{
+    switch (getDataType())
+    {
+        case NIFTI_TYPE_RGB24:
+            return 3;
+            break;
+        case NIFTI_TYPE_COMPLEX64:
+        case NIFTI_TYPE_COMPLEX128:
+        case NIFTI_TYPE_COMPLEX256:
+            return 2;
+            break;
+        case DT_BINARY:
+        case NIFTI_TYPE_INT8:
+        case NIFTI_TYPE_UINT8:
+        case NIFTI_TYPE_INT16:
+        case NIFTI_TYPE_UINT16:
+        case NIFTI_TYPE_INT32:
+        case NIFTI_TYPE_UINT32:
+        case NIFTI_TYPE_FLOAT32:
+        case NIFTI_TYPE_INT64:
+        case NIFTI_TYPE_UINT64:
+        case NIFTI_TYPE_FLOAT64:
+        case NIFTI_TYPE_FLOAT128:
+            return 1;
+            break;
+        default:
+            CiftiAssert(0);
+            throw CiftiException("internal error, report what you did to the developers");
+    }
+}
+
 void NiftiHeader::read(BinaryFile& inFile)
 {
     nifti_1_header buffer1;
@@ -631,7 +767,7 @@ int NiftiHeader::typeToNumBits(const int64_t& type)
             return 256;
             break;
         default:
-            throw CiftiException("incorrect datatype code");
+            throw CiftiException("incorrect nifti datatype code");
     }
 }
 

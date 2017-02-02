@@ -54,7 +54,8 @@ namespace
         CiftiXML m_xml;//because we need to parse it to set up the dimensions anyway
     public:
         CiftiOnDiskImpl(const AString& filename);//read-only
-        CiftiOnDiskImpl(const AString& filename, const CiftiXML& xml, const CiftiVersion& version, const bool& swapEndian);//make new empty file with read/write
+        CiftiOnDiskImpl(const AString& filename, const CiftiXML& xml, const CiftiVersion& version, const bool& swapEndian,
+                        const int16_t& datatype, const bool& rescale, const double& minval, const double& maxval);//make new empty file with read/write
         void getRow(float* dataOut, const std::vector<int64_t>& indexSelect, const bool& tolerateShortRead) const;
         void getColumn(float* dataOut, const int64_t& index) const;
         const CiftiXML& getCiftiXML() const { return m_xml; }
@@ -135,9 +136,22 @@ CiftiFile::WriteImplInterface::~WriteImplInterface()
 {
 }
 
+CiftiFile::CiftiFile()
+{
+    m_endianPref = NATIVE;
+    m_writingDataType = NIFTI_TYPE_FLOAT32;
+    m_doWriteScaling = false;
+    m_minScalingVal = -1.0;//these scaling values should never be used, but don't leave them uninitialized
+    m_maxScalingVal = 1.0;
+}
+
 CiftiFile::CiftiFile(const AString& fileName)
 {
     m_endianPref = NATIVE;
+    m_writingDataType = NIFTI_TYPE_FLOAT32;
+    m_doWriteScaling = false;
+    m_minScalingVal = -1.0;//these scaling values should never be used, but don't leave them uninitialized
+    m_maxScalingVal = 1.0;
     openFile(fileName);
 }
 
@@ -161,6 +175,24 @@ void CiftiFile::setWritingFile(const AString& fileName, const CiftiVersion& writ
     m_endianPref = endian;
 }
 
+void CiftiFile::setWritingDataTypeNoScaling(const int16_t& type)
+{
+    m_writingDataType = type;//could do some validation here
+    m_doWriteScaling = false;
+    m_minScalingVal = -1.0;
+    m_maxScalingVal = 1.0;
+    m_writingImpl.reset();//prevent writing to previous writing implementation, let the next set...() set up for writing
+}
+
+void CiftiFile::setWritingDataTypeAndScaling(const int16_t& type, const double& minval, const double& maxval)
+{
+    m_writingDataType = type;//could do some validation here
+    m_doWriteScaling = true;
+    m_minScalingVal = minval;
+    m_maxScalingVal = maxval;
+    m_writingImpl.reset();//prevent writing to previous writing implementation, let the next set...() set up for writing
+}
+
 void CiftiFile::writeFile(const AString& fileName, const CiftiVersion& writingVersion, const ENDIAN& endian)
 {
     if (m_readingImpl == NULL || m_dims.empty()) throw CiftiException("writeFile called on uninitialized CiftiFile");
@@ -177,7 +209,8 @@ void CiftiFile::writeFile(const AString& fileName, const CiftiVersion& writingVe
         m_readingImpl = tempMemory;//we are about to make the old reading impl very unhappy, replace it so that if we get an error while writing, we hang onto the memory version
         m_writingImpl.reset();//and make it re-magic the writing implementation again if it tries to write again
     }
-    boost::shared_ptr<WriteImplInterface> tempWrite(new CiftiOnDiskImpl(pathToAbsolute(fileName), m_xml, writingVersion, writeSwapped));
+    boost::shared_ptr<WriteImplInterface> tempWrite(new CiftiOnDiskImpl(pathToAbsolute(fileName), m_xml, writingVersion, writeSwapped,
+                                                                        m_writingDataType, m_doWriteScaling, m_minScalingVal, m_maxScalingVal));
     copyImplData(m_readingImpl.get(), tempWrite.get(), m_dims);
     if (collision)//if we rewrote the file, we need the handle to the new file, and to dump the temporary in-memory version
     {
@@ -308,7 +341,8 @@ void CiftiFile::verifyWriteImpl()
                 }
             }
         }
-        m_writingImpl = boost::shared_ptr<CiftiOnDiskImpl>(new CiftiOnDiskImpl(m_writingFile, m_xml, m_onDiskVersion, shouldSwap(m_endianPref)));//this constructor makes new file for writing
+        m_writingImpl = boost::shared_ptr<CiftiOnDiskImpl>(new CiftiOnDiskImpl(m_writingFile, m_xml, m_onDiskVersion, shouldSwap(m_endianPref),
+                                                                               m_writingDataType, m_doWriteScaling, m_minScalingVal, m_maxScalingVal));//this constructor makes new file for writing
         if (m_readingImpl != NULL)
         {
             copyImplData(m_readingImpl.get(), m_writingImpl.get(), m_dims);
@@ -425,10 +459,16 @@ CiftiOnDiskImpl::CiftiOnDiskImpl(const AString& filename)
     }
 }
 
-CiftiOnDiskImpl::CiftiOnDiskImpl(const AString& filename, const CiftiXML& xml, const CiftiVersion& version, const bool& swapEndian)
+CiftiOnDiskImpl::CiftiOnDiskImpl(const AString& filename, const CiftiXML& xml, const CiftiVersion& version, const bool& swapEndian,
+                                 const int16_t& datatype, const bool& rescale, const double& minval, const double& maxval)
 {//starts writing new file
     NiftiHeader outHeader;
-    outHeader.setDataType(NIFTI_TYPE_FLOAT32);//actually redundant currently, default is float32
+    if (rescale)
+    {
+        outHeader.setDataTypeAndScaleRange(datatype, minval, maxval);
+    } else {
+        outHeader.setDataType(datatype);
+    }
     char intentName[16];
     int32_t intentCode = xml.getIntentInfo(version, intentName);
     outHeader.setIntent(intentCode, intentName);

@@ -13,6 +13,13 @@ TARGET_LINK_LIBRARIES(xmlinfo
 Cifti
 ${LIBS})
 
+ADD_EXECUTABLE(datatype
+datatype.cxx)
+
+TARGET_LINK_LIBRARIES(datatype
+Cifti
+${LIBS})
+
 INCLUDE_DIRECTORIES(
 ${CMAKE_SOURCE_DIR}/example
 ${CMAKE_SOURCE_DIR}/src
@@ -27,7 +34,7 @@ ones.dscalar.nii
 )
 
 IF(QT_FOUND)
-    #QT4
+    #QT4 and QT5
     SET(cifti_be_md5s
         3ba20f6ef590735c1211991f8e0144e6
         e3a1639ef4b354752b0abb0613eedb73
@@ -41,6 +48,13 @@ IF(QT_FOUND)
         e096a1cf0713f7a36590445e9f6564b1
         32345267599b07083092b7dedfd8796c
         512e0359c64d69dde93d605f8797f3a2
+    )
+    SET(cifti_datatype_md5s
+        cca91b955b1134251d62764cb1ebf44c
+        6359af74ba6b51357aefab7de7a76097
+        10ee62309850e55936fa9f702df8b4d1
+        e4997bdd4b8202ff502a19173693c43f
+        870dae2d646cadeed1494f6271433499
     )
 ELSE(QT_FOUND)
     #xml++
@@ -57,6 +71,13 @@ ELSE(QT_FOUND)
         764c816004ebe23d188d98f9f29c7337
         6fabac021e377efd35dede7198feefd4
         fe0cbb768e26aa12a0e03990f4f50a30
+    )
+    SET(cifti_datatype_md5s
+        6db4a73e4e11a1ac0a5e7cbfb56eff40
+        f321156573ed8f165b208d84769bfd9a
+        794d60d9d397fe341e18313efeeac5ea
+        ea43725139bd3e152197fdf22c5e72e7
+        4dbb23ab2564ba8c9f242a3cb6036600
     )
 ENDIF(QT_FOUND)
 
@@ -80,4 +101,10 @@ FOREACH(index RANGE ${loop_end})
     LIST(GET cifti_be_md5s ${index} goodsum)
     ADD_TEST(rewrite-big-md5-${testfile} ${CMAKE_COMMAND} -Dgood_sum=${goodsum} -Dcheck_file=big-${testfile} -P ${CMAKE_SOURCE_DIR}/cmake/scripts/testmd5.cmake)
     SET_TESTS_PROPERTIES(rewrite-big-md5-${testfile} PROPERTIES DEPENDS rewrite-big-${testfile})
+    
+    ADD_TEST(datatype-${testfile} datatype ${CMAKE_SOURCE_DIR}/example/data/${testfile} datatype-${testfile})
+    LIST(GET cifti_datatype_md5s ${index} goodsum)
+    ADD_TEST(datatype-md5-${testfile} ${CMAKE_COMMAND} -Dgood_sum=${goodsum} -Dcheck_file=datatype-${testfile} -P ${CMAKE_SOURCE_DIR}/cmake/scripts/testmd5.cmake)
+    SET_TESTS_PROPERTIES(rewrite-big-md5-${testfile} PROPERTIES DEPENDS datatype-${testfile})
+    
 ENDFOREACH(index RANGE ${loop_end})

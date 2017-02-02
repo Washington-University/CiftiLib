@@ -63,6 +63,7 @@ namespace cifti
         int32_t getIntentCode() const { return m_header.intent_code; }
         const char* getIntentName() const { return m_header.intent_name; }//NOTE: 16 BYTES, MAY NOT HAVE A NULL TERMINATOR
         bool getDataScaling(double& mult, double& offset) const;//returns false if scaling not needed
+        int getNumComponents() const;
         AString toString() const;
         
         void setDimensions(const std::vector<int64_t>& dimsIn);
@@ -71,6 +72,7 @@ namespace cifti
         void setDataType(const int16_t& type);
         void clearDataScaling();
         void setDataScaling(const double& mult, const double& offset);
+        void setDataTypeAndScaleRange(const int16_t& type, const double& minval, const double& maxval);
         ///get the FSL "scale" space
         std::vector<std::vector<float> > getFSLSpace() const;
         

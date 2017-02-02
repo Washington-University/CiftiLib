@@ -32,6 +32,7 @@
 #include "Common/CiftiException.h"
 #include "Common/MultiDimIterator.h"
 #include "Cifti/CiftiXML.h"
+#include "Nifti/nifti1.h"
 
 #include "boost/shared_ptr.hpp"
 
@@ -53,8 +54,8 @@ namespace cifti
             BIG
         };
         
-        CiftiFile() { m_endianPref = NATIVE; }
-        
+        CiftiFile();
+
         ///starts on-disk reading
         explicit CiftiFile(const AString &fileName);
         
@@ -97,6 +98,10 @@ namespace cifti
         
         ///for 2D only, if you don't want to pass a vector for indexing
         void setRow(const float* dataIn, const int64_t& index);
+        
+        ///data type and scaling options - should be set before setRow, etc, to avoid rewriting of file
+        void setWritingDataTypeNoScaling(const int16_t& type = NIFTI_TYPE_FLOAT32);
+        void setWritingDataTypeAndScaling(const int16_t& type, const double& minval, const double& maxval);
 
         //implementation details from here down
         class ReadImplInterface
@@ -123,6 +128,9 @@ namespace cifti
         CiftiXML m_xml;
         CiftiVersion m_onDiskVersion;
         ENDIAN m_endianPref;
+        bool m_doWriteScaling;
+        int16_t m_writingDataType;
+        double m_minScalingVal, m_maxScalingVal;
         
         void verifyWriteImpl();
         static void copyImplData(const ReadImplInterface* from, WriteImplInterface* to, const std::vector<int64_t>& dims);
