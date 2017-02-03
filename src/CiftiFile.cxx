@@ -139,19 +139,13 @@ CiftiFile::WriteImplInterface::~WriteImplInterface()
 CiftiFile::CiftiFile()
 {
     m_endianPref = NATIVE;
-    m_writingDataType = NIFTI_TYPE_FLOAT32;
-    m_doWriteScaling = false;
-    m_minScalingVal = -1.0;//these scaling values should never be used, but don't leave them uninitialized
-    m_maxScalingVal = 1.0;
+    setWritingDataTypeNoScaling();//default argument is float32
 }
 
 CiftiFile::CiftiFile(const AString& fileName)
 {
     m_endianPref = NATIVE;
-    m_writingDataType = NIFTI_TYPE_FLOAT32;
-    m_doWriteScaling = false;
-    m_minScalingVal = -1.0;//these scaling values should never be used, but don't leave them uninitialized
-    m_maxScalingVal = 1.0;
+    setWritingDataTypeNoScaling();//default argument is float32
     openFile(fileName);
 }
 
@@ -179,7 +173,7 @@ void CiftiFile::setWritingDataTypeNoScaling(const int16_t& type)
 {
     m_writingDataType = type;//could do some validation here
     m_doWriteScaling = false;
-    m_minScalingVal = -1.0;
+    m_minScalingVal = -1.0;//these scaling values should never be used, but don't leave them uninitialized
     m_maxScalingVal = 1.0;
     m_writingImpl.reset();//prevent writing to previous writing implementation, let the next set...() set up for writing
 }
