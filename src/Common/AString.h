@@ -58,6 +58,10 @@ namespace cifti
     {
         return mystr.mid(first, count);
     }
+    inline bool AString_endsWith(const AString& test, const AString& pattern)
+    {
+        return test.endsWith(pattern);
+    }
     template <typename T>
     AString AString_number(const T& num)
     {
@@ -92,6 +96,10 @@ namespace cifti
     inline AString AString_substr(const AString& mystr, const Glib::ustring::size_type& first, const Glib::ustring::size_type& count = std::string::npos)
     {//HACK: Glib::ustring::npos is undefined at link time with glibmm 2.4 for unknown reasons, but the header says it is equal to std::string's, so use it instead
         return mystr.substr(first, count);
+    }
+    inline bool AString_endsWith(const AString& test, const AString& pattern)
+    {
+        return test.substr(test.size() - pattern.size()) == pattern;
     }
     template <typename T>
     AString AString_number(const T& num)

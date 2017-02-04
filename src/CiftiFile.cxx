@@ -453,9 +453,98 @@ CiftiOnDiskImpl::CiftiOnDiskImpl(const AString& filename)
     }
 }
 
+namespace
+{
+    void warnForBadExtension(const AString& filename, const CiftiXML& myXML)
+    {
+        char junk[16];
+        int32_t intent_code = myXML.getIntentInfo(CiftiVersion(), junk);//use default writing version to check file extension, older version is missing some intent codes
+        switch (intent_code)
+        {
+            case 3000://unknown
+                if (!AString_endsWith(filename, ".nii"))
+                {
+                    cerr << "warning: cifti file of nonstandard mapping combination '" << AString_to_std_string(filename) << "' should be saved ending in .<something>.nii" << endl;
+                }
+                break;
+            case 3001:
+                if (!AString_endsWith(filename, ".dconn.nii"))
+                {
+                    cerr << "warning: dense by dense cifti file '" << AString_to_std_string(filename) << "' should be saved ending in .dconn.nii" << endl;
+                }
+                break;
+            case 3002:
+                if (!AString_endsWith(filename, ".dtseries.nii"))
+                {
+                    cerr << "warning: series by dense cifti file '" << AString_to_std_string(filename) << "' should be saved ending in .dtseries.nii" << endl;
+                }
+                break;
+            case 3003:
+                if (!AString_endsWith(filename, ".pconn.nii"))
+                {
+                    cerr << "warning: parcels by parcels cifti file '" << AString_to_std_string(filename) << "' should be saved ending in .pconn.nii" << endl;
+                }
+                break;
+            case 3004:
+                if (!AString_endsWith(filename, ".ptseries.nii"))
+                {
+                    cerr << "warning: series by parcels cifti file '" << AString_to_std_string(filename) << "' should be saved ending in .ptseries.nii" << endl;
+                }
+                break;
+            case 3006://3005 unused in practice
+                if (!(AString_endsWith(filename, ".dscalar.nii") || AString_endsWith(filename, ".dfan.nii") || AString_endsWith(filename, ".fiberTEMP.nii")))
+                {//there are additional special extensions in the standard for this mapping combination (specializations of scalar maps)
+                    //also include workbench's fiberTEMP special extension
+                    cerr << "warning: scalars by dense cifti file '" << AString_to_std_string(filename) << "' should be saved ending in .dscalar.nii" << endl;
+                }
+                break;
+            case 3007:
+                if (!AString_endsWith(filename, ".dlabel.nii"))
+                {
+                    cerr << "warning: labels by dense cifti file '" << AString_to_std_string(filename) << "' should be saved ending in .dlabel.nii" << endl;
+                }
+                break;
+            case 3008:
+                if (!AString_endsWith(filename, ".pscalar.nii"))
+                {
+                    cerr << "warning: scalars by parcels cifti file '" << AString_to_std_string(filename) << "' should be saved ending in .pscalar.nii" << endl;
+                }
+                break;
+            case 3009:
+                if (!AString_endsWith(filename, ".pdconn.nii"))
+                {
+                    cerr << "warning: dense by parcels cifti file '" << AString_to_std_string(filename) << "' should be saved ending in .pdconn.nii" << endl;
+                }
+                break;
+            case 3010:
+                if (!AString_endsWith(filename, ".dpconn.nii"))
+                {
+                    cerr << "warning: parcels by dense cifti file '" << AString_to_std_string(filename) << "' should be saved ending in .dpconn.nii" << endl;
+                }
+                break;
+            case 3011:
+                if (!AString_endsWith(filename, ".pconnseries.nii"))
+                {
+                    cerr << "warning: parcels by parcels by series cifti file '" << AString_to_std_string(filename) << "' should be saved ending in .pconnseries.nii" << endl;
+                }
+                break;
+            case 3012:
+                if (!AString_endsWith(filename, ".pconnscalar.nii"))
+                {
+                    cerr << "warning: parcels by parcels by scalar cifti file '" << AString_to_std_string(filename) << "' should be saved ending in .pconnscalar.nii" << endl;
+                }
+                break;
+            default:
+                CiftiAssert(0);
+                throw CiftiException("internal error, tell the developers what you just tried to do");
+        }
+    }
+}
+
 CiftiOnDiskImpl::CiftiOnDiskImpl(const AString& filename, const CiftiXML& xml, const CiftiVersion& version, const bool& swapEndian,
                                  const int16_t& datatype, const bool& rescale, const double& minval, const double& maxval)
 {//starts writing new file
+    warnForBadExtension(filename, xml);
     NiftiHeader outHeader;
     if (rescale)
     {
