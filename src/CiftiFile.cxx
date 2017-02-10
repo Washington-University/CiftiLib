@@ -552,6 +552,10 @@ CiftiOnDiskImpl::CiftiOnDiskImpl(const AString& filename, const CiftiXML& xml, c
     } else {
         outHeader.setDataType(datatype);
     }
+    if (outHeader.getNumComponents() != 1)
+    {
+        throw CiftiException("cifti cannot be written with multi-component nifti datatypes (i.e., complex, RGB)");
+    }
     char intentName[16];
     int32_t intentCode = xml.getIntentInfo(version, intentName);
     outHeader.setIntent(intentCode, intentName);

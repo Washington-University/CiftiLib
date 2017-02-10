@@ -842,6 +842,12 @@ void NiftiHeader::swapHeaderBytes(nifti_2_header& header)
 void NiftiHeader::write(BinaryFile& outFile, const int& version, const bool& swapEndian)
 {
     if (!canWriteVersion(version)) throw CiftiException("unable to write NIfTI version " + AString_number(version) + " for file " + outFile.getFilename());
+    double junk1, junk2;
+    int16_t datatype = getDataType();
+    if (getDataScaling(junk1, junk2) && ((datatype & 0x70) > 0 || datatype >= 1536))
+    {//that hacky expression is to detect 16, 32, 64, 1536, 1792, and 2048
+        cerr << "warning: writing nifti file with scaling factor and floating point datatype" << endl;
+    }
     const char padding[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     int64_t voxOffset;
     if (version == 2)
