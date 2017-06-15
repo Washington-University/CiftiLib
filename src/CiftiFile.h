@@ -68,6 +68,9 @@ namespace cifti
         ///does nothing if filename, version, and effective endianness match file currently open, otherwise writes complete file
         void writeFile(const AString& fileName, const CiftiVersion& writingVersion = CiftiVersion(), const ENDIAN& endian = ANY);
         
+        ///closes the underlying file to flush it, so that exceptions can be thrown
+        void close();
+
         ///reads file into memory, closes file
         void convertToInMemory();
         
@@ -118,6 +121,7 @@ namespace cifti
         public:
             virtual void setRow(const float* dataIn, const std::vector<int64_t>& indexSelect) = 0;
             virtual void setColumn(const float* dataIn, const int64_t& index) = 0;
+            virtual void close() {}
             virtual ~WriteImplInterface();
         };
     private:
