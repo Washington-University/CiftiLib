@@ -13,6 +13,7 @@ addons:
             - libboost-dev
             - libboost-filesystem-dev
             - zlib1g-dev
+            - doxygen
 
 compiler:
     - clang
@@ -31,4 +32,5 @@ before_install:
 script:
     - cmake -D BUILD_SHARED_LIBS:BOOL=$SHARED -D IGNORE_QT:BOOL=$IGNORE_QT ../CiftiLib
     - make -j 4
+    - make doc
     - ctest
