@@ -621,8 +621,8 @@ void NiftiHeader::read(BinaryFile& inFile)
     {
         int min_offset = 352;
         if (version == 2) min_offset = 544;
-        cerr << "warning: in file '" + inFile.getFilename() + "', vox_offset is " + AString_number(m_header.vox_offset) +
-        ", nifti standard specifies that it should be at least " + AString_number(min_offset) + ", assuming malformed file with no extender" << endl;
+        cerr << AString_to_std_string("warning: in file '" + inFile.getFilename() + "', vox_offset is " + AString_number(m_header.vox_offset) +
+        ", nifti standard specifies that it should be at least " + AString_number(min_offset) + ", assuming malformed file with no extender") << endl;
     } else {
         char extender[4];
         inFile.read(extender, 4);
