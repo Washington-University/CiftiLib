@@ -32,5 +32,7 @@ before_install:
 script:
     - cmake -D BUILD_SHARED_LIBS:BOOL=$SHARED -D IGNORE_QT:BOOL=$IGNORE_QT ../CiftiLib
     - make -j 4
+    - example/xmlinfo
+    - ldd example/xmlinfo
     - make doc
     - ctest
