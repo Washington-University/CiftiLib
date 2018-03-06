@@ -31,6 +31,7 @@ before_install:
 
 script:
     - cmake -D BUILD_SHARED_LIBS:BOOL=$SHARED -D IGNORE_QT:BOOL=$IGNORE_QT ../CiftiLib
+    - export LD_LIBRARY_PATH=$(if [[ $CXX == "clang++" ]]; then echo -n '/usr/local/clang/lib'; fi)
     - make -j 4
     - example/xmlinfo ../CiftiLib/example/data/ones.dscalar.nii
     - ctest
