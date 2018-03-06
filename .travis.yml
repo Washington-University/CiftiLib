@@ -32,7 +32,6 @@ before_install:
 
 script:
     - cmake -D BUILD_SHARED_LIBS:BOOL=$SHARED -D IGNORE_QT:BOOL=$IGNORE_QT ../CiftiLib
-    - export LD_LIBRARY_PATH=$(if [[ $CXX == "clang++" ]]; then echo -n '/usr/local/clang-3.9.0/lib'; fi)
     - make -j 4
     - make doc
     - ctest
