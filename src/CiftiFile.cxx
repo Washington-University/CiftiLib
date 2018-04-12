@@ -481,6 +481,23 @@ namespace
                 {
                     cerr << "warning: cifti file of nonstandard mapping combination '" << AString_to_std_string(filename) << "' should be saved ending in .<something>.nii" << endl;
                 }
+                if (AString_endsWith(filename, ".dconn.nii") ||
+                    AString_endsWith(filename, ".dtseries.nii") ||
+                    AString_endsWith(filename, ".pconn.nii") ||
+                    AString_endsWith(filename, ".ptseries.nii") ||
+                    AString_endsWith(filename, ".dscalar.nii") ||
+                    AString_endsWith(filename, ".dfan.nii") ||
+                    AString_endsWith(filename, ".fiberTemp.nii") ||
+                    AString_endsWith(filename, ".dlabel.nii") ||
+                    AString_endsWith(filename, ".pscalar.nii") ||
+                    AString_endsWith(filename, ".pdconn.nii") ||
+                    AString_endsWith(filename, ".dpconn.nii") ||
+                    AString_endsWith(filename, ".pconnseries.nii") ||
+                    AString_endsWith(filename, ".pconnscalar.nii"))
+                {
+                    cerr << "warning: cifti file of nonstandard mapping combination '" << AString_to_std_string(filename) << "' should NOT be saved using an already-used cifti extension, "
+                            << "please choose a different, reasonable cifti extension ending in .<something>.nii" << endl;
+                }
                 break;
             case 3001:
                 if (!AString_endsWith(filename, ".dconn.nii"))
