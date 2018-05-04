@@ -326,6 +326,16 @@ AString NiftiHeader::toString() const
         ret += "qoffset_y: " + AString_number(m_header.qoffset_y) + "\n";
         ret += "qoffset_z: " + AString_number(m_header.qoffset_z) + "\n";
     }
+    ret += "effective sform:\n";
+    vector<vector<float> > tempSform = getSForm();
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
+            ret += " " + AString_number(tempSform[i][j]);
+        }
+        ret += "\n";
+    }
     ret += "xyzt_units: " + AString_number(m_header.xyzt_units) + "\n";
     ret += "intent_code: " + AString_number(m_header.intent_code) + "\n";
     ret += "intent_name: " + AString_from_latin1(m_header.intent_name, 16) + "\n";
@@ -412,9 +422,9 @@ void NiftiHeader::setSForm(const vector<vector<float> >& sForm)
         kvec = -kvec;//because to nifti, "left handed" apparently means "up is down", not "left is right"
     }
     float rotmat[3][3];
-    rotmat[0][0] = ivec[0]; rotmat[1][0] = jvec[0]; rotmat[2][0] = kvec[0];
-    rotmat[0][1] = ivec[1]; rotmat[1][1] = jvec[1]; rotmat[2][1] = kvec[1];
-    rotmat[0][2] = ivec[2]; rotmat[1][2] = jvec[2]; rotmat[2][2] = kvec[2];
+    rotmat[0][0] = ivec[0]; rotmat[1][0] = ivec[1]; rotmat[2][0] = ivec[2];
+    rotmat[0][1] = jvec[0]; rotmat[1][1] = jvec[1]; rotmat[2][1] = jvec[2];
+    rotmat[0][2] = kvec[0]; rotmat[1][2] = kvec[1]; rotmat[2][2] = kvec[2];
     float quat[4];
     if (!MathFunctions::matrixToQuatern(rotmat, quat))
     {
