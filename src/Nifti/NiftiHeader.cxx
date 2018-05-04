@@ -220,7 +220,7 @@ vector<vector<float> > NiftiHeader::getSForm() const
             {
                 for (int j = 0; j < 3; ++j)
                 {
-                    rotmat[i][j] *= m_header.pixdim[i + 1];
+                    rotmat[i][j] *= m_header.pixdim[j + 1];
                 }
             }
             if (m_header.pixdim[0] < 0.0f)//left handed coordinate system, flip the kvec
