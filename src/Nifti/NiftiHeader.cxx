@@ -240,13 +240,13 @@ vector<vector<float> > NiftiHeader::getSForm() const
             ret[1][3] = m_header.qoffset_y;
             ret[2][3] = m_header.qoffset_z;
         } else {
-            cerr << "found quaternion with length greater than 1 in nifti header" << endl;
+            cerr << "warning: found quaternion with length greater than 1 in nifti header, using ANALYZE coordinates!" << endl;
             ret[0][0] = m_header.pixdim[1];
             ret[1][1] = m_header.pixdim[2];
             ret[2][2] = m_header.pixdim[3];
         }
     } else {//fall back to analyze and complain
-        cerr << "no sform or qform code found, using ANALYZE coordinates!" << endl;
+        cerr << "warning: no sform or qform code found, using ANALYZE coordinates!" << endl;
         ret[0][0] = m_header.pixdim[1];
         ret[1][1] = m_header.pixdim[2];
         ret[2][2] = m_header.pixdim[3];
@@ -266,9 +266,29 @@ vector<vector<float> > NiftiHeader::getSForm() const
         case NIFTI_UNITS_MM:
             break;
         default:
-            cerr << "unrecognized spatial unit in nifti header" << endl;
+            cerr << "warning: unrecognized spatial unit in nifti header" << endl;
     }
     return ret.getMatrix();
+}
+
+double NiftiHeader::getTimeStep() const
+{
+    int timeUnit = XYZT_TO_TIME(m_header.xyzt_units);
+    double ret = m_header.pixdim[4];
+    switch (timeUnit)
+    {
+        case NIFTI_UNITS_USEC:
+            ret /= 1000000.0;
+            break;
+        case NIFTI_UNITS_MSEC:
+            ret /= 1000.0;
+            break;
+        default:
+            cerr << "warning: non-time units code " + AString_number(timeUnit) + " used in nifti header, pretending units are seconds" << endl;
+        case NIFTI_UNITS_SEC:
+            break;
+    }
+    return ret;
 }
 
 AString NiftiHeader::toString() const
@@ -388,6 +408,13 @@ void NiftiHeader::setIntent(const int32_t& code, const char name[16])
     for (; i < 16; ++i) m_header.intent_name[i] = '\0';
 }
 
+void NiftiHeader::setDescription(const char descrip[80])
+{
+    int i;//custom strncpy-like code to fill nulls to the end
+    for (i = 0; i < 80 && descrip[i] != '\0'; ++i) m_header.descrip[i] = descrip[i];
+    for (; i < 80; ++i) m_header.descrip[i] = '\0';
+}
+
 void NiftiHeader::setSForm(const vector<vector<float> >& sForm)
 {
     CiftiAssert(sForm.size() >= 3);//programmer error to pass badly sized matrix
@@ -397,7 +424,8 @@ void NiftiHeader::setSForm(const vector<vector<float> >& sForm)
         CiftiAssert(sForm[i].size() >= 4);//ditto
         if (sForm[i].size() < 4) throw CiftiException("internal error: setSForm matrix badly sized");
     }
-    m_header.xyzt_units = SPACE_TIME_TO_XYZT(NIFTI_UNITS_MM, NIFTI_UNITS_SEC);//overwrite whatever units we read in
+    int timeUnit = XYZT_TO_TIME(m_header.xyzt_units);
+    m_header.xyzt_units = SPACE_TIME_TO_XYZT(NIFTI_UNITS_MM, timeUnit);//overwrite whatever spatial unit we read in
     for (int i = 0; i < 4; i++)
     {
         m_header.srow_x[i] = sForm[0][i];
@@ -444,6 +472,13 @@ void NiftiHeader::setSForm(const vector<vector<float> >& sForm)
         m_header.qoffset_y = sForm[1][3];
         m_header.qoffset_z = sForm[2][3];
     }
+}
+
+void NiftiHeader::setTimeStep(const double& seconds)
+{
+    int spaceUnit = XYZT_TO_SPACE(m_header.xyzt_units);//save the current space units so we don't clobber it...
+    m_header.xyzt_units = SPACE_TIME_TO_XYZT(spaceUnit, NIFTI_UNITS_SEC);//overwrite the time part of the units with seconds
+    m_header.pixdim[4] = seconds;
 }
 
 void NiftiHeader::clearDataScaling()
