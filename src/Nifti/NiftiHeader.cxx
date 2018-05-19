@@ -284,7 +284,7 @@ double NiftiHeader::getTimeStep() const
             ret /= 1000.0;
             break;
         default:
-            cerr << "warning: non-time units code " + AString_number(timeUnit) + " used in nifti header, pretending units are seconds" << endl;
+            cerr << AString_to_std_string("warning: non-time units code " + AString_number(timeUnit) + " used in nifti header, pretending units are seconds") << endl;
         case NIFTI_UNITS_SEC:
             break;
     }
