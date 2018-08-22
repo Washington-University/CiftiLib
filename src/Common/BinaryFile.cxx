@@ -405,7 +405,7 @@ void QFileImpl::write(const void* dataIn, const int64_t& count)
     while (total < count)
     {
         int64_t maxToWrite = min(count - total, CHUNK_SIZE);
-        writeret = m_file.write((const char*)dataIn, maxToWrite);//QFile probably also chokes on large writes
+        writeret = m_file.write(((const char*)dataIn) + total, maxToWrite);//QFile probably also chokes on large writes
         if (writeret < 1) break;//0 or -1 means error or eof
         total += writeret;
     }
