@@ -21,7 +21,7 @@ int main(int argc, char** argv)
     }
     try
     {
-        CiftiFile inputFile(argv[1]);//on-disk reading by default, and we only need the XML header anyway
+        CiftiFile inputFile((string(argv[1])));//on-disk reading by default, and we only need the XML header anyway
         const CiftiXML& myXML = inputFile.getCiftiXML();
         for (int whichDim = 0; whichDim < myXML.getNumberOfDimensions(); ++whichDim)
         {

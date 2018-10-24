@@ -42,7 +42,26 @@
 #include <QString>
 namespace cifti
 {
-    typedef QString AString;
+    struct AString : public QString
+    {//QT doesn't convert from std::string, and conversions have to be member functions
+        AString() {}
+        
+        //make common copy case simple by not going through the below mess
+        AString(const AString& rhs) : QString(rhs) { }
+        
+        //some QString constructors are explicit, so instead only make conversion constructors for whatever works with assignment to QString
+        //the cast is required to avoid recursing through AString
+        template <typename T>
+        AString(const T& rhs) : QString()
+        {
+            *(static_cast<QString*>(this)) = rhs;
+        }
+        
+        AString(const std::string& rhs) : QString()
+        {
+            (*this) = fromStdString(rhs);
+        }
+    };
 #define ASTRING_TO_CSTR(mystr) ((mystr).toLocal8Bit().constData())
 #define ASTRING_UTF8_RAW(mystr) ((mystr).toUtf8().constData())
     inline std::string AString_to_std_string(const AString& mystr)
