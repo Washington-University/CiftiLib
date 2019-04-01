@@ -19,14 +19,14 @@ int main(int argc, char** argv)
     if (argc < 3)
     {
         cout << "usage: " << argv[0] << " <input cifti> <output cifti>" << endl;
-        cout << "  rewrite the input cifti file to the output filename, using uint8 and data scaling." << endl;
+        cout << "  rewrite the input cifti file to the output filename, using uint8 and data scaling, little-endian." << endl;
         return 1;
     }
     try
     {
         CiftiFile inputFile(argv[1]);//on-disk reading by default
         inputFile.setWritingDataTypeAndScaling(NIFTI_TYPE_UINT8, -1.0, 6.0);//tells it to use this datatype to best represent this specified range of values [-1.0, 6.0] whenever this instance is written
-        inputFile.writeFile(argv[2]);//if this is the same filename as the input, CiftiFile actually detects this and reads the input into memory first
+        inputFile.writeFile(argv[2], CiftiVersion(), CiftiFile::LITTLE);//if this is the same filename as the input, CiftiFile actually detects this and reads the input into memory first
         //otherwise, it will read and write one row at a time, using very little memory
         //inputFile.setWritingDataTypeNoScaling(NIFTI_TYPE_FLOAT32);//this is how you would revert back to writing as float32 without rescaling
     } catch (CiftiException& e) {
