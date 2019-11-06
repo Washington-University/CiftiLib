@@ -141,12 +141,12 @@ AString BinaryFile::getFilename() const
 
 bool BinaryFile::getOpenForRead()
 {
-    return (m_curMode | READ) != 0;
+    return (m_curMode & READ) != 0;
 }
 
 bool BinaryFile::getOpenForWrite()
 {
-    return (m_curMode | WRITE) != 0;
+    return (m_curMode & WRITE) != 0;
 }
 
 void BinaryFile::open(const AString& filename, const OpenMode& opmode)
