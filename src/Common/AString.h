@@ -44,10 +44,7 @@ namespace cifti
 {
     struct AString : public QString
     {//QT doesn't convert from std::string, and conversions have to be member functions
-        AString() {}
-        
-        //make common copy case simple by not going through the below mess
-        AString(const AString& rhs) : QString(rhs) { }
+        AString() : QString() {}
         
         //some QString constructors are explicit, so instead only make conversion constructors for whatever works with assignment to QString
         //the cast is required to avoid recursing through AString

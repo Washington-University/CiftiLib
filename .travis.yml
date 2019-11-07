@@ -8,7 +8,7 @@ cache:
 addons:
     apt:
         packages:
-            - libqt4-dev
+            - qtbase5-dev
             - libxml++2.6-dev
             - libboost-dev
             - libboost-filesystem-dev
@@ -30,8 +30,7 @@ before_install:
     - cd ../build
 
 script:
-    - cmake -D BUILD_SHARED_LIBS:BOOL=$SHARED -D IGNORE_QT:BOOL=$IGNORE_QT ../CiftiLib
-    - export LD_LIBRARY_PATH=$(if [[ $CXX == "clang++" ]]; then echo -n '/usr/local/clang/lib'; fi)
+    - cmake -D CMAKE_CXX_FLAGS="-W -Wall -Wno-narrowing" -D BUILD_SHARED_LIBS:BOOL=$SHARED -D IGNORE_QT:BOOL=$IGNORE_QT ../CiftiLib
     - make -j 4
     - example/xmlinfo ../CiftiLib/example/data/ones.dscalar.nii
     - ctest
