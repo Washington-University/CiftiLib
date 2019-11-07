@@ -22,6 +22,22 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/" 
 
 INCLUDE(UseDoxygen)
 
+#TSC: glibmm requires c++11, so it needs to be in the compile flags - in older cmake, this needs to be done manually
+IF (${CMAKE_VERSION} VERSION_LESS "3.1")
+    IF (CMAKE_COMPILER_IS_GNUCC)
+        include(CheckCXXCompilerFlag)
+        CHECK_CXX_COMPILER_FLAG("-std=c++11" GCC_STD11)
+        IF (${GCC_STD11})
+            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+        ELSE (${GCC_STD11})
+            SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+        ENDIF (${GCC_STD11})
+    ENDIF (CMAKE_COMPILER_IS_GNUCC)
+ELSE (${CMAKE_VERSION} VERSION_LESS "3.1")
+    SET(CMAKE_CXX_STANDARD 11)
+    SET(CMAKE_CXX_STANDARD_REQUIRED TRUE)
+ENDIF (${CMAKE_VERSION} VERSION_LESS "3.1")
+
 #QT
 IF (NOT IGNORE_QT)
     FIND_PACKAGE(Qt4 4.8.0 QUIET)

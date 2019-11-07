@@ -8,7 +8,7 @@ cache:
 addons:
     apt:
         packages:
-            - qtbase5-dev
+            - libqt4-dev
             - libxml++2.6-dev
             - libboost-dev
             - libboost-filesystem-dev
