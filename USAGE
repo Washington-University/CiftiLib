@@ -1,5 +1,6 @@
-The main object for dealing with Cifti is CiftiFile.  To set up a new CiftiFile,
-make a CiftiXML object with the mappings you want, and call setCiftiXML on the CiftiFile object.
+The only header you need to include is CiftiFile.h, it will include the other needed headers.  The main
+object for dealing with Cifti is CiftiFile.  To set up a new CiftiFile, make a CiftiXML object with the
+mappings you want, and call setCiftiXML on the CiftiFile object.
 
 The XML tells you things about the mappings, and lets you set new mappings or modify existing ones:
 
@@ -16,10 +17,12 @@ if (rowType == CiftiMappingType::SCALARS)
 See the rewrite example for how to read and write data to CiftiFile.
 
 CiftiFile internally uses NiftiIO, which is a NIfTI reader for both NIfTI-1 and NIfTI-2 single-file (.nii),
-including reading .nii.gz files if zlib is found (NOTE: .nii.gz should not be used for CIFTI files,
-as seeking is slow, and seeking backwards is impossible).
+including reading .nii.gz files if zlib is found (NOTE: .nii.gz is not allowed in the CIFTI-2 standard, as
+seeking is slow, and seeking backwards is problematic).  If you want to use our NIfTI implementation to
+read volume files, include NiftiIO.h.  We do not provide a VolumeFile object, NiftiIO only handles the
+low-level file format details.
 
-Our nifti1.h and nifti2.h are slightly modified, replacing the #defines of standard values for header fields
-with constant integers.  We also declare CIFTI-specific intent codes and the extension code in nifti2.h,
-and have some macros for determining header version.
-
+Our nifti1.h and nifti2.h are slightly modified, replacing the #defines of standard values for header
+fields with constant integers, and placing almost everything in a namespace so that it shouldn't interfere
+with an existing nifti implementation in the same codebase.  We also declare CIFTI-specific intent codes
+and the CIFTI extension code in nifti2.h, and have some macros for determining header version.
