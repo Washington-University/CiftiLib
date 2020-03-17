@@ -78,8 +78,6 @@ ELSE(QT_FOUND)
     )
 ENDIF(QT_FOUND)
 
-#ADD_TEST(timer ${CMAKE_CURRENT_BINARY_DIR}/Tests/test_driver timer)
-
 LIST(LENGTH cifti_files num_cifti_files)
 #FOREACH(... RANGE x) is stupid, it does all of [0, x] inclusive, totaling x + 1 iterations
 MATH(EXPR loop_end "${num_cifti_files} - 1")
