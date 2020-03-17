@@ -3,22 +3,19 @@ ADD_EXECUTABLE(rewrite
 rewrite.cxx)
 
 TARGET_LINK_LIBRARIES(rewrite
-Cifti
-${LIBS})
+Cifti)
 
 ADD_EXECUTABLE(xmlinfo
 xmlinfo.cxx)
 
 TARGET_LINK_LIBRARIES(xmlinfo
-Cifti
-${LIBS})
+Cifti)
 
 ADD_EXECUTABLE(datatype
 datatype.cxx)
 
 TARGET_LINK_LIBRARIES(datatype
-Cifti
-${LIBS})
+Cifti)
 
 INCLUDE_DIRECTORIES(
 ${CMAKE_SOURCE_DIR}/example

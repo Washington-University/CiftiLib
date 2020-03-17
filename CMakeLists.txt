@@ -22,6 +22,27 @@ SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/" 
 
 INCLUDE(UseDoxygen)
 
+#the library source, doesn't contain build targets
+ADD_SUBDIRECTORY(src)
+
+macro(append_subdir_files variable dirname)
+    get_directory_property(holder DIRECTORY ${dirname} DEFINITION ${variable})
+    foreach(depfile ${holder})
+        list(APPEND ${variable} "${dirname}/${depfile}")
+    endforeach()
+endmacro()
+
+#get the sources and install info
+append_subdir_files(SOURCES src)
+append_subdir_files(HEADERS src)
+append_subdir_files(PUBLIC_HEADERS src)
+append_subdir_files(PRIVATE_DIRS src)
+
+ADD_LIBRARY(Cifti
+${SOURCES}
+${HEADERS}
+)
+
 #TSC: glibmm requires c++11, so it needs to be in the compile flags - in older cmake, this needs to be done manually
 IF (${CMAKE_VERSION} VERSION_LESS "3.1")
     IF (CMAKE_COMPILER_IS_GNUCC)
@@ -43,7 +64,7 @@ IF (NOT IGNORE_QT)
     FIND_PACKAGE(Qt4 4.8.0 QUIET)
     IF (QT_FOUND)
         SET(QT_DONT_USE_QTGUI TRUE)
-        ADD_DEFINITIONS(-DCIFTILIB_USE_QT)
+        TARGET_COMPILE_DEFINITIONS(Cifti PUBLIC -DCIFTILIB_USE_QT)
         INCLUDE(${QT_USE_FILE})
         SET(LIBS ${LIBS} ${QT_LIBRARIES})
         #for pkg-config file
@@ -53,10 +74,9 @@ IF (NOT IGNORE_QT)
         FIND_PACKAGE(Qt5Core)
         IF (Qt5Core_FOUND)
             SET(QT_FOUND TRUE)
-            INCLUDE_DIRECTORIES(${Qt5Core_INCLUDE_DIRS})
+            TARGET_INCLUDE_DIRECTORIES(Cifti PUBLIC ${Qt5Core_INCLUDE_DIRS})
             SET(LIBS ${LIBS} Qt5::Core)
-            #whatever that means
-            ADD_DEFINITIONS(-DCIFTILIB_USE_QT)
+            TARGET_COMPILE_DEFINITIONS(Cifti PUBLIC -DCIFTILIB_USE_QT)
             SET(CIFTILIB_PKGCONFIG_REQUIRES_LINE "Requires: Qt5Core")
             SET(CIFTILIB_PKGCONFIG_DEFINE "-DCIFTILIB_USE_QT")
         ENDIF (Qt5Core_FOUND)
@@ -68,7 +88,7 @@ IF (NOT QT_FOUND)
     FIND_PACKAGE(libxml++ 2.17.0 REQUIRED)
     INCLUDE_DIRECTORIES(${libxml++_INCLUDE_DIRS})
     SET(LIBS ${LIBS} ${libxml++_LIBRARIES})
-    ADD_DEFINITIONS(-DCIFTILIB_USE_XMLPP)
+    TARGET_COMPILE_DEFINITIONS(Cifti PUBLIC -DCIFTILIB_USE_XMLPP)
     #for pkg-config file
     SET(CIFTILIB_PKGCONFIG_REQUIRES_LINE "Requires: libxml++-2.6 >= 2.17.0")
     SET(CIFTILIB_PKGCONFIG_DEFINE "-DCIFTILIB_USE_XMLPP")
@@ -85,15 +105,15 @@ SET(LIBS ${LIBS} ${Boost_LIBRARIES})
 #boost quirks
 IF (Boost_VERSION LESS 104400)
     #absolute() was added in 1.44.0, with filesystem v3
-    ADD_DEFINITIONS(-DCIFTILIB_BOOST_NO_FSV3)
+    TARGET_COMPILE_DEFINITIONS(Cifti PUBLIC -DCIFTILIB_BOOST_NO_FSV3)
 ENDIF (Boost_VERSION LESS 104400)
 IF (Boost_VERSION LESS 104800)
     #canonical() was added in 1.48.0
-    ADD_DEFINITIONS(-DCIFTILIB_BOOST_NO_CANONICAL)
+    TARGET_COMPILE_DEFINITIONS(Cifti PUBLIC -DCIFTILIB_BOOST_NO_CANONICAL)
 ENDIF (Boost_VERSION LESS 104800)
 IF (Boost_VERSION LESS 105600)
     #try_lexical_cast was added in 1.56.0
-    ADD_DEFINITIONS(-DCIFTILIB_BOOST_NO_TRY_LEXICAL)
+    TARGET_COMPILE_DEFINITIONS(Cifti PUBLIC -DCIFTILIB_BOOST_NO_TRY_LEXICAL)
 ENDIF (Boost_VERSION LESS 105600)
 
 #zlib, useful for volume reading
@@ -116,32 +136,11 @@ ENDIF (OPENMP_FOUND)
 
 ENABLE_TESTING()
 
-#the library source, doesn't contain build targets
-ADD_SUBDIRECTORY(src)
+#one way to get qt5's new compiler flag restrictions into the build - does it have other consequences?
+TARGET_LINK_LIBRARIES(Cifti ${LIBS})
 
 #example directory, has build targets and tests
 ADD_SUBDIRECTORY(example)
-
-macro(append_subdir_files variable dirname)
-    get_directory_property(holder DIRECTORY ${dirname} DEFINITION ${variable})
-    foreach(depfile ${holder})
-        list(APPEND ${variable} "${dirname}/${depfile}")
-    endforeach()
-endmacro()
-
-#get the sources and install info
-append_subdir_files(SOURCES src)
-append_subdir_files(HEADERS src)
-append_subdir_files(PUBLIC_HEADERS src)
-append_subdir_files(PRIVATE_DIRS src)
-
-ADD_LIBRARY(Cifti
-${SOURCES}
-${HEADERS}
-)
-
-#one way to get qt5's new compiler flag restrictions into the build - does it have other consequences?
-TARGET_LINK_LIBRARIES(Cifti ${LIBS})
 
 #NOTE: soversion set to 0 because ABI compatibility was not designed into the interface
 #soversion defines what symlinks are created, version defines what to put on the end of the actual library file
@@ -152,9 +151,7 @@ SOVERSION 0
 VERSION ${CIFTILIB_VERSION}
 )
 
-INCLUDE_DIRECTORIES(
-${CMAKE_SOURCE_DIR}/src
-)
+TARGET_INCLUDE_DIRECTORIES(Cifti PRIVATE src)
 
 #install dirs
 INCLUDE(GNUInstallDirs)
@@ -164,6 +161,11 @@ CONFIGURE_FILE(CiftiLib.pc.in CiftiLib.pc @ONLY)
 INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/CiftiLib.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
 #install
-INSTALL(TARGETS Cifti DESTINATION ${CMAKE_INSTALL_LIBDIR})
+TARGET_INCLUDE_DIRECTORIES(Cifti INTERFACE $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/CiftiLib>)
+INSTALL(TARGETS Cifti DESTINATION ${CMAKE_INSTALL_LIBDIR} EXPORT CiftiLib)
 INSTALL(FILES ${PUBLIC_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/CiftiLib)
 INSTALL(DIRECTORY ${PRIVATE_DIRS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/CiftiLib FILES_MATCHING PATTERN "*.h")
+
+#target export only contains dependency stuff, no headers
+INSTALL(EXPORT CiftiLib DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/CiftiLib)
+
