@@ -26,3 +26,4 @@ Our nifti1.h and nifti2.h are slightly modified, replacing the #defines of stand
 fields with constant integers, and placing almost everything in a namespace so that it shouldn't interfere
 with an existing nifti implementation in the same codebase.  We also declare CIFTI-specific intent codes
 and the CIFTI extension code in nifti2.h, and have some macros for determining header version.
+

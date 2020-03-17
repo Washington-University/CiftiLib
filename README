@@ -28,17 +28,20 @@ make doc
 
 The build results will be in subdirectories of the build directory, not in the source directory.
 
-To use the installed library, use pkg-config to get the needed directories and libraries.  For instance, in cmake:
+To use the installed library, use the cmake imported target to get the needed directories and libraries:
 
-find_package(PkgConfig)
-pkg_check_modules(PC_CIFTI REQUIRED CiftiLib)
+add_executable(yourProject yourProject.cpp)
+find_package(CiftiLib)
+target_link_libraries(yourProject Cifti)
 
-You can then use cmake variables PC_CIFTI_LIBRARIES, PC_CIFTI_INCLUDE_DIRS, and similar, see here for descriptions:
+If you are not using cmake, it also installs a file for pkg-config:
 
-https://cmake.org/cmake/help/v3.0/module/FindPkgConfig.html
+$ pkg-config CiftiLib --libs
+-L/usr/local/lib -lCifti -lxml++-2.6 -lxml2 -lglibmm-2.4 -lgobject-2.0 -lglib-2.0 -lsigc-2.0
 
 Troubleshooting:
 
 If you are using manually-installed libraries rather than distribution-packaged libraries, you may need to use the cmake variables CMAKE_LIBRARY_PATH and CMAKE_INCLUDE_PATH.
 
 If you are getting link errors related to boost, try setting a cmake variable Boost_NO_BOOST_CMAKE to true.
+
