@@ -44,7 +44,7 @@ ${HEADERS}
 )
 
 #TSC: glibmm requires c++11, so it needs to be in the compile flags - in older cmake, this needs to be done manually
-IF (${CMAKE_VERSION} VERSION_LESS "3.1")
+IF (${CMAKE_VERSION} VERSION_LESS "3.6")
     IF (CMAKE_COMPILER_IS_GNUCC)
         include(CheckCXXCompilerFlag)
         CHECK_CXX_COMPILER_FLAG("-std=c++11" GCC_STD11)
@@ -54,9 +54,9 @@ IF (${CMAKE_VERSION} VERSION_LESS "3.1")
             TARGET_COMPILE_OPTIONS(Cifti PUBLIC -std=c++0x)
         ENDIF (${GCC_STD11})
     ENDIF (CMAKE_COMPILER_IS_GNUCC)
-ELSE (${CMAKE_VERSION} VERSION_LESS "3.1")
+ELSE (${CMAKE_VERSION} VERSION_LESS "3.6")
     SET_TARGET_PROPERTIES(Cifti PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED YES)
-ENDIF (${CMAKE_VERSION} VERSION_LESS "3.1")
+ENDIF (${CMAKE_VERSION} VERSION_LESS "3.6")
 
 #QT has extra cmake magic that exported target doesn't handle, so we need to do extra stuff in our ...Config.cmake
 SET(USING_QT5 FALSE)
@@ -135,9 +135,9 @@ ENDIF (APPLE)
 
 #openmp provides a fast mutex implementation, faster than QT (and probably faster than glibmm)
 FIND_PACKAGE(OpenMP)
-IF (OpenMP_FOUND)
+IF (OpenMP_CXX_FOUND)
     SET(LIBS ${LIBS} OpenMP::OpenMP_CXX)
-ENDIF (OpenMP_FOUND)
+ENDIF (OpenMP_CXX_FOUND)
 
 ENABLE_TESTING()
 
