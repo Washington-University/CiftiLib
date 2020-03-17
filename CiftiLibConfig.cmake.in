@@ -1,0 +1,38 @@
+cmake_minimum_required(VERSION 2.8.11)
+
+set(USING_QT5 @USING_QT5@)
+set(CIFTI_EXPORT_FILE @CIFTI_EXPORT_FILE@)
+set(USING_OMP @OpenMP_FOUND@)
+
+include(${CMAKE_CURRENT_LIST_DIR}/CiftiLib.cmake)
+
+set(CiftiLib_LIBRARY Cifti)
+
+if (USING_QT5)
+    #hopefully this is enough to get the magic -fPIC, reinterpreting Qt5::Core before it hits the linker, etc
+    if (CiftiLib_FIND_REQUIRED)
+        find_package(Qt5Core REQUIRED)
+    else (CiftiLib_FIND_REQUIRED)
+        find_package(Qt5Core)
+        if (NOT Qt5Core_FOUND)
+            unset(CiftiLib_LIBRARY)
+        endif (Qt5Core_FOUND)
+    endif (CiftiLib_FIND_REQUIRED)
+endif (USING_QT5)
+
+if (USING_OMP)
+    #same for OpenMP
+    if (CiftiLib_FIND_REQUIRED)
+        find_package(OpenMP REQUIRED)
+    else (CiftiLib_FIND_REQUIRED)
+        find_package(OpenMP)
+        if (NOT OpenMP_FOUND)
+            unset(CiftiLib_LIBRARY)
+        endif (NOT OpenMP_FOUND)
+    endif (CiftiLib_FIND_REQUIRED)
+endif  (USING_OMP)
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(CiftiLib DEFAULT_MSG CiftiLib_LIBRARY)
+mark_as_advanced(CiftiLib_LIBRARY)
+
