@@ -390,7 +390,7 @@ void QFileImpl::read(void* dataOut, const int64_t& count, int64_t* numRead)
 
 void QFileImpl::seek(const int64_t& position)
 {
-    if (!m_file.seek(position)) throw CiftiException("seek failed in file '" + m_fileName + "'");
+    if (m_file.pos() != position && !m_file.seek(position)) throw CiftiException("seek failed in file '" + m_fileName + "'");
 }
 
 int64_t QFileImpl::pos()
