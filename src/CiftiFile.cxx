@@ -476,6 +476,10 @@ namespace
         int32_t intent_code = myXML.getIntentInfo(CiftiVersion(), junk);//use default writing version to check file extension, older version is missing some intent codes
         switch (intent_code)
         {
+            default:
+                cerr << "warning: unhandled cifti type in extension warning check, tell the developers what you just tried to do" << endl;
+                CiftiAssert(0);//yes, let it fall through to "unknown" in release so that it at least looks for .nii
+                //-fallthrough
             case 3000://unknown
                 if (!AString_endsWith(filename, ".nii"))
                 {
@@ -496,7 +500,7 @@ namespace
                     AString_endsWith(filename, ".pconnscalar.nii"))
                 {
                     cerr << "warning: cifti file of nonstandard mapping combination '" << AString_to_std_string(filename) << "' should NOT be saved using an already-used cifti extension, "
-                            << "please choose a different, reasonable cifti extension ending in .<something>.nii" << endl;
+                            << "please choose a different, reasonable cifti extension of the form .<something>.nii" << endl;
                 }
                 break;
             case 3001:
@@ -566,9 +570,6 @@ namespace
                     cerr << "warning: parcels by parcels by scalar cifti file '" << AString_to_std_string(filename) << "' should be saved ending in .pconnscalar.nii" << endl;
                 }
                 break;
-            default:
-                CiftiAssert(0);
-                throw CiftiException("internal error, tell the developers what you just tried to do");
         }
     }
 }
