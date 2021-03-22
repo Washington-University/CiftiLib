@@ -475,7 +475,7 @@ void StrFileImpl::close()
 void StrFileImpl::read(void* dataOut, const int64_t& count, int64_t* numRead)
 {
     if (m_file == NULL) throw CiftiException("read called on unopened StrFileImpl");//shouldn't happen
-    int64_t readret = fread(dataOut, 1, count, m_file);//expect fread to not have read size limitations comapred to memory
+    int64_t readret = fread(dataOut, 1, count, m_file);//expect fread to not have read size limitations compared to memory
     m_curPos += readret;//the item size is 1
     CiftiAssert(m_curPos == ftello(m_file));//double check it in debug, ftello is fast on linux at least
     if (numRead == NULL)
