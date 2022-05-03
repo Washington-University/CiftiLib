@@ -853,7 +853,7 @@ void CiftiXML::parseMatrixIndicesMap2(XmlReader& xml)
     } else if (type == "CIFTI_INDEX_TYPE_SERIES") {
         toRead = boost::shared_ptr<CiftiSeriesMap>(new CiftiSeriesMap());
     } else {
-        throw CiftiException("invalid value for IndicesMapToDataType in CIFTI-1: " + type);
+        throw CiftiException("invalid value for IndicesMapToDataType in CIFTI-2: " + type);
     }
     toRead->readXML2(xml);
 #ifdef CIFTILIB_USE_QT
