@@ -279,7 +279,7 @@ void CiftiFile::setCiftiXML(const CiftiXML& xml, const bool useOldMetadata)
     {
         if (xmlDims[i] < 1) throw CiftiException("cifti xml dimensions must be greater than zero");
     }
-    m_readingImpl.reset();//drop old implementation, as it is now invalid due to XML (and therefore matrix size) change
+    m_readingImpl.reset();//drop old matrix/file, as it is now invalid due to XML (and therefore matrix size) change
     m_writingImpl.reset();
     if (useOldMetadata)
     {

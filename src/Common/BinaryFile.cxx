@@ -362,6 +362,10 @@ void QFileImpl::open(const AString& filename, const BinaryFile::OpenMode& opmode
 
 void QFileImpl::close()
 {
+    if (!m_file.isOpen()) return; //not sure what flush() does if file isn't open, so let's not try it
+    //WARNING: QFileDevice::close() calls flush, ignores if it fails, then closes
+    //so flush manually and check its error condition instead
+    if (!m_file.flush()) throw CiftiException("failed to flush file '" + m_file.fileName() + "' before closing, data may be corrupted");
     m_file.close();
 }
 
