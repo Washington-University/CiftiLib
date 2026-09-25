@@ -163,13 +163,21 @@ void StructureEnum::initialize()
                                      "DIENCEPHALON_VENTRAL_RIGHT", 
                                      "DiencephalonVentralRight"));
     
-    enumData.push_back(StructureEnum(HIPPOCAMPUS_LEFT, 
+    enumData.push_back(StructureEnum(HIPPOCAMPUS_LEFT,
                                      "HIPPOCAMPUS_LEFT", 
                                      "HippocampusLeft"));
     
     enumData.push_back(StructureEnum(HIPPOCAMPUS_RIGHT, 
                                      "HIPPOCAMPUS_RIGHT", 
                                      "HippocampusRight"));
+    
+    enumData.push_back(StructureEnum(HIPPOCAMPUS_DENTATE_LEFT,
+                                     "HIPPOCAMPUS_DENTATE_LEFT",
+                                     "HippocampusDentateLeft"));
+    
+    enumData.push_back(StructureEnum(HIPPOCAMPUS_DENTATE_RIGHT,
+                                     "HIPPOCAMPUS_DENTATE_RIGHT",
+                                     "HippocampusDentateRight"));
     
     enumData.push_back(StructureEnum(INVALID,
                                      "INVALID",
@@ -436,6 +444,7 @@ bool StructureEnum::isRight(const Enum enumValue)
         case CEREBRAL_WHITE_MATTER_RIGHT:
         case CORTEX_RIGHT:
         case DIENCEPHALON_VENTRAL_RIGHT:
+        case HIPPOCAMPUS_DENTATE_RIGHT:
         case HIPPOCAMPUS_RIGHT:
         case PALLIDUM_RIGHT:
         case PUTAMEN_RIGHT:
@@ -460,6 +469,7 @@ bool StructureEnum::isRight(const Enum enumValue)
         case CEREBRAL_WHITE_MATTER_LEFT:
         case CORTEX_LEFT:
         case DIENCEPHALON_VENTRAL_LEFT:
+        case HIPPOCAMPUS_DENTATE_LEFT:
         case HIPPOCAMPUS_LEFT:
         case PALLIDUM_LEFT:
         case PUTAMEN_LEFT:
@@ -489,6 +499,7 @@ bool StructureEnum::isLeft(const Enum enumValue)
         case CEREBRAL_WHITE_MATTER_LEFT:
         case CORTEX_LEFT:
         case DIENCEPHALON_VENTRAL_LEFT:
+        case HIPPOCAMPUS_DENTATE_LEFT:
         case HIPPOCAMPUS_LEFT:
         case PALLIDUM_LEFT:
         case PUTAMEN_LEFT:
@@ -513,6 +524,7 @@ bool StructureEnum::isLeft(const Enum enumValue)
         case CEREBRAL_WHITE_MATTER_RIGHT:
         case CORTEX_RIGHT:
         case DIENCEPHALON_VENTRAL_RIGHT:
+        case HIPPOCAMPUS_DENTATE_RIGHT:
         case HIPPOCAMPUS_RIGHT:
         case PALLIDUM_RIGHT:
         case PUTAMEN_RIGHT:
@@ -626,6 +638,12 @@ StructureEnum::Enum StructureEnum::getContralateralStructure(const Enum enumValu
             break;
         case DIENCEPHALON_VENTRAL_RIGHT:
             contralateralStructure = DIENCEPHALON_VENTRAL_LEFT;
+            break;
+        case HIPPOCAMPUS_DENTATE_LEFT:
+            contralateralStructure = HIPPOCAMPUS_DENTATE_RIGHT;
+            break;
+        case HIPPOCAMPUS_DENTATE_RIGHT:
+            contralateralStructure = HIPPOCAMPUS_DENTATE_LEFT;
             break;
         case HIPPOCAMPUS_LEFT:
             contralateralStructure = HIPPOCAMPUS_RIGHT;

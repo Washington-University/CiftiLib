@@ -47,18 +47,23 @@ public:
      * Enumerated values.
      */
     enum Enum {
-        /** Invalid */
-        INVALID,
+        /** Left Cerebral Cortex */
+        CORTEX_LEFT,
+        /** Right Cerebral Cortex*/
+        CORTEX_RIGHT,
+        /** Cerebellum */
+        CEREBELLUM,
+        //matching accumbens to getAll order for consistency - yes, it is a bit silly
+        /** Left Nucleus Accumbens */
+        ACCUMBENS_LEFT,
+        /** Right Nucleus Accumbens */
+        ACCUMBENS_RIGHT,
         /** All Strucures */
         ALL,
         /** All white matter */
         ALL_WHITE_MATTER,
         /** All grey matter */
         ALL_GREY_MATTER,
-        /** Left Nucleus Accumbens */
-        ACCUMBENS_LEFT,
-        /** Right Nucleus Accumbens */
-        ACCUMBENS_RIGHT,
         /** Left Amygdala */
         AMYGDALA_LEFT,
         /** Right Amygdala */
@@ -73,8 +78,6 @@ public:
         CEREBELLAR_WHITE_MATTER_LEFT,
         /** Cerebellar white matter right */
         CEREBELLAR_WHITE_MATTER_RIGHT,
-        /** Cerebellum */
-        CEREBELLUM,
         /** Left Cerebellum */
         CEREBELLUM_LEFT,
         /** Right Cerebellum */
@@ -85,10 +88,6 @@ public:
         CEREBRAL_WHITE_MATTER_RIGHT,
         /** Cortex not specified */
         CORTEX,
-        /** Left Cerebral Cortex */
-        CORTEX_LEFT,
-        /** Right Cerebral Cortex*/
-        CORTEX_RIGHT,
         /** Left Ventral Diencephalon */
         DIENCEPHALON_VENTRAL_LEFT,
         /** Right Ventral Diencephalon */
@@ -97,10 +96,16 @@ public:
         HIPPOCAMPUS_LEFT,
         /** Right Hippocampus */
         HIPPOCAMPUS_RIGHT,
+        /** Left Dentate Hippocampus */
+        HIPPOCAMPUS_DENTATE_LEFT,
+        /** Right Dentate Hippocampus */
+        HIPPOCAMPUS_DENTATE_RIGHT,
         /** Left Pallidum */
         PALLIDUM_LEFT,
         /** Right Pallidum */
         PALLIDUM_RIGHT,
+        /** Invalid */
+        INVALID,
         /** Other structure not specified */
         OTHER,
         /** Other grey matter */
